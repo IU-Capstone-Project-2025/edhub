@@ -23,12 +23,12 @@ class Course(BaseModel):
 
 class MaterialID(BaseModel):
     course_id: str
-    material_id: str
+    material_id: int
 
 
 class Material(BaseModel):
     course_id: str
-    material_id: str
+    material_id: int
     creation_date: str
     title: str
     description: str
