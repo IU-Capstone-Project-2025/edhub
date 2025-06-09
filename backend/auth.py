@@ -54,6 +54,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 async def create_user(user: json_classes.UserCreate):
     '''
     Creates user account with provided email, name, and password.
+
     Returns email and JWT access token for 30 minutes.
     '''
 
@@ -83,6 +84,7 @@ async def create_user(user: json_classes.UserCreate):
 async def login(user: json_classes.UserLogin):
     '''
     Log into user account with provided email and password.
+
     Returns email and JWT access token for 30 minutes.
     '''
 

@@ -92,7 +92,7 @@ def check_course_access(db_cursor, user_email: str, course_id: str, is_teacher: 
 @app.get('/available_courses', response_model=List[json_classes.CourseId])
 async def available_courses(user_email: str = Depends(get_current_user)):
     '''
-    Get the IDs of courses available for user (as a teacher, student, or parent).
+    Get the list of IDs of courses available for user (as a teacher, student, or parent).
     '''
 
     # finding available courses
@@ -135,7 +135,9 @@ async def create_course(title: str, user_email: str = Depends(get_current_user))
 async def remove_course(course_id: str, user_email: str = Depends(get_current_user)):
     '''
     Remove the course with provided course_id.
-    All the course materials, teachers, students, and parents will be also removed. 
+
+    All the course materials, teachers, students, and parents will be also removed.
+
     Teacher role required.
     '''
 
@@ -207,6 +209,7 @@ async def get_course_info(course_id: str, user_email: str = Depends(get_current_
 async def get_course_feed(course_id: str, user_email: str = Depends(get_current_user)):
     '''
     Get the course feed with all its materials.
+
     Returns the list of (course_id, material_id) for each material.
     '''
 
@@ -229,7 +232,9 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
 async def create_material(course_id: str, title: str, description: str, user_email: str = Depends(get_current_user)):
     '''
     Create the material with provided title and description in the course with provided course_id.
+
     Teacher role required.
+
     Returns the (course_id, material_id) for the new material in case of success.
     '''
 
@@ -255,6 +260,7 @@ async def create_material(course_id: str, title: str, description: str, user_ema
 async def remove_material(course_id: str, material_id: str, user_email: str = Depends(get_current_user)):
     '''
     Remove the material by the provided course_id and material_id.
+
     Teacher role required.
     '''
 
@@ -276,6 +282,7 @@ async def remove_material(course_id: str, material_id: str, user_email: str = De
 async def get_material(course_id: str, material_id: str, user_email: str = Depends(get_current_user)):
     '''
     Get the material details by the provided (course_id, material_id).
+
     Returns course_id, material_id, creation_date, title, and description.
     '''
 
@@ -310,6 +317,7 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
 async def get_enrolled_students(course_id: str, user_email: str = Depends(get_current_user)):
     '''
     Get the list of enrolled students by course_id.
+
     Return the email and name of the student.
     '''
 
@@ -339,6 +347,7 @@ async def get_enrolled_students(course_id: str, user_email: str = Depends(get_cu
 async def invite_student(course_id: str, student_email: str, teacher_email: str = Depends(get_current_user)):
     '''
     Add the student with provided email to the course with provided course_id.
+
     Teacher role required.
     '''
 
@@ -370,6 +379,7 @@ async def invite_student(course_id: str, student_email: str, teacher_email: str 
 async def remove_student(course_id: str, student_email: str, teacher_email: str = Depends(get_current_user)):
     '''
     Remove the student with provided email from the course with provided course_id.
+
     Teacher role required.
     '''
 
@@ -408,6 +418,7 @@ async def remove_student(course_id: str, student_email: str, teacher_email: str 
 async def get_students_parents(course_id: str, student_email: str, user_email: str = Depends(get_current_user)):
     '''
     Get the list of parents observing the student with provided email on course with provided course_id.
+
     Teacher role required.
     '''
 
@@ -444,6 +455,7 @@ async def get_students_parents(course_id: str, student_email: str, user_email: s
 async def invite_parent(course_id: str, student_email: str, parent_email: str, teacher_email: str = Depends(get_current_user)):
     '''
     Invite the user with provided parent_email to become a parent of the student with provided student_email on course with provided course_id.
+
     Teacher role required.
     '''
 
@@ -477,6 +489,7 @@ async def invite_parent(course_id: str, student_email: str, parent_email: str, t
 async def remove_parent(course_id: str, student_email: str, parent_email: str, teacher_email: str = Depends(get_current_user)):
     '''
     Remove the parent identified by parent_email from the tracking of student with provided student_email on course with provided course_id.
+
     Teacher role required.
     '''
 
@@ -538,6 +551,7 @@ async def get_course_teachers(course_id: str, user_email: str = Depends(get_curr
 async def invite_teacher(course_id: str, new_teacher_email: str, teacher_email: str = Depends(get_current_user)):
     '''
     Add the user with provided new_teacher_email as a techer to the course with provided course_id.
+
     Teacher role required.
     '''
 
@@ -569,8 +583,11 @@ async def invite_teacher(course_id: str, new_teacher_email: str, teacher_email: 
 async def remove_teacher(course_id: str, removing_teacher_email: str, teacher_email: str = Depends(get_current_user)):
     '''
     Remove the teacher with removing_teacher_email from the course with provided course_id.
+
     Teacher role required.
+
     Teacher can remove himself.
+
     At least one teacher should stay in the course.
     '''
 
