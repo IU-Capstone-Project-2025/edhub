@@ -32,3 +32,19 @@ class Material(BaseModel):
     creation_date: str
     title: str
     description: str
+
+
+class Account(BaseModel):
+    email: str
+    access_token: str
+
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    name: str
+
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
