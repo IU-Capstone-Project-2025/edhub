@@ -16,9 +16,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # checking whether the user exists in our LMS
-
-
 def check_user_exists(db_cursor, user_email: str):
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (user_email,))
     user_exists = db_cursor.fetchone()[0]
@@ -26,9 +25,8 @@ def check_user_exists(db_cursor, user_email: str):
         raise HTTPException(status_code=404, detail="No user with provided email")
     return True
 
+
 # checking whether the course exists in our LMS
-
-
 def check_course_exists(db_cursor, course_id: str):
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM courses WHERE courseid = %s)", (course_id,))
     course_exists = db_cursor.fetchone()[0]
@@ -36,9 +34,8 @@ def check_course_exists(db_cursor, course_id: str):
         raise HTTPException(status_code=404, detail="No course with provided ID")
     return True
 
+
 # checking whether the course exists in our LMS
-
-
 def check_material_exists(db_cursor, course_id: str, material_id: str):
     try:
         material_id = int(material_id)
@@ -51,9 +48,8 @@ def check_material_exists(db_cursor, course_id: str, material_id: str):
     except Exception:
         raise HTTPException(status_code=404, detail="Material ID should be integer")
 
+
 # checking whether the user has access to course in our LMS
-
-
 def check_course_access(db_cursor, user_email: str, course_id: str, is_teacher: bool = False, is_student: bool = False, is_parent: bool = False):
 
     if is_teacher:
@@ -95,6 +91,9 @@ def check_course_access(db_cursor, user_email: str, course_id: str, is_teacher: 
 
 @app.get('/available_courses', response_model=List[json_classes.CourseId])
 async def available_courses(user_email: str = Depends(get_current_user)):
+    '''
+    Get the list of IDs of courses available for user (as a teacher, student, or parent).
+    '''
 
     # finding available courses
     with get_db() as (db_conn, db_cursor):
@@ -113,6 +112,9 @@ async def available_courses(user_email: str = Depends(get_current_user)):
 
 @app.post('/create_course', response_model=json_classes.CourseId)
 async def create_course(title: str, user_email: str = Depends(get_current_user)):
+    '''
+    Create the course with provided title and become a teacher in it.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -131,6 +133,13 @@ async def create_course(title: str, user_email: str = Depends(get_current_user))
 
 @app.post('/remove_course', response_model=json_classes.Success)
 async def remove_course(course_id: str, user_email: str = Depends(get_current_user)):
+    '''
+    Remove the course with provided course_id.
+
+    All the course materials, teachers, students, and parents will be also removed.
+
+    Teacher role required.
+    '''
 
     with get_db() as (db_conn, db_cursor):
         check_course_exists(db_cursor, course_id)
@@ -164,6 +173,9 @@ async def remove_course(course_id: str, user_email: str = Depends(get_current_us
 
 @app.get('/get_course_info', response_model=json_classes.Course)
 async def get_course_info(course_id: str, user_email: str = Depends(get_current_user)):
+    '''
+    Get information about the course: course_id, title, creation date, and number of enrolled students.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -195,6 +207,11 @@ async def get_course_info(course_id: str, user_email: str = Depends(get_current_
 
 @app.get('/get_course_feed', response_model=List[json_classes.MaterialID])
 async def get_course_feed(course_id: str, user_email: str = Depends(get_current_user)):
+    '''
+    Get the course feed with all its materials.
+
+    Returns the list of (course_id, material_id) for each material.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -213,6 +230,13 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
 
 @app.post('/create_material', response_model=json_classes.MaterialID)
 async def create_material(course_id: str, title: str, description: str, user_email: str = Depends(get_current_user)):
+    '''
+    Create the material with provided title and description in the course with provided course_id.
+
+    Teacher role required.
+
+    Returns the (course_id, material_id) for the new material in case of success.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -234,6 +258,11 @@ async def create_material(course_id: str, title: str, description: str, user_ema
 
 @app.post('/remove_material', response_model=json_classes.Success)
 async def remove_material(course_id: str, material_id: str, user_email: str = Depends(get_current_user)):
+    '''
+    Remove the material by the provided course_id and material_id.
+
+    Teacher role required.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -251,6 +280,11 @@ async def remove_material(course_id: str, material_id: str, user_email: str = De
 
 @app.get('/get_material', response_model=json_classes.Material)
 async def get_material(course_id: str, material_id: str, user_email: str = Depends(get_current_user)):
+    '''
+    Get the material details by the provided (course_id, material_id).
+
+    Returns course_id, material_id, creation_date, title, and description.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -281,6 +315,11 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
 
 @app.get('/get_enrolled_students', response_model=List[json_classes.User])
 async def get_enrolled_students(course_id: str, user_email: str = Depends(get_current_user)):
+    '''
+    Get the list of enrolled students by course_id.
+
+    Return the email and name of the student.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -306,6 +345,11 @@ async def get_enrolled_students(course_id: str, user_email: str = Depends(get_cu
 
 @app.post('/invite_student', response_model=json_classes.Success)
 async def invite_student(course_id: str, student_email: str, teacher_email: str = Depends(get_current_user)):
+    '''
+    Add the student with provided email to the course with provided course_id.
+
+    Teacher role required.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -333,6 +377,11 @@ async def invite_student(course_id: str, student_email: str, teacher_email: str 
 
 @app.post('/remove_student', response_model=json_classes.Success)
 async def remove_student(course_id: str, student_email: str, teacher_email: str = Depends(get_current_user)):
+    '''
+    Remove the student with provided email from the course with provided course_id.
+
+    Teacher role required.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -367,6 +416,11 @@ async def remove_student(course_id: str, student_email: str, teacher_email: str 
 
 @app.get('/get_students_parents', response_model=List[json_classes.User])
 async def get_students_parents(course_id: str, student_email: str, user_email: str = Depends(get_current_user)):
+    '''
+    Get the list of parents observing the student with provided email on course with provided course_id.
+
+    Teacher role required.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -399,6 +453,11 @@ async def get_students_parents(course_id: str, student_email: str, user_email: s
 
 @app.post('/invite_parent', response_model=json_classes.Success)
 async def invite_parent(course_id: str, student_email: str, parent_email: str, teacher_email: str = Depends(get_current_user)):
+    '''
+    Invite the user with provided parent_email to become a parent of the student with provided student_email on course with provided course_id.
+
+    Teacher role required.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -428,6 +487,11 @@ async def invite_parent(course_id: str, student_email: str, parent_email: str, t
 
 @app.post('/remove_parent', response_model=json_classes.Success)
 async def remove_parent(course_id: str, student_email: str, parent_email: str, teacher_email: str = Depends(get_current_user)):
+    '''
+    Remove the parent identified by parent_email from the tracking of student with provided student_email on course with provided course_id.
+
+    Teacher role required.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -456,6 +520,9 @@ async def remove_parent(course_id: str, student_email: str, parent_email: str, t
 
 @app.get('/get_course_teachers', response_model=List[json_classes.User])
 async def get_course_teachers(course_id: str, user_email: str = Depends(get_current_user)):
+    '''
+    Get the list of teachers teaching the course with the provided course_id.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -482,6 +549,11 @@ async def get_course_teachers(course_id: str, user_email: str = Depends(get_curr
 
 @app.post('/invite_teacher', response_model=json_classes.Success)
 async def invite_teacher(course_id: str, new_teacher_email: str, teacher_email: str = Depends(get_current_user)):
+    '''
+    Add the user with provided new_teacher_email as a techer to the course with provided course_id.
+
+    Teacher role required.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -509,6 +581,15 @@ async def invite_teacher(course_id: str, new_teacher_email: str, teacher_email: 
 
 @app.post('/remove_teacher', response_model=json_classes.Success)
 async def remove_teacher(course_id: str, removing_teacher_email: str, teacher_email: str = Depends(get_current_user)):
+    '''
+    Remove the teacher with removing_teacher_email from the course with provided course_id.
+
+    Teacher role required.
+
+    Teacher can remove himself.
+
+    At least one teacher should stay in the course.
+    '''
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
