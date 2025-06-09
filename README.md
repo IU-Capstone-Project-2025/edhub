@@ -42,6 +42,8 @@ docker-compose up --build
 | POST   | `/invite_student`    | Invite student to course            |
 | POST   | `/invite_parent`     | Invite parent to follow student     |
 
+You can also open web version of API documentation at http://localhost:8000/docs#/.
+
 ### Maintenance Commands
 ```bash
 # Stop all services
