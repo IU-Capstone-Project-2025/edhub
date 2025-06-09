@@ -1,6 +1,6 @@
 create database edhub;
 \c edhub
-create table users(email text primary key, publicname text, isadmin bool, timeregistered timestamp);
+create table users(email text primary key, publicname text, isadmin bool, timeregistered timestamp, passwordhash text);
 create table courses(courseid uuid primary key, name text, timecreated timestamp);
 create table course_materials(courseid uuid references courses, matid serial, timeadded timestamp,
     name text, description text, primary key (courseid, matid));
