@@ -8,6 +8,7 @@ from secrets import token_hex
 from jose import jwt
 import psycopg2
 
+
 @contextmanager
 def get_db():
     conn = psycopg2.connect(dbname="edhub", user="postgres", password="12345678", host="db", port="5432")
@@ -18,6 +19,7 @@ def get_db():
         cursor.close()
         conn.close()
 
+
 router = APIRouter()
 
 # setting for JWT and autorization
@@ -26,6 +28,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 pwd_hasher = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
@@ -42,13 +45,15 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         user_exists = db_cursor.fetchone()[0]
         if not user_exists:
             raise HTTPException(status_code=401, detail="User not exists")
-    
+
     return user_email
+
 
 class UserCreate(BaseModel):
     email: str
     password: str
     name: str
+
 
 @router.post('/create_user')
 async def create_user(user: UserCreate):
@@ -60,7 +65,7 @@ async def create_user(user: UserCreate):
         user_exists = db_cursor.fetchone()[0]
         if user_exists:
             raise HTTPException(status_code=400, detail="User already exists")
-    
+
         # hashing password
         hashed_password = pwd_hasher.hash(user.password)
         db_cursor.execute(
@@ -74,9 +79,11 @@ async def create_user(user: UserCreate):
     access_token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
     return {"email": user.email, "success": True, "access_token": access_token}
 
+
 class UserLogin(BaseModel):
     email: str
     password: str
+
 
 @router.post('/login')
 async def login(user: UserLogin):
@@ -93,7 +100,7 @@ async def login(user: UserLogin):
         hashed_password = result[0]
         if not pwd_hasher.verify(user.password, hashed_password):
             raise HTTPException(status_code=401, detail="Invalid password")
-    
+
     # giving access token
     data = {"email": user.email, "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)}
     access_token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
