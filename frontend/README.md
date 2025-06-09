@@ -23,6 +23,7 @@ app will be running at: http://localhost:5173
 
 ### 📁 project structure
 
+```bash
 frontend/
 ├── src/
 │   ├── components/       # reusable components (ui + layout)
@@ -34,6 +35,7 @@ frontend/
 ├── tailwind.config.js
 ├── postcss.config.js
 └── jsconfig.json         # alias config for `@/`
+```
 
 ### 🎨 using shadcn/ui components
 
