@@ -1,0 +1,9 @@
+name: github-ci
+jobs:
+  Tests:
+    runs-on: [self-hosted, ci]
+    steps:
+      - name: "git clone"
+        uses: actions/checkout@v4
+      - name: "running tests"
+        run: bash "${{ github.workspace }}/run_all_tests.sh"
