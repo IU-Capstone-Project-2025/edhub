@@ -32,17 +32,8 @@ docker-compose up --build
 | **Database**  | postgresql://db:5432/edhub    | 5432  | PostgreSQL container      |
 
 ### API Endpoints
-| Method | Endpoint           | Description                          |
-|--------|--------------------|--------------------------------------|
-| GET    | `/available_courses` | List accessible courses for user    |
-| GET    | `/get_course_feed`   | Get course materials feed           |
-| GET    | `/get_material`      | Get specific material details       |
-| POST   | `/create_material`   | Create new course material          |
-| POST   | `/create_course`     | Create new course                   |
-| POST   | `/invite_student`    | Invite student to course            |
-| POST   | `/invite_parent`     | Invite parent to follow student     |
 
-You can also open web version of API documentation at http://localhost:8000/docs#/.
+You can access the web version of API documentation at http://localhost:8000/docs#/.
 
 ### Maintenance Commands
 ```bash
