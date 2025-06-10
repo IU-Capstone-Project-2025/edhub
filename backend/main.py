@@ -290,6 +290,10 @@ async def invite_student(course_id: str, student_email: str, teacher_email: str 
         # check if the student already enrolled to course
         if constrants.check_student_access(db_cursor, student_email, course_id):
             raise HTTPException(status_code=404, detail="User to invite already has student right at this course")
+        
+        # check if the potential student already has teacher rights at this course
+        if constrants.check_teacher_access(db_cursor, student_email, course_id):
+            raise HTTPException(status_code=404, detail="Can't invite course teacher as a student")
 
         # invite student
         db_cursor.execute(
@@ -394,6 +398,14 @@ async def invite_parent(course_id: str, student_email: str, parent_email: str, t
         # check if the parent already assigned to the course with the student
         if constrants.check_parent_access(db_cursor, parent_email, student_email, course_id):
             raise HTTPException(status_code=404, detail="Parent already assigned to this student at this course")
+        
+        # check if the potential parent already has teacher rights at this course
+        if constrants.check_teacher_access(db_cursor, parent_email, course_id):
+            raise HTTPException(status_code=404, detail="Can't invite course teacher as a parent")
+        
+        # check if the potential parent already has student rights at this course
+        if constrants.check_student_access(db_cursor, parent_email, course_id):
+            raise HTTPException(status_code=404, detail="Can't invite course student as a parent")
 
         # invite parent
         db_cursor.execute(
@@ -484,6 +496,14 @@ async def invite_teacher(course_id: str, new_teacher_email: str, teacher_email: 
         # check if the teacher already assigned to course
         if constrants.check_teacher_access(db_cursor, new_teacher_email, course_id):
             raise HTTPException(status_code=404, detail="User to invite already has teacher right at this course")
+        
+        # check if the potential teacher already has student rights at this course
+        if constrants.check_student_access(db_cursor, new_teacher_email, course_id):
+            raise HTTPException(status_code=404, detail="Can't invite course student as a teacher")
+        
+        # check if the potential teacher already has student rights at this course
+        if constrants.check_student_access(db_cursor, new_teacher_email, course_id):
+            raise HTTPException(status_code=404, detail="Can't invite course student as a teacher")
 
         # invite teacher
         db_cursor.execute(
