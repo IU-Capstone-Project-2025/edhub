@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from auth import get_current_user, router as auth_router, get_db
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
-import json_classes, constrants
+import json_classes, constraints
 
 app = FastAPI()
 app.include_router(auth_router)
@@ -70,8 +70,8 @@ async def remove_course(course_id: str, user_email: str = Depends(get_current_us
     '''
 
     with get_db() as (db_conn, db_cursor):
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_teacher_access(db_cursor, user_email, course_id)
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -108,9 +108,9 @@ async def get_course_info(course_id: str, user_email: str = Depends(get_current_
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_course_access(db_cursor, user_email, course_id)
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_course_access(db_cursor, user_email, course_id)
 
         # getting course info
         db_cursor.execute("""
@@ -144,9 +144,9 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_course_access(db_cursor, user_email, course_id)
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_course_access(db_cursor, user_email, course_id)
 
         # finding course feed
         db_cursor.execute("SELECT courseid, matid FROM course_materials WHERE courseid = %s", (course_id,))
@@ -169,9 +169,9 @@ async def create_material(course_id: str, title: str, description: str, user_ema
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_teacher_access(db_cursor, user_email, course_id)
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
         # create material
         db_cursor.execute(
@@ -195,9 +195,9 @@ async def remove_material(course_id: str, material_id: str, user_email: str = De
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_material_exists(db_cursor, course_id, material_id)
-        constrants.assert_teacher_access(db_cursor, user_email, course_id)
+        # checking constraints
+        constraints.assert_material_exists(db_cursor, course_id, material_id)
+        constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
         # remove material
         db_cursor.execute("DELETE FROM course_materials WHERE courseid = %s AND matid = %s", (course_id, material_id))
@@ -217,9 +217,9 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_course_access(db_cursor, user_email, course_id)
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_course_access(db_cursor, user_email, course_id)
 
         # searching for materials
         db_cursor.execute("""
@@ -252,9 +252,9 @@ async def get_enrolled_students(course_id: str, user_email: str = Depends(get_cu
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_course_access(db_cursor, user_email, course_id)
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_course_access(db_cursor, user_email, course_id)
 
         # finding enrolled students
         db_cursor.execute("""
@@ -282,21 +282,21 @@ async def invite_student(course_id: str, student_email: str, teacher_email: str 
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_user_exists(db_cursor, student_email)
-        constrants.assert_teacher_access(db_cursor, teacher_email, course_id)
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_user_exists(db_cursor, student_email)
+        constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
 
         # check if the student already enrolled to course
-        if constrants.check_student_access(db_cursor, student_email, course_id):
+        if constraints.check_student_access(db_cursor, student_email, course_id):
             raise HTTPException(status_code=404, detail="User to invite already has student right at this course")
         
         # check if the potential student already has teacher rights at this course
-        if constrants.check_teacher_access(db_cursor, student_email, course_id):
+        if constraints.check_teacher_access(db_cursor, student_email, course_id):
             raise HTTPException(status_code=404, detail="Can't invite course teacher as a student")
         
         # check if the potential student already has parent rights at this course
-        if constrants.check_parent_access(db_cursor, student_email, course_id):
+        if constraints.check_parent_access(db_cursor, student_email, course_id):
             raise HTTPException(status_code=404, detail="Can't invite parent as a student")
 
         # invite student
@@ -320,13 +320,13 @@ async def remove_student(course_id: str, student_email: str, teacher_email: str 
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_user_exists(db_cursor, student_email)
-        constrants.assert_teacher_access(db_cursor, teacher_email, course_id)
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_user_exists(db_cursor, student_email)
+        constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
 
         # check if the student enrolled to course
-        if not constrants.check_student_access(db_cursor, student_email, course_id):
+        if not constraints.check_student_access(db_cursor, student_email, course_id):
             raise HTTPException(status_code=404, detail="User to remove is not a student at this course")
 
         # remove student
@@ -357,13 +357,13 @@ async def get_students_parents(course_id: str, student_email: str, user_email: s
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_user_exists(db_cursor, student_email)
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_teacher_access(db_cursor, user_email, course_id)
+        # checking constraints
+        constraints.assert_user_exists(db_cursor, student_email)
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
         # check if the student is enrolled to course
-        if not constrants.check_student_access(db_cursor, student_email, course_id):
+        if not constraints.check_student_access(db_cursor, student_email, course_id):
             raise HTTPException(status_code=404, detail="Provided user in not a student at this course")
 
         # finding student's parents
@@ -392,23 +392,23 @@ async def invite_parent(course_id: str, student_email: str, parent_email: str, t
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_user_exists(db_cursor, student_email)
-        constrants.assert_user_exists(db_cursor, parent_email)
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_teacher_access(db_cursor, teacher_email, course_id)
-        constrants.assert_student_access(db_cursor, student_email, course_id)
+        # checking constraints
+        constraints.assert_user_exists(db_cursor, student_email)
+        constraints.assert_user_exists(db_cursor, parent_email)
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
+        constraints.assert_student_access(db_cursor, student_email, course_id)
 
         # check if the parent already assigned to the course with the student
-        if constrants.check_parent_student_access(db_cursor, parent_email, student_email, course_id):
+        if constraints.check_parent_student_access(db_cursor, parent_email, student_email, course_id):
             raise HTTPException(status_code=404, detail="Parent already assigned to this student at this course")
         
         # check if the potential parent already has teacher rights at this course
-        if constrants.check_teacher_access(db_cursor, parent_email, course_id):
+        if constraints.check_teacher_access(db_cursor, parent_email, course_id):
             raise HTTPException(status_code=404, detail="Can't invite course teacher as a parent")
         
         # check if the potential parent already has student rights at this course
-        if constrants.check_student_access(db_cursor, parent_email, course_id):
+        if constraints.check_student_access(db_cursor, parent_email, course_id):
             raise HTTPException(status_code=404, detail="Can't invite course student as a parent")
 
         # invite parent
@@ -432,14 +432,14 @@ async def remove_parent(course_id: str, student_email: str, parent_email: str, t
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_user_exists(db_cursor, student_email)
-        constrants.assert_user_exists(db_cursor, parent_email)
-        constrants.assert_teacher_access(db_cursor, teacher_email, course_id)
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_user_exists(db_cursor, student_email)
+        constraints.assert_user_exists(db_cursor, parent_email)
+        constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
 
         # check if the parent assigned to the course with the student
-        if not constrants.check_parent_student_access(db_cursor, parent_email, student_email, course_id):
+        if not constraints.check_parent_student_access(db_cursor, parent_email, student_email, course_id):
             raise HTTPException(status_code=404, detail="Parent is not assigned to this student at this course")
 
         # remove parent
@@ -461,9 +461,9 @@ async def get_course_teachers(course_id: str, user_email: str = Depends(get_curr
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_course_access(db_cursor, user_email, course_id)
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_course_access(db_cursor, user_email, course_id)
 
         # finding assigned teachers
         db_cursor.execute("""
@@ -492,21 +492,21 @@ async def invite_teacher(course_id: str, new_teacher_email: str, teacher_email: 
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_user_exists(db_cursor, new_teacher_email)
-        constrants.assert_teacher_access(db_cursor, teacher_email, course_id)
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_user_exists(db_cursor, new_teacher_email)
+        constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
 
         # check if the teacher already assigned to course
-        if constrants.check_teacher_access(db_cursor, new_teacher_email, course_id):
+        if constraints.check_teacher_access(db_cursor, new_teacher_email, course_id):
             raise HTTPException(status_code=404, detail="User to invite already has teacher right at this course")
         
         # check if the potential teacher already has student rights at this course
-        if constrants.check_student_access(db_cursor, new_teacher_email, course_id):
+        if constraints.check_student_access(db_cursor, new_teacher_email, course_id):
             raise HTTPException(status_code=404, detail="Can't invite course student as a teacher")
         
         # check if the potential teacher already has parent rights at this course
-        if constrants.check_parent_access(db_cursor, new_teacher_email, course_id):
+        if constraints.check_parent_access(db_cursor, new_teacher_email, course_id):
             raise HTTPException(status_code=404, detail="Can't invite parent as a teacher")
 
         # invite teacher
@@ -534,13 +534,13 @@ async def remove_teacher(course_id: str, removing_teacher_email: str, teacher_em
     # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constrants
-        constrants.assert_course_exists(db_cursor, course_id)
-        constrants.assert_user_exists(db_cursor, removing_teacher_email)
-        constrants.assert_teacher_access(db_cursor, teacher_email, course_id)
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_user_exists(db_cursor, removing_teacher_email)
+        constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
 
         # check if the teacher assigned to the course
-        if not constrants.check_teacher_access(db_cursor, removing_teacher_email, course_id):
+        if not constraints.check_teacher_access(db_cursor, removing_teacher_email, course_id):
             raise HTTPException(status_code=404, detail="User to remove is not a teacher at this course")
 
         # ensuring that at least one teacher remains in the course
