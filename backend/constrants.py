@@ -76,9 +76,19 @@ def check_student_access(db_cursor, student_email: str, course_id: str):
 def assert_student_access(db_cursor, student_email: str, course_id: str):
     if not check_student_access(db_cursor, student_email, course_id):
         raise HTTPException(status_code=403, detail="User has not student rights at this course")
-    
+
+
 # checking whether the user has parent access to the course
-def check_parent_access(db_cursor, parent_email: str, student_email: str, course_id: str):
+def check_parent_access(db_cursor, parent_email: str, course_id: str):
+    db_cursor.execute("SELECT EXISTS(SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND courseid = %s)", (parent_email, course_id))
+    has_access = db_cursor.fetchone()[0]
+    if not has_access:
+        return False
+    return True
+
+
+# checking whether the user has parent access with the student at the course
+def check_parent_student_access(db_cursor, parent_email: str, student_email: str, course_id: str):
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND studentemail = %s AND courseid = %s)", (parent_email, student_email, course_id))
     has_access = db_cursor.fetchone()[0]
     if not has_access:
