@@ -1,6 +1,6 @@
 ## What is EdHub?
 
-EdHub is a Learning Management System for interaction between teachers, students, and parents. It aims to improve the quality of an educational process, simplify the interaction between the stakeholders, and improve student engagement in learning.
+EdHub is a Learning Management System for interaction between teachers, students, and parents. It aims to improve the quality of an educational process, simplify the interaction between stakeholders, and improve student engagement in learning.
 
 Any user can create a course becoming a **Teacher**, invite students and their parents, upload materials, create assignments, see student submissions, grade them based on criteria, and calculate course grade. You can also join the course as a **Student** to see the study materials and submit your homework or as a **Parent** to track the academic performance of your child.
 
@@ -32,17 +32,8 @@ docker-compose up --build
 | **Database**  | postgresql://db:5432/edhub    | 5432  | PostgreSQL container      |
 
 ### API Endpoints
-| Method | Endpoint           | Description                          |
-|--------|--------------------|--------------------------------------|
-| GET    | `/available_courses` | List accessible courses for user    |
-| GET    | `/get_course_feed`   | Get course materials feed           |
-| GET    | `/get_material`      | Get specific material details       |
-| POST   | `/create_material`   | Create new course material          |
-| POST   | `/create_course`     | Create new course                   |
-| POST   | `/invite_student`    | Invite student to course            |
-| POST   | `/invite_parent`     | Invite parent to follow student     |
 
-You can also open web version of API documentation at http://localhost:8000/docs#/.
+You can access the web version of API documentation at http://localhost:8000/docs#/.
 
 ### Maintenance Commands
 ```bash

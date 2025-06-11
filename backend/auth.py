@@ -3,7 +3,6 @@ from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from contextlib import contextmanager
-from pydantic import BaseModel
 from secrets import token_hex
 from jose import jwt
 import psycopg2
@@ -53,7 +52,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 @router.post('/create_user', response_model=json_classes.Account)
 async def create_user(user: json_classes.UserCreate):
     '''
-    Creates user account with provided email, name, and password.
+    Creates a user account with provided email, name, and password.
 
     Returns email and JWT access token for 30 minutes.
     '''
