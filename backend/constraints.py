@@ -55,7 +55,7 @@ def check_teacher_access(db_cursor, teacher_email: str, course_id: str):
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM teaches WHERE email = %s AND courseid = %s)", (teacher_email, course_id))
     has_access = db_cursor.fetchone()[0]
     if not has_access:
-        raise False
+        return False
     return True
 
 
