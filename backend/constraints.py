@@ -1,8 +1,11 @@
 from fastapi import HTTPException
 
+
 # checking whether the user exists in our LMS
 def assert_user_exists(db_cursor, user_email: str):
-    db_cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (user_email,))
+    db_cursor.execute(
+        "SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (user_email,)
+    )
     user_exists = db_cursor.fetchone()[0]
     if not user_exists:
         raise HTTPException(status_code=404, detail="No user with provided email")
@@ -11,7 +14,9 @@ def assert_user_exists(db_cursor, user_email: str):
 
 # checking whether the course exists in our LMS
 def assert_course_exists(db_cursor, course_id: str):
-    db_cursor.execute("SELECT EXISTS(SELECT 1 FROM courses WHERE courseid = %s)", (course_id,))
+    db_cursor.execute(
+        "SELECT EXISTS(SELECT 1 FROM courses WHERE courseid = %s)", (course_id,)
+    )
     course_exists = db_cursor.fetchone()[0]
     if not course_exists:
         raise HTTPException(status_code=404, detail="No course with provided ID")
@@ -26,16 +31,22 @@ def assert_material_exists(db_cursor, course_id: str, material_id: str):
         raise HTTPException(status_code=404, detail="Material ID should be integer")
 
     assert_course_exists(db_cursor, course_id)
-    db_cursor.execute("SELECT EXISTS(SELECT 1 FROM course_materials WHERE courseid = %s AND matid = %s  )", (course_id, material_id))
+    db_cursor.execute(
+        "SELECT EXISTS(SELECT 1 FROM course_materials WHERE courseid = %s AND matid = %s  )",
+        (course_id, material_id),
+    )
     material_exists = db_cursor.fetchone()[0]
     if not material_exists:
-        raise HTTPException(status_code=404, detail="No material with provided ID in this course")
+        raise HTTPException(
+            status_code=404, detail="No material with provided ID in this course"
+        )
     return True
 
 
 # checking whether the user has general access to the course
 def assert_course_access(db_cursor, user_email: str, course_id: str):
-    db_cursor.execute("""
+    db_cursor.execute(
+        """
         SELECT EXISTS(
             SELECT 1 FROM teaches WHERE email = %s AND courseid = %s
             UNION
@@ -43,16 +54,23 @@ def assert_course_access(db_cursor, user_email: str, course_id: str):
             UNION
             SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND courseid = %s
         )
-    """, (user_email, course_id, user_email, course_id, user_email, course_id))
+    """,
+        (user_email, course_id, user_email, course_id, user_email, course_id),
+    )
     has_access = db_cursor.fetchone()[0]
     if not has_access:
-        raise HTTPException(status_code=403, detail="User does not have access to this course")
+        raise HTTPException(
+            status_code=403, detail="User does not have access to this course"
+        )
     return True
 
 
 # checking whether the user has teacher access to the course
 def check_teacher_access(db_cursor, teacher_email: str, course_id: str):
-    db_cursor.execute("SELECT EXISTS(SELECT 1 FROM teaches WHERE email = %s AND courseid = %s)", (teacher_email, course_id))
+    db_cursor.execute(
+        "SELECT EXISTS(SELECT 1 FROM teaches WHERE email = %s AND courseid = %s)",
+        (teacher_email, course_id),
+    )
     has_access = db_cursor.fetchone()[0]
     if not has_access:
         return False
@@ -61,12 +79,17 @@ def check_teacher_access(db_cursor, teacher_email: str, course_id: str):
 
 def assert_teacher_access(db_cursor, teacher_email: str, course_id: str):
     if not check_teacher_access(db_cursor, teacher_email, course_id):
-        raise HTTPException(status_code=403, detail="User has not teacher rights at this course")
+        raise HTTPException(
+            status_code=403, detail="User has not teacher rights at this course"
+        )
 
 
 # checking whether the user has student access to the course
 def check_student_access(db_cursor, student_email: str, course_id: str):
-    db_cursor.execute("SELECT EXISTS(SELECT 1 FROM student_at WHERE email = %s AND courseid = %s)", (student_email, course_id))
+    db_cursor.execute(
+        "SELECT EXISTS(SELECT 1 FROM student_at WHERE email = %s AND courseid = %s)",
+        (student_email, course_id),
+    )
     has_access = db_cursor.fetchone()[0]
     if not has_access:
         return False
@@ -75,12 +98,17 @@ def check_student_access(db_cursor, student_email: str, course_id: str):
 
 def assert_student_access(db_cursor, student_email: str, course_id: str):
     if not check_student_access(db_cursor, student_email, course_id):
-        raise HTTPException(status_code=403, detail="User has not student rights at this course")
+        raise HTTPException(
+            status_code=403, detail="User has not student rights at this course"
+        )
 
 
 # checking whether the user has parent access to the course
 def check_parent_access(db_cursor, parent_email: str, course_id: str):
-    db_cursor.execute("SELECT EXISTS(SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND courseid = %s)", (parent_email, course_id))
+    db_cursor.execute(
+        "SELECT EXISTS(SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND courseid = %s)",
+        (parent_email, course_id),
+    )
     has_access = db_cursor.fetchone()[0]
     if not has_access:
         return False
@@ -88,8 +116,13 @@ def check_parent_access(db_cursor, parent_email: str, course_id: str):
 
 
 # checking whether the user has parent access with the student at the course
-def check_parent_student_access(db_cursor, parent_email: str, student_email: str, course_id: str):
-    db_cursor.execute("SELECT EXISTS(SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND studentemail = %s AND courseid = %s)", (parent_email, student_email, course_id))
+def check_parent_student_access(
+    db_cursor, parent_email: str, student_email: str, course_id: str
+):
+    db_cursor.execute(
+        "SELECT EXISTS(SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND studentemail = %s AND courseid = %s)",
+        (parent_email, student_email, course_id),
+    )
     has_access = db_cursor.fetchone()[0]
     if not has_access:
         return False
