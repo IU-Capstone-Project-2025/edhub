@@ -51,6 +51,16 @@ class Assignment(BaseModel):
     title: str
     description: str
 
+class Submission(BaseModel):
+    course_id: str
+    assignment_id: int
+    email: str
+    name: str
+    submission_time: str
+    comment: str
+    grade: str
+    gradedby: str
+
 
 class Account(BaseModel):
     email: str

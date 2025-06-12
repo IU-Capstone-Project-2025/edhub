@@ -676,9 +676,93 @@ async def submit_assignment(course_id: str, assignment_id: str, comment: str, st
 
     return {"success": True}
 
-# TODO: list students' submissions
 
-# TODO: get_submission()
+@app.get('/get_assignment_submissions', response_model=List[json_classes.Submission])
+async def get_assignment_submissions(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
+    '''
+    Get the list of students submissions of provided assignments.
+
+    Teacher role required.
+    '''
+
+    # connection to database
+    with get_db() as (db_conn, db_cursor):
+
+        # checking constraints
+        constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
+        constraints.assert_teacher_access(db_cursor, user_email, course_id)
+
+        # finding students' submissions
+        db_cursor.execute("""
+            SELECT
+                s.email,
+                u.publicname,
+                s.timeadded,
+                s.comment,
+                s.grade,
+                s.gradedby
+            FROM course_assignments_submissions s
+            JOIN users u ON s.email = u.email
+            WHERE s.courseid = %s AND p.assid = %s
+        """, (course_id, assignment_id))
+        submissions = db_cursor.fetchall()
+
+    res = [{'course_id': course_id,
+            'assignment_id': assignment_id,
+            'email': sub[0],
+            'name': sub[1],
+            'submission_time': sub[2].strftime("%m-%d-%Y %H:%M:%S"),
+            'comment': sub[3],
+            'grade': sub[4],
+            'graded by': sub[5]} for sub in submissions]
+    return res
+
+
+@app.get('/get_submission', response_model=List[json_classes.Submission])
+async def get_submission(course_id: str, assignment_id: str, student_email: str, user_email: str = Depends(get_current_user)):
+    '''
+    Get the student submission of assignment by course_id, assignment_id and student_email.
+
+    Teacher OR Parent role required.
+    '''
+
+    # connection to database
+    with get_db() as (db_conn, db_cursor):
+
+        # checking constraints
+        constraints.assert_user_exists(db_cursor, student_email)
+        constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
+        constraints.assert_student_access(db_cursor, student_email, course_id)
+        if not constraints.check_teacher_access(db_cursor, user_email, course_id) and not constraints.check_parent_student_access(db_cursor, user_email, student_email, course_id):
+            raise HTTPException(status_code=404, detail="User is neither a Teacher nor a Parent of the provided student on this course")
+
+        # finding student's submission
+        db_cursor.execute("""
+            SELECT
+                s.email,
+                u.publicname,
+                s.timeadded,
+                s.comment,
+                s.grade,
+                s.gradedby
+            FROM course_assignments_submissions s
+            JOIN users u ON s.email = u.email
+            WHERE s.courseid = %s AND p.assid = %s AND s.email = %s
+        """, (course_id, assignment_id, student_email))
+        submission = db_cursor.fetchone()[0]
+        if not submission:
+            raise HTTPException(status_code=404, detail="Submission of this user is not found")
+
+    res = [{'course_id': course_id,
+            'assignment_id': assignment_id,
+            'email': submission[0],
+            'name': submission[1],
+            'submission_time': submission[2].strftime("%m-%d-%Y %H:%M:%S"),
+            'comment': submission[3],
+            'grade': submission[4],
+            'graded by': submission[5]}]
+    return res
+
 
 @app.post('/grade_submission', response_model=json_classes.Success)
 async def grade_submission(course_id: str, assignment_id: str, student_email: str, grade: str, user_email: str = Depends(get_current_user)):
