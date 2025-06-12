@@ -7,7 +7,7 @@ create table course_materials(courseid uuid references courses, matid serial, ti
 create table course_assignments(courseid uuid references courses, assid serial, timeadded timestamp,
     name text, description text, primary key (courseid, assid));
 create table course_assignments_submissions(courseid uuid references courses, assid int references course_assignments,
-    email text references users, timeadded timestamp, comment text, grade int,
+    email text references users, timeadded timestamp, comment text, grade int, gradedby text references users
     primary key (courseid, assid, email));
 create table course_materials_attachments(courseid uuid, matid int, name text,
     filepath text, foreign key (courseid, matid) references course_materials,

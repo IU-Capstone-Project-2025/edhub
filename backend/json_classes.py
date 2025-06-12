@@ -21,6 +21,11 @@ class Course(BaseModel):
     number_of_students: int
 
 
+class CourseFeed(BaseModel):
+    course_id: str
+    feed_id: int
+
+
 class MaterialID(BaseModel):
     course_id: str
     material_id: int
@@ -29,6 +34,19 @@ class MaterialID(BaseModel):
 class Material(BaseModel):
     course_id: str
     material_id: int
+    creation_date: str
+    title: str
+    description: str
+
+
+class AssignmentID(BaseModel):
+    course_id: str
+    assignment_id: int
+
+
+class Assignment(BaseModel):
+    course_id: str
+    assignment_id: int
     creation_date: str
     title: str
     description: str

@@ -133,7 +133,7 @@ async def get_course_info(course_id: str, user_email: str = Depends(get_current_
     return res
 
 
-@app.get('/get_course_feed', response_model=List[json_classes.MaterialID])
+@app.get('/get_course_feed', response_model=List[json_classes.CourseFeed])
 async def get_course_feed(course_id: str, user_email: str = Depends(get_current_user)):
     '''
     Get the course feed with all its materials.
@@ -149,10 +149,14 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
         constraints.assert_course_access(db_cursor, user_email, course_id)
 
         # finding course feed
-        db_cursor.execute("SELECT courseid, matid FROM course_materials WHERE courseid = %s", (course_id,))
+        db_cursor.execute("""
+            SELECT courseid AS cid, matid as feedid, 'mat' as type FROM course_materials WHERE courseid = %s
+            UNION
+            SELECT courseid AS cid, assid as feedid, 'ass' as type FROM course_assignments WHERE courseid = %s
+        """, (course_id, course_id))
         course_feed = db_cursor.fetchall()
 
-    res = [{'course_id': str(mat[0]), 'material_id': mat[1]} for mat in course_feed]
+    res = [{'course_id': str(mat[0]), 'feed_id': mat[1]} for mat in course_feed]
     return res
 
 
@@ -237,6 +241,95 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
         "creation_date": material[2].strftime("%m-%d-%Y %H:%M:%S"),
         "title": material[3],
         "description": material[4]
+    }
+    return res
+
+
+@app.get('/create_assignment', response_model=json_classes.AssignmentID)
+async def create_assignment(course_id: str, title: str, description: str, user_email: str = Depends(get_current_user)):
+    '''
+    Create the assignment with provided title and description in the course with provided course_id.
+
+    Teacher role required.
+
+    Returns the (course_id, assignment_id) for the new material in case of success.
+    '''
+
+    # connection to database
+    with get_db() as (db_conn, db_cursor):
+
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_teacher_access(db_cursor, user_email, course_id)
+
+        # create material
+        db_cursor.execute(
+            "INSERT INTO course_assignments (courseid, name, description, timeadded) VALUES (%s, %s, %s, now()) RETURNING assid",
+            (course_id, title, description)
+        )
+        assignment_id = db_cursor.fetchone()[0]
+        db_conn.commit()
+
+    return {"course_id": course_id, "assignment_id": assignment_id}
+
+
+@app.get('/remove_assignment', response_model=json_classes.Success)
+async def create_assignment(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
+    '''
+    Remove the assignment by the provided course_id and assignment_id.
+
+    Teacher role required.
+    '''
+
+    # connection to database
+    with get_db() as (db_conn, db_cursor):
+
+        # checking constraints
+        constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
+        constraints.assert_teacher_access(db_cursor, user_email, course_id)
+
+        # remove material
+        db_cursor.execute("DELETE FROM course_assignments WHERE courseid = %s AND assid = %s", (course_id, assignment_id))
+        db_conn.commit()
+
+        # remove students' submissions
+        db_cursor.execute("DELETE FROM course_assignments_submissions WHERE courseid = %s AND assid = %s", (course_id, assignment_id))
+        db_conn.commit()
+
+    return {"success": True}
+
+
+@app.get('/get_assignment', response_model=json_classes.Assignment)
+async def get_assignment(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
+    '''
+    Get the assignment details by the provided (course_id, assignment_id).
+
+    Returns course_id, assignment_id, creation_date, title, and description.
+    '''
+
+    # connection to database
+    with get_db() as (db_conn, db_cursor):
+
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_course_access(db_cursor, user_email, course_id)
+
+        # searching for assignments
+        db_cursor.execute("""
+            SELECT courseid, assid, timeadded, name, description
+            FROM course_assignments
+            WHERE courseid = %s AND assid = %s
+        """, (course_id, assignment_id))
+        assignment = db_cursor.fetchone()
+        if not assignment:
+            raise HTTPException(status_code=404, detail="Assignment not found")
+
+    res = {
+        "course_id": str(assignment[0]),
+        "assignment_id": assignment[1],
+        "creation_date": assignment[2].strftime("%m-%d-%Y %H:%M:%S"),
+        "title": assignment[3],
+        "description": assignment[4]
     }
     return res
 
@@ -554,6 +647,68 @@ async def remove_teacher(course_id: str, removing_teacher_email: str, teacher_em
             "DELETE FROM teaches WHERE courseid = %s AND email = %s",
             (course_id, removing_teacher_email)
         )
+        db_conn.commit()
+
+    return {"success": True}
+
+
+@app.post('/submit_assignment', response_model=json_classes.Success)
+async def submit_assignment(course_id: str, assignment_id: str, comment: str, student_email: str = Depends(get_current_user)):
+    '''
+    Allows student to submit their assignment.
+
+    Student role required.
+    '''
+
+    # connection to database
+    with get_db() as (db_conn, db_cursor):
+
+        # checking constraints
+        constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
+        constraints.assert_student_access(db_cursor, student_email, course_id)
+
+        # inserting submission
+        db_cursor.execute(
+            "INSERT INTO course_assignments_submissions (courseid, assid, email, timeadded, comment, grade, gradedby) VALUES (%s, %s, %s, now(), %s, null, null)",
+            (course_id, assignment_id, student_email, comment)
+        )
+        db_conn.commit()
+
+    return {"success": True}
+
+# TODO: list students' submissions
+
+# TODO: get_submission()
+
+@app.post('/grade_submission', response_model=json_classes.Success)
+async def grade_submission(course_id: str, assignment_id: str, student_email: str, grade: str, user_email: str = Depends(get_current_user)):
+    '''
+    Allows teacher to grade student's submission.
+
+    Teacher role required.
+    '''
+
+    # connection to database
+    with get_db() as (db_conn, db_cursor):
+
+        # checking constraints
+        constraints.assert_user_exists(db_cursor, student_email)
+        constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
+        constraints.assert_teacher_access(db_cursor, user_email, course_id)
+
+        # check if the student is enrolled to course
+        if not constraints.check_student_access(db_cursor, student_email, course_id):
+            raise HTTPException(status_code=404, detail="Provided user in not a student at this course")
+        
+        # check submission of student exists
+        constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
+
+        # grading submission
+        db_cursor.execute("""
+            UPDATE course_assignments_submissions
+            SET grade = %s, gradedby = %s
+            WHERE courseid = %s AND assid = %s AND email = %s
+        """, (grade, user_email, course_id, assignment_id, student_email))
         db_conn.commit()
 
     return {"success": True}
