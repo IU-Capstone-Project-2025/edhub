@@ -5,7 +5,7 @@ create table courses(courseid uuid primary key, name text, timecreated timestamp
 create table course_materials(courseid uuid references courses, matid serial, timeadded timestamp,
     name text, description text, primary key (courseid, matid));
 create table course_assignments(courseid uuid references courses, assid serial, timeadded timestamp,
-    name text, description text, primary key (courseid, matid));
+    name text, description text, primary key (courseid, assid));
 create table course_assignments_submissions(courseid uuid references courses, assid int references course_assignments,
     email text references users, timeadded timestamp, comment text, grade int,
     primary key (courseid, assid, email));
