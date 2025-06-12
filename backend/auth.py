@@ -3,10 +3,10 @@ from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from contextlib import contextmanager
-from pydantic import BaseModel
 from secrets import token_hex
 from jose import jwt
 import psycopg2
+import json_classes
 
 
 @contextmanager
@@ -49,14 +49,13 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     return user_email
 
 
-class UserCreate(BaseModel):
-    email: str
-    password: str
-    name: str
+@router.post('/create_user', response_model=json_classes.Account)
+async def create_user(user: json_classes.UserCreate):
+    '''
+    Creates a user account with provided email, name, and password.
 
-
-@router.post('/create_user')
-async def create_user(user: UserCreate):
+    Returns email and JWT access token for 30 minutes.
+    '''
 
     with get_db() as (db_conn, db_cursor):
 
@@ -77,16 +76,16 @@ async def create_user(user: UserCreate):
     # giving access_token
     data = {"email": user.email, "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)}
     access_token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-    return {"email": user.email, "success": True, "access_token": access_token}
+    return {"email": user.email, "access_token": access_token}
 
 
-class UserLogin(BaseModel):
-    email: str
-    password: str
+@router.post('/login', response_model=json_classes.Account)
+async def login(user: json_classes.UserLogin):
+    '''
+    Log into user account with provided email and password.
 
-
-@router.post('/login')
-async def login(user: UserLogin):
+    Returns email and JWT access token for 30 minutes.
+    '''
 
     with get_db() as (db_conn, db_cursor):
         db_cursor.execute("SELECT passwordhash FROM users WHERE email = %s", (user.email,))
@@ -104,4 +103,4 @@ async def login(user: UserLogin):
     # giving access token
     data = {"email": user.email, "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)}
     access_token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-    return {"email": user.email, "success": True, "access_token": access_token}
+    return {"email": user.email, "access_token": access_token}
