@@ -245,7 +245,7 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
     return res
 
 
-@app.get('/create_assignment', response_model=json_classes.AssignmentID)
+@app.post('/create_assignment', response_model=json_classes.AssignmentID)
 async def create_assignment(course_id: str, title: str, description: str, user_email: str = Depends(get_current_user)):
     '''
     Create the assignment with provided title and description in the course with provided course_id.
@@ -273,7 +273,7 @@ async def create_assignment(course_id: str, title: str, description: str, user_e
     return {"course_id": course_id, "assignment_id": assignment_id}
 
 
-@app.get('/remove_assignment', response_model=json_classes.Success)
+@app.post('/remove_assignment', response_model=json_classes.Success)
 async def remove_assignment(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
     '''
     Remove the assignment by the provided course_id and assignment_id.
@@ -718,7 +718,7 @@ async def get_assignment_submissions(course_id: str, assignment_id: str, user_em
     return res
 
 
-@app.get('/get_submission', response_model=List[json_classes.Submission])
+@app.get('/get_submission', response_model=json_classes.Submission)
 async def get_submission(course_id: str, assignment_id: str, student_email: str, user_email: str = Depends(get_current_user)):
     '''
     Get the student submission of assignment by course_id, assignment_id and student_email.
