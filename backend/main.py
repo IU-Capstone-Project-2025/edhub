@@ -156,7 +156,7 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
         """, (course_id, course_id))
         course_feed = db_cursor.fetchall()
 
-    res = [{'course_id': str(mat[0]), 'feed_id': mat[1]} for mat in course_feed]
+    res = [{'course_id': str(mat[0]), 'feed_id': mat[1], 'type': mat[2]} for mat in course_feed]
     return res
 
 
