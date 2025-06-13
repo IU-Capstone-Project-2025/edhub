@@ -24,6 +24,7 @@ class Course(BaseModel):
 class CourseFeed(BaseModel):
     course_id: str
     feed_id: int
+    type: str
 
 
 class MaterialID(BaseModel):
