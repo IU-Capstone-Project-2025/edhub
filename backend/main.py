@@ -274,7 +274,7 @@ async def create_assignment(course_id: str, title: str, description: str, user_e
 
 
 @app.get('/remove_assignment', response_model=json_classes.Success)
-async def create_assignment(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
+async def remove_assignment(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
     '''
     Remove the assignment by the provided course_id and assignment_id.
 
@@ -703,7 +703,7 @@ async def get_assignment_submissions(course_id: str, assignment_id: str, user_em
                 s.gradedby
             FROM course_assignments_submissions s
             JOIN users u ON s.email = u.email
-            WHERE s.courseid = %s AND p.assid = %s
+            WHERE s.courseid = %s AND s.assid = %s
         """, (course_id, assignment_id))
         submissions = db_cursor.fetchall()
 
@@ -747,20 +747,21 @@ async def get_submission(course_id: str, assignment_id: str, student_email: str,
                 s.gradedby
             FROM course_assignments_submissions s
             JOIN users u ON s.email = u.email
-            WHERE s.courseid = %s AND p.assid = %s AND s.email = %s
+            WHERE s.courseid = %s AND s.assid = %s AND s.email = %s
         """, (course_id, assignment_id, student_email))
-        submission = db_cursor.fetchone()[0]
+        submission = db_cursor.fetchone()
         if not submission:
             raise HTTPException(status_code=404, detail="Submission of this user is not found")
+        submission = submission[0]
 
-    res = [{'course_id': course_id,
+    res = {'course_id': course_id,
             'assignment_id': assignment_id,
             'email': submission[0],
             'name': submission[1],
             'submission_time': submission[2].strftime("%m-%d-%Y %H:%M:%S"),
             'comment': submission[3],
             'grade': submission[4],
-            'graded by': submission[5]}]
+            'graded by': submission[5]}
     return res
 
 
