@@ -138,7 +138,9 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
     '''
     Get the course feed with all its materials.
 
-    Returns the list of (course_id, material_id) for each material.
+    Returns the list of (course_id, feed_id, type) for each material.
+
+    Type can be 'mat' for material and 'ass' for assignment.
     '''
 
     # connection to database
