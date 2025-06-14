@@ -103,6 +103,8 @@ async def remove_course(course_id: str, user_email: str = Depends(get_current_us
 async def get_course_info(course_id: str, user_email: str = Depends(get_current_user)):
     '''
     Get information about the course: course_id, title, creation date, and number of enrolled students.
+
+    The format of creation time is "%m-%d-%Y %H:%M:%S".
     '''
 
     # connection to database
@@ -127,18 +129,20 @@ async def get_course_info(course_id: str, user_email: str = Depends(get_current_
     res = {
         "course_id": str(course[0]),
         "title": course[1],
-        "creation_date": course[2].strftime("%m-%d-%Y %H:%M:%S"),
+        "creation_time": course[2].strftime("%m-%d-%Y %H:%M:%S"),
         "number_of_students": course[3]
     }
     return res
 
 
-@app.get('/get_course_feed', response_model=List[json_classes.CourseFeed])
+@app.get('/get_course_feed', response_model=List[json_classes.CoursePost])
 async def get_course_feed(course_id: str, user_email: str = Depends(get_current_user)):
     '''
     Get the course feed with all its materials.
 
-    Returns the list of (course_id, feed_id, type) for each material.
+    Materials are ordered by creation_date, the first posts are new.
+
+    Returns the list of (course_id, post_id, type) for each material.
 
     Type can be 'mat' for material and 'ass' for assignment.
     '''
@@ -152,13 +156,21 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
 
         # finding course feed
         db_cursor.execute("""
-            SELECT courseid AS cid, matid as feedid, 'mat' as type FROM course_materials WHERE courseid = %s
+            SELECT courseid AS cid, matid as postid, 'mat' as type, timeadded 
+            FROM course_materials 
+            WHERE courseid = %s
+            
             UNION
-            SELECT courseid AS cid, assid as feedid, 'ass' as type FROM course_assignments WHERE courseid = %s
+            
+            SELECT courseid AS cid, assid as postid, 'ass' as type, timeadded 
+            FROM course_assignments 
+            WHERE courseid = %s
+            
+            ORDER BY timeadded DESC
         """, (course_id, course_id))
         course_feed = db_cursor.fetchall()
 
-    res = [{'course_id': str(mat[0]), 'feed_id': mat[1], 'type': mat[2]} for mat in course_feed]
+    res = [{'course_id': str(mat[0]), 'post_id': mat[1], 'type': mat[2]} for mat in course_feed]
     return res
 
 
@@ -217,7 +229,9 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
     '''
     Get the material details by the provided (course_id, material_id).
 
-    Returns course_id, material_id, creation_date, title, and description.
+    Returns course_id, material_id, creation_time, title, and description.
+
+    The format of creation time is "%m-%d-%Y %H:%M:%S".
     '''
 
     # connection to database
@@ -240,7 +254,7 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
     res = {
         "course_id": str(material[0]),
         "material_id": material[1],
-        "creation_date": material[2].strftime("%m-%d-%Y %H:%M:%S"),
+        "creation_time": material[2].strftime("%m-%d-%Y %H:%M:%S"),
         "title": material[3],
         "description": material[4]
     }
@@ -306,7 +320,9 @@ async def get_assignment(course_id: str, assignment_id: str, user_email: str = D
     '''
     Get the assignment details by the provided (course_id, assignment_id).
 
-    Returns course_id, assignment_id, creation_date, title, and description.
+    Returns course_id, assignment_id, creation_time, title, and description.
+
+    The format of creation time is "%m-%d-%Y %H:%M:%S".
     '''
 
     # connection to database
@@ -329,7 +345,7 @@ async def get_assignment(course_id: str, assignment_id: str, user_email: str = D
     res = {
         "course_id": str(assignment[0]),
         "assignment_id": assignment[1],
-        "creation_date": assignment[2].strftime("%m-%d-%Y %H:%M:%S"),
+        "creation_time": assignment[2].strftime("%m-%d-%Y %H:%M:%S"),
         "title": assignment[3],
         "description": assignment[4]
     }
@@ -660,6 +676,8 @@ async def submit_assignment(course_id: str, assignment_id: str, comment: str, st
     Allows student to submit their assignment.
 
     Student role required.
+
+    Student cannot submit already graded assignment.
     '''
 
     # connection to database
@@ -669,12 +687,28 @@ async def submit_assignment(course_id: str, assignment_id: str, comment: str, st
         constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
         constraints.assert_student_access(db_cursor, student_email, course_id)
 
+        db_cursor.execute("SELECT grade FROM course_assignments_submissions WHERE courseid = %s AND assid = %s AND email = %s", (course_id, assignment_id, student_email))
+        submission = db_cursor.fetchone()
+
         # inserting submission
-        db_cursor.execute(
-            "INSERT INTO course_assignments_submissions (courseid, assid, email, timeadded, comment, grade, gradedby) VALUES (%s, %s, %s, now(), %s, null, null)",
-            (course_id, assignment_id, student_email, comment)
-        )
-        db_conn.commit()
+        if submission is None:
+            db_cursor.execute(
+                "INSERT INTO course_assignments_submissions (courseid, assid, email, timeadded, timemodified, comment, grade, gradedby) VALUES (%s, %s, %s, now(), now(), %s, null, null)",
+                (course_id, assignment_id, student_email, comment)
+            )
+            db_conn.commit()
+
+        # updating submission if not graded
+        elif submission and submission[0] in (None, 'null'):
+            db_cursor.execute("""
+                UPDATE course_assignments_submissions
+                SET comment = %s, timemodified = now()
+                WHERE courseid = %s AND assid = %s AND email = %s
+            """, (comment, course_id, assignment_id, student_email))
+            db_conn.commit()
+
+        else:
+            raise HTTPException(status_code=404, detail="Can't edit the submission after it was graded.")
 
     return {"success": True}
 
@@ -685,6 +719,14 @@ async def get_assignment_submissions(course_id: str, assignment_id: str, user_em
     Get the list of students submissions of provided assignments.
 
     Teacher role required.
+
+    Submissions are ordered by submission_time, the first submissions are new.
+
+    Returns the list of submissions (course_id, assignment_id, student_email, student_name, submission_time, last_modification_time, comment, grade, gradedby_email).
+
+    The format of submission_time and last_modification_time is "%m-%d-%Y %H:%M:%S".
+
+    `grade` and `gradedby_email` can be `null` if the assignment was not graded yet.
     '''
 
     # connection to database
@@ -700,23 +742,26 @@ async def get_assignment_submissions(course_id: str, assignment_id: str, user_em
                 s.email,
                 u.publicname,
                 s.timeadded,
+                s.timemodified,
                 s.comment,
                 s.grade,
                 s.gradedby
             FROM course_assignments_submissions s
             JOIN users u ON s.email = u.email
             WHERE s.courseid = %s AND s.assid = %s
+            ORDER BY s.timeadded DESC
         """, (course_id, assignment_id))
         submissions = db_cursor.fetchall()
 
     res = [{'course_id': course_id,
             'assignment_id': assignment_id,
-            'email': sub[0],
-            'name': sub[1],
+            'student_email': sub[0],
+            'student_name': sub[1],
             'submission_time': sub[2].strftime("%m-%d-%Y %H:%M:%S"),
-            'comment': sub[3],
-            'grade': sub[4],
-            'graded by': sub[5]} for sub in submissions]
+            'last_modification_time': sub[3].strftime("%m-%d-%Y %H:%M:%S"),
+            'comment': sub[4],
+            'grade': sub[5],
+            'gradedby_email': sub[6]} for sub in submissions]
     return res
 
 
@@ -725,7 +770,15 @@ async def get_submission(course_id: str, assignment_id: str, student_email: str,
     '''
     Get the student submission of assignment by course_id, assignment_id and student_email.
 
-    Teacher OR Parent role required.
+    - Teacher can get all submissions of the course
+    - Parent can get the submission of their student
+    - Stuent can get their submissions
+
+    Returns the submission (course_id, assignment_id, student_email, student_name, submission_time, last_modification_time, comment, grade, gradedby_email).
+
+    The format of submission_time and last_modification_time is "%m-%d-%Y %H:%M:%S".
+
+    `grade` and `gradedby_email` can be `null` if the assignment was not graded yet.
     '''
 
     # connection to database
@@ -735,8 +788,8 @@ async def get_submission(course_id: str, assignment_id: str, student_email: str,
         constraints.assert_user_exists(db_cursor, student_email)
         constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
         constraints.assert_student_access(db_cursor, student_email, course_id)
-        if not constraints.check_teacher_access(db_cursor, user_email, course_id) and not constraints.check_parent_student_access(db_cursor, user_email, student_email, course_id):
-            raise HTTPException(status_code=404, detail="User is neither a Teacher nor a Parent of the provided student on this course")
+        if not constraints.check_teacher_access(db_cursor, user_email, course_id) and not constraints.check_parent_student_access(db_cursor, user_email, student_email, course_id) and not student_email == user_email:
+            raise HTTPException(status_code=404, detail="User does not have access to this submission")
 
         # finding student's submission
         db_cursor.execute("""
@@ -744,6 +797,7 @@ async def get_submission(course_id: str, assignment_id: str, student_email: str,
                 s.email,
                 u.publicname,
                 s.timeadded,
+                s.timemodified,
                 s.comment,
                 s.grade,
                 s.gradedby
@@ -758,12 +812,13 @@ async def get_submission(course_id: str, assignment_id: str, student_email: str,
 
     res = {'course_id': course_id,
             'assignment_id': assignment_id,
-            'email': submission[0],
-            'name': submission[1],
+            'student_email': submission[0],
+            'student_name': submission[1],
             'submission_time': submission[2].strftime("%m-%d-%Y %H:%M:%S"),
-            'comment': submission[3],
-            'grade': submission[4],
-            'graded by': submission[5]}
+            'last_modification_time': submission[3].strftime("%m-%d-%Y %H:%M:%S"),
+            'comment': submission[4],
+            'grade': submission[5],
+            'gradedby_email': submission[6]}
     return res
 
 

@@ -14,16 +14,15 @@ class CourseId(BaseModel):
     course_id: str
 
 
-class Course(BaseModel):
-    course_id: str
+class Course(CourseId):
     title: str
-    creation_date: str
+    creation_time: str
     number_of_students: int
 
 
-class CourseFeed(BaseModel):
+class CoursePost(BaseModel):
     course_id: str
-    feed_id: int
+    post_id: int
     type: str
 
 
@@ -32,10 +31,8 @@ class MaterialID(BaseModel):
     material_id: int
 
 
-class Material(BaseModel):
-    course_id: str
-    material_id: int
-    creation_date: str
+class Material(MaterialID):
+    creation_time: str
     title: str
     description: str
 
@@ -45,22 +42,20 @@ class AssignmentID(BaseModel):
     assignment_id: int
 
 
-class Assignment(BaseModel):
-    course_id: str
-    assignment_id: int
-    creation_date: str
+class Assignment(AssignmentID):
+    creation_time: str
     title: str
     description: str
 
 class Submission(BaseModel):
     course_id: str
     assignment_id: int
-    email: str
-    name: str
+    student_email: str
+    student_name: str
     submission_time: str
     comment: str
     grade: str
-    gradedby: str
+    gradedby_email: str
 
 
 class Account(BaseModel):
