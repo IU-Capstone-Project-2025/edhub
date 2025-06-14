@@ -1,8 +1,11 @@
 from typing import List
 from routers.auth import get_current_user, get_db
 from fastapi import APIRouter, Depends, HTTPException
-import models.api, constraints
+import models.api
 from routers.auth import get_current_user, get_db
+import repository.courses as courses_repo
+import repository.users as users_repo
+import repository.materials as mats_repo
 
 router = APIRouter()
 
@@ -26,8 +29,8 @@ async def create_material(
     with get_db() as (db_conn, db_cursor):
 
         # checking constraints
-        constraints.assert_course_exists(db_cursor, course_id)
-        constraints.assert_teacher_access(db_cursor, user_email, course_id)
+        courses_repo.assert_course_exists(db_cursor, course_id)
+        users_repo.assert_teacher_access(db_cursor, user_email, course_id)
 
         # create material
         db_cursor.execute(
@@ -54,8 +57,8 @@ async def remove_material(
     with get_db() as (db_conn, db_cursor):
 
         # checking constraints
-        constraints.assert_material_exists(db_cursor, course_id, material_id)
-        constraints.assert_teacher_access(db_cursor, user_email, course_id)
+        mats_repo.assert_material_exists(db_cursor, course_id, material_id)
+        users_repo.assert_teacher_access(db_cursor, user_email, course_id)
 
         # remove material
         db_cursor.execute(
@@ -81,8 +84,8 @@ async def get_material(
     with get_db() as (db_conn, db_cursor):
 
         # checking constraints
-        constraints.assert_course_exists(db_cursor, course_id)
-        constraints.assert_course_access(db_cursor, user_email, course_id)
+        courses_repo.assert_course_exists(db_cursor, course_id)
+        courses_repo.assert_course_access(db_cursor, user_email, course_id)
 
         # searching for materials
         db_cursor.execute(

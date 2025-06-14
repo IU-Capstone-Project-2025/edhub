@@ -1,8 +1,10 @@
 from typing import List
 from routers.auth import get_current_user, get_db
 from fastapi import APIRouter, Depends, HTTPException
-import models.api, constraints
+import models.api
 from routers.auth import get_current_user, get_db
+import repository.courses as courses_repo
+import repository.users as users_repo
 
 router = APIRouter()
 
@@ -69,8 +71,8 @@ async def remove_course(course_id: str, user_email: str = Depends(get_current_us
     """
 
     with get_db() as (db_conn, db_cursor):
-        constraints.assert_course_exists(db_cursor, course_id)
-        constraints.assert_teacher_access(db_cursor, user_email, course_id)
+        courses_repo.assert_course_exists(db_cursor, course_id)
+        users_repo.assert_teacher_access(db_cursor, user_email, course_id)
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
@@ -112,8 +114,8 @@ async def get_course_info(course_id: str, user_email: str = Depends(get_current_
     with get_db() as (db_conn, db_cursor):
 
         # checking constraints
-        constraints.assert_course_exists(db_cursor, course_id)
-        constraints.assert_course_access(db_cursor, user_email, course_id)
+        courses_repo.assert_course_exists(db_cursor, course_id)
+        courses_repo.assert_course_access(db_cursor, user_email, course_id)
 
         # getting course info
         db_cursor.execute(
@@ -151,8 +153,8 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
     with get_db() as (db_conn, db_cursor):
 
         # checking constraints
-        constraints.assert_course_exists(db_cursor, course_id)
-        constraints.assert_course_access(db_cursor, user_email, course_id)
+        courses_repo.assert_course_exists(db_cursor, course_id)
+        courses_repo.assert_course_access(db_cursor, user_email, course_id)
 
         # finding course feed
         db_cursor.execute(
