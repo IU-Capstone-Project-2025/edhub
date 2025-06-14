@@ -6,6 +6,7 @@ import json_classes, constraints
 
 app = FastAPI()
 app.include_router(auth_router)
+TIME_FORMAT = "%m-%d-%Y %H:%M:%S"
 
 # TODO: прописать конкретные доверенные источники (на прод уже)
 app.add_middleware(
@@ -101,10 +102,10 @@ async def remove_course(course_id: str, user_email: str = Depends(get_current_us
 
 @app.get('/get_course_info', response_model=json_classes.Course)
 async def get_course_info(course_id: str, user_email: str = Depends(get_current_user)):
-    '''
+    f'''
     Get information about the course: course_id, title, creation date, and number of enrolled students.
 
-    The format of creation time is "%m-%d-%Y %H:%M:%S".
+    The format of creation time is "{TIME_FORMAT}".
     '''
 
     # connection to database
@@ -129,7 +130,7 @@ async def get_course_info(course_id: str, user_email: str = Depends(get_current_
     res = {
         "course_id": str(course[0]),
         "title": course[1],
-        "creation_time": course[2].strftime("%m-%d-%Y %H:%M:%S"),
+        "creation_time": course[2].strftime(TIME_FORMAT),
         "number_of_students": course[3]
     }
     return res
@@ -156,16 +157,16 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
 
         # finding course feed
         db_cursor.execute("""
-            SELECT courseid AS cid, matid as postid, 'mat' as type, timeadded 
-            FROM course_materials 
+            SELECT courseid AS cid, matid as postid, 'mat' as type, timeadded
+            FROM course_materials
             WHERE courseid = %s
-            
+
             UNION
-            
+
             SELECT courseid AS cid, assid as postid, 'ass' as type, timeadded 
             FROM course_assignments 
             WHERE courseid = %s
-            
+
             ORDER BY timeadded DESC
         """, (course_id, course_id))
         course_feed = db_cursor.fetchall()
@@ -226,12 +227,12 @@ async def remove_material(course_id: str, material_id: str, user_email: str = De
 
 @app.get('/get_material', response_model=json_classes.Material)
 async def get_material(course_id: str, material_id: str, user_email: str = Depends(get_current_user)):
-    '''
+    f'''
     Get the material details by the provided (course_id, material_id).
 
     Returns course_id, material_id, creation_time, title, and description.
 
-    The format of creation time is "%m-%d-%Y %H:%M:%S".
+    The format of creation time is "{TIME_FORMAT}".
     '''
 
     # connection to database
@@ -254,7 +255,7 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
     res = {
         "course_id": str(material[0]),
         "material_id": material[1],
-        "creation_time": material[2].strftime("%m-%d-%Y %H:%M:%S"),
+        "creation_time": material[2].strftime(TIME_FORMAT),
         "title": material[3],
         "description": material[4]
     }
@@ -317,12 +318,12 @@ async def remove_assignment(course_id: str, assignment_id: str, user_email: str 
 
 @app.get('/get_assignment', response_model=json_classes.Assignment)
 async def get_assignment(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
-    '''
+    f'''
     Get the assignment details by the provided (course_id, assignment_id).
 
     Returns course_id, assignment_id, creation_time, title, and description.
 
-    The format of creation time is "%m-%d-%Y %H:%M:%S".
+    The format of creation time is "{TIME_FORMAT}".
     '''
 
     # connection to database
@@ -345,7 +346,7 @@ async def get_assignment(course_id: str, assignment_id: str, user_email: str = D
     res = {
         "course_id": str(assignment[0]),
         "assignment_id": assignment[1],
-        "creation_time": assignment[2].strftime("%m-%d-%Y %H:%M:%S"),
+        "creation_time": assignment[2].strftime(TIME_FORMAT),
         "title": assignment[3],
         "description": assignment[4]
     }
@@ -745,7 +746,7 @@ async def submit_assignment(course_id: str, assignment_id: str, comment: str, st
 
 @app.get('/get_assignment_submissions', response_model=List[json_classes.Submission])
 async def get_assignment_submissions(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
-    '''
+    f'''
     Get the list of students submissions of provided assignments.
 
     Teacher role required.
@@ -754,7 +755,7 @@ async def get_assignment_submissions(course_id: str, assignment_id: str, user_em
 
     Returns the list of submissions (course_id, assignment_id, student_email, student_name, submission_time, last_modification_time, comment, grade, gradedby_email).
 
-    The format of submission_time and last_modification_time is "%m-%d-%Y %H:%M:%S".
+    The format of submission_time and last_modification_time is "{TIME_FORMAT}".
 
     `grade` and `gradedby_email` can be `null` if the assignment was not graded yet.
     '''
@@ -787,8 +788,8 @@ async def get_assignment_submissions(course_id: str, assignment_id: str, user_em
             'assignment_id': assignment_id,
             'student_email': sub[0],
             'student_name': sub[1],
-            'submission_time': sub[2].strftime("%m-%d-%Y %H:%M:%S"),
-            'last_modification_time': sub[3].strftime("%m-%d-%Y %H:%M:%S"),
+            'submission_time': sub[2].strftime(TIME_FORMAT),
+            'last_modification_time': sub[3].strftime(TIME_FORMAT),
             'comment': sub[4],
             'grade': sub[5],
             'gradedby_email': sub[6]} for sub in submissions]
@@ -797,7 +798,7 @@ async def get_assignment_submissions(course_id: str, assignment_id: str, user_em
 
 @app.get('/get_submission', response_model=json_classes.Submission)
 async def get_submission(course_id: str, assignment_id: str, student_email: str, user_email: str = Depends(get_current_user)):
-    '''
+    f'''
     Get the student submission of assignment by course_id, assignment_id and student_email.
 
     - Teacher can get all submissions of the course
@@ -806,7 +807,7 @@ async def get_submission(course_id: str, assignment_id: str, student_email: str,
 
     Returns the submission (course_id, assignment_id, student_email, student_name, submission_time, last_modification_time, comment, grade, gradedby_email).
 
-    The format of submission_time and last_modification_time is "%m-%d-%Y %H:%M:%S".
+    The format of submission_time and last_modification_time is "{TIME_FORMAT}".
 
     `grade` and `gradedby_email` can be `null` if the assignment was not graded yet.
     '''
@@ -844,8 +845,8 @@ async def get_submission(course_id: str, assignment_id: str, student_email: str,
             'assignment_id': assignment_id,
             'student_email': submission[0],
             'student_name': submission[1],
-            'submission_time': submission[2].strftime("%m-%d-%Y %H:%M:%S"),
-            'last_modification_time': submission[3].strftime("%m-%d-%Y %H:%M:%S"),
+            'submission_time': submission[2].strftime(TIME_FORMAT),
+            'last_modification_time': submission[3].strftime(TIME_FORMAT),
             'comment': submission[4],
             'grade': submission[5],
             'gradedby_email': submission[6]}
