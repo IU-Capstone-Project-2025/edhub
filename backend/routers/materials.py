@@ -2,7 +2,6 @@ from typing import List
 from routers.auth import get_current_user, get_db
 from fastapi import APIRouter, Depends, HTTPException
 import models.api
-from routers.auth import get_current_user, get_db
 import repository.courses as courses_repo
 import repository.users as users_repo
 import repository.materials as mats_repo
@@ -25,21 +24,12 @@ async def create_material(
     Returns the (course_id, material_id) for the new material in case of success.
     """
 
-    # connection to database
     with get_db() as (db_conn, db_cursor):
-
-        # checking constraints
         courses_repo.assert_course_exists(db_cursor, course_id)
         users_repo.assert_teacher_access(db_cursor, user_email, course_id)
-
-        # create material
-        db_cursor.execute(
-            "INSERT INTO course_materials (courseid, name, description, timeadded) VALUES (%s, %s, %s, now()) RETURNING matid",
-            (course_id, title, description),
+        material_id = mats_repo.create_material(
+            db_cursor, db_conn, course_id, title, description
         )
-        material_id = db_cursor.fetchone()[0]
-        db_conn.commit()
-
     return {"course_id": course_id, "material_id": material_id}
 
 
@@ -53,20 +43,10 @@ async def remove_material(
     Teacher role required.
     """
 
-    # connection to database
     with get_db() as (db_conn, db_cursor):
-
-        # checking constraints
         mats_repo.assert_material_exists(db_cursor, course_id, material_id)
         users_repo.assert_teacher_access(db_cursor, user_email, course_id)
-
-        # remove material
-        db_cursor.execute(
-            "DELETE FROM course_materials WHERE courseid = %s AND matid = %s",
-            (course_id, material_id),
-        )
-        db_conn.commit()
-
+        mats_repo.remove_material(db_cursor, db_conn, course_id, material_id)
     return {"success": True}
 
 
@@ -80,23 +60,10 @@ async def get_material(
     Returns course_id, material_id, creation_date, title, and description.
     """
 
-    # connection to database
     with get_db() as (db_conn, db_cursor):
-
-        # checking constraints
         courses_repo.assert_course_exists(db_cursor, course_id)
         courses_repo.assert_course_access(db_cursor, user_email, course_id)
-
-        # searching for materials
-        db_cursor.execute(
-            """
-            SELECT courseid, matid, timeadded, name, description
-            FROM course_materials
-            WHERE courseid = %s AND matid = %s
-        """,
-            (course_id, material_id),
-        )
-        material = db_cursor.fetchone()
+        material = mats_repo.get_material(db_cursor, course_id, material_id)
         if not material:
             raise HTTPException(status_code=404, detail="Material not found")
 
