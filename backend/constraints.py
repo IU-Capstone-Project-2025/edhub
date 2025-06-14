@@ -19,7 +19,7 @@ def value_assert_user_exists(db_cursor, user_email: str) -> Union[None, HTTPExce
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (user_email,))
     user_exists = db_cursor.fetchone()[0]
     if not user_exists:
-        raise HTTPException(status_code=404, detail="No user with provided email")
+        return HTTPException(status_code=404, detail="No user with provided email")
     return None
 
 
