@@ -63,9 +63,9 @@ def value_assert_material_exists(db_cursor, course_id: str, material_id: str) ->
     except Exception:
         return HTTPException(status_code=400, detail="Material ID should be integer")
 
-    course_exists_error = value_assert_course_exists(db_cursor, course_id)
-    if course_exists_error is not None:
-        return course_exists_error
+    err = value_assert_course_exists(db_cursor, course_id)
+    if err is not None:
+        return err
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM course_materials WHERE courseid = %s AND matid = %s)", (course_id, material_id))
     material_exists = db_cursor.fetchone()[0]
     if not material_exists:
