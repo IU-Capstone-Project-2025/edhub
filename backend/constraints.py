@@ -60,7 +60,7 @@ def check_course_exists(db_cursor, course_id: str) -> bool:
 def value_assert_material_exists(db_cursor, course_id: str, material_id: str) -> Union[None, HTTPException]:
     try:
         material_id = int(material_id)
-    except Exception:
+    except ValueError:
         return HTTPException(status_code=400, detail="Material ID should be integer")
 
     err = value_assert_course_exists(db_cursor, course_id)
@@ -89,7 +89,7 @@ def check_material_exists(db_cursor, course_id: str, material_id: str) -> bool:
 def value_assert_assignment_exists(db_cursor, course_id: str, assignment_id: str) -> Union[None, HTTPException]:
     try:
         assignment_id = int(assignment_id)
-    except Exception:
+    except ValueError:
         return HTTPException(status_code=400, detail="Assignment ID should be integer")
 
     err = value_assert_course_exists(db_cursor, course_id)
@@ -99,6 +99,7 @@ def value_assert_assignment_exists(db_cursor, course_id: str, assignment_id: str
     assignment_exists = db_cursor.fetchone()[0]
     if not assignment_exists:
         return HTTPException(status_code=404, detail="No assignment with provided ID in this course")
+    return None
 
 
 # checking whether the assignment exists in the course
