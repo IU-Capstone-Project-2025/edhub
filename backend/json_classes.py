@@ -24,6 +24,8 @@ class CoursePost(BaseModel):
     course_id: str
     post_id: int
     type: str
+    timeadded: str
+    author: str
 
 
 class MaterialID(BaseModel):
@@ -46,6 +48,7 @@ class Assignment(AssignmentID):
     creation_time: str
     title: str
     description: str
+    author: str
 
 class Submission(BaseModel):
     course_id: str
