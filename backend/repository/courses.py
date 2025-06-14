@@ -47,12 +47,10 @@ def get_available_courses(db_cursor, user_email):
     )
     courses = db_cursor.fetchall()
 
-    result = [{"course_id": crs[0]} for crs in courses]
+    return [{"course_id": crs[0]} for crs in courses]
 
 
-# TODO: separate into multiple methods
-def create_course_add_teacher(db_cursor, db_conn, title, user_email):
-    # create course
+def create_course(db_cursor, db_conn, title):
     db_cursor.execute(
         "INSERT INTO courses (courseid, name, timecreated) VALUES (gen_random_uuid(), %s, now()) RETURNING courseid",
         (title,),
@@ -60,12 +58,21 @@ def create_course_add_teacher(db_cursor, db_conn, title, user_email):
     course_id = db_cursor.fetchone()[0]
     db_conn.commit()
 
-    # add teacher
+    return course_id
+
+
+def add_teacher_to_course(db_cursor, db_conn, user_email, course_id):
     db_cursor.execute(
         "INSERT INTO teaches (email, courseid) VALUES (%s, %s)",
         (user_email, course_id),
     )
     db_conn.commit()
+
+
+# TODO: separate into multiple methods
+def create_course_add_teacher(db_cursor, db_conn, title, user_email):
+    course_id = create_course(db_cursor, db_conn, title)
+    add_teacher_to_course(db_cursor, db_conn, user_email, course_id)
 
     return course_id
 
@@ -97,14 +104,21 @@ def remove_course(db_cursor, db_conn, course_id):
 
 def get_course_info(db_cursor, course_id):
     db_cursor.execute(
-            """
-            SELECT c.courseid, c.name, c.timecreated, COUNT(sa.email) AS student_count
-            FROM courses c
-            LEFT JOIN student_at sa ON c.courseid = sa.courseid
-            WHERE c.courseid = %s
-            GROUP BY c.courseid
+        """
+        SELECT c.courseid, c.name, c.timecreated, COUNT(sa.email) AS student_count
+        FROM courses c
+        LEFT JOIN student_at sa ON c.courseid = sa.courseid
+        WHERE c.courseid = %s
+        GROUP BY c.courseid
         """,
-            (course_id,),
-        )
-    course = db_cursor.fetchone()
-    return course
+        (course_id,),
+    )
+    return db_cursor.fetchone()
+
+
+def get_course_feed(db_cursor, course_id):
+    db_cursor.execute(
+        "SELECT courseid, matid FROM course_materials WHERE courseid = %s",
+        (course_id,),
+    )
+    return db_cursor.fetchall()

@@ -1,11 +1,10 @@
 from typing import List
 from routers.auth import get_current_user, get_db
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 import models.api
-from routers.auth import get_current_user, get_db
+import logic.user as user_logic
 import repository.users as repo_users
 import repository.courses as courses_repo
-import repository.users as users_repo
 
 router = APIRouter()
 
@@ -15,12 +14,11 @@ async def get_enrolled_students(
     course_id: str, user_email: str = Depends(get_current_user)
 ):
     """
-    Get the list of enrolled stu    dents by course_id.
+    Get the list of enrolled students by course_id.
 
     Return the email and name of the student.
     """
 
-    # connection to database
     with get_db() as (db_conn, db_cursor):
 
         courses_repo.assert_course_exists(db_cursor, course_id)
@@ -40,41 +38,11 @@ async def invite_student(
     Teacher role required.
     """
 
-    # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constraints
-        courses_repo.assert_course_exists(db_cursor, course_id)
-        users_repo.assert_user_exists(db_cursor, student_email)
-        users_repo.assert_teacher_access(db_cursor, teacher_email, course_id)
-
-        # check if the student already enrolled to course
-        if users_repo.check_student_access(db_cursor, student_email, course_id):
-            raise HTTPException(
-                status_code=404,
-                detail="User to invite already has student right at this course",
-            )
-
-        # check if the potential student already has teacher rights at this course
-        if users_repo.check_teacher_access(db_cursor, student_email, course_id):
-            raise HTTPException(
-                status_code=404, detail="Can't invite course teacher as a student"
-            )
-
-        # check if the potential student already has parent rights at this course
-        if users_repo.check_parent_access(db_cursor, student_email, course_id):
-            raise HTTPException(
-                status_code=404, detail="Can't invite parent as a student"
-            )
-
-        # invite student
-        db_cursor.execute(
-            "INSERT INTO student_at (email, courseid) VALUES (%s, %s)",
-            (student_email, course_id),
+        return user_logic.invite_student_logic(
+            db_cursor, db_conn, course_id, student_email, teacher_email
         )
-        db_conn.commit()
-
-    return {"success": True}
 
 
 @router.post("/remove_student", response_model=models.api.Success)
@@ -87,35 +55,11 @@ async def remove_student(
     Teacher role required.
     """
 
-    # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constraints
-        courses_repo.assert_course_exists(db_cursor, course_id)
-        users_repo.assert_user_exists(db_cursor, student_email)
-        users_repo.assert_teacher_access(db_cursor, teacher_email, course_id)
-
-        # check if the student enrolled to course
-        if not users_repo.check_student_access(db_cursor, student_email, course_id):
-            raise HTTPException(
-                status_code=404, detail="User to remove is not a student at this course"
-            )
-
-        # remove student
-        db_cursor.execute(
-            "DELETE FROM student_at WHERE courseid = %s AND email = %s",
-            (course_id, student_email),
+        return user_logic.remove_student_logic(
+            db_cursor, db_conn, course_id, student_email, teacher_email
         )
-        db_conn.commit()
-
-        # remove student's parents
-        db_cursor.execute(
-            "DELETE FROM parent_of_at_course WHERE courseid = %s AND studentemail = %s",
-            (course_id, student_email),
-        )
-        db_conn.commit()
-
-    return {"success": True}
 
 
 @router.get("/get_students_parents", response_model=List[models.api.User])
@@ -128,36 +72,11 @@ async def get_students_parents(
     Teacher role required.
     """
 
-    # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constraints
-        users_repo.assert_user_exists(db_cursor, student_email)
-        courses_repo.assert_course_exists(db_cursor, course_id)
-        users_repo.assert_teacher_access(db_cursor, user_email, course_id)
-
-        # check if the student is enrolled to course
-        if not users_repo.check_student_access(db_cursor, student_email, course_id):
-            raise HTTPException(
-                status_code=404, detail="Provided user in not a student at this course"
-            )
-
-        # finding student's parents
-        db_cursor.execute(
-            """
-            SELECT
-                p.parentemail,
-                u.publicname
-            FROM parent_of_at_course p
-            JOIN users u ON p.parentemail = u.email
-            WHERE p.courseid = %s AND p.studentemail = %s
-        """,
-            (course_id, student_email),
+        return user_logic.get_students_parents_logic(
+            db_cursor, course_id, student_email, user_email
         )
-        parents = db_cursor.fetchall()
-
-    res = [{"email": par[0], "name": par[1]} for par in parents]
-    return res
 
 
 @router.post("/invite_parent", response_model=models.api.Success)
@@ -173,45 +92,11 @@ async def invite_parent(
     Teacher role required.
     """
 
-    # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constraints
-        users_repo.assert_user_exists(db_cursor, student_email)
-        users_repo.assert_user_exists(db_cursor, parent_email)
-        courses_repo.assert_course_exists(db_cursor, course_id)
-        users_repo.assert_teacher_access(db_cursor, teacher_email, course_id)
-        users_repo.assert_student_access(db_cursor, student_email, course_id)
-
-        # check if the parent already assigned to the course with the student
-        if users_repo.check_parent_student_access(
-            db_cursor, parent_email, student_email, course_id
-        ):
-            raise HTTPException(
-                status_code=404,
-                detail="Parent already assigned to this student at this course",
-            )
-
-        # check if the potential parent already has teacher rights at this course
-        if users_repo.check_teacher_access(db_cursor, parent_email, course_id):
-            raise HTTPException(
-                status_code=404, detail="Can't invite course teacher as a parent"
-            )
-
-        # check if the potential parent already has student rights at this course
-        if users_repo.check_student_access(db_cursor, parent_email, course_id):
-            raise HTTPException(
-                status_code=404, detail="Can't invite course student as a parent"
-            )
-
-        # invite parent
-        db_cursor.execute(
-            "INSERT INTO parent_of_at_course (parentemail, studentemail, courseid) VALUES (%s, %s, %s)",
-            (parent_email, student_email, course_id),
+        return user_logic.invite_parent_logic(
+            db_cursor, db_conn, course_id, student_email, parent_email, teacher_email
         )
-        db_conn.commit()
-
-    return {"success": True}
 
 
 @router.post("/remove_parent", response_model=models.api.Success)
@@ -227,32 +112,11 @@ async def remove_parent(
     Teacher role required.
     """
 
-    # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constraints
-        courses_repo.assert_course_exists(db_cursor, course_id)
-        users_repo.assert_user_exists(db_cursor, student_email)
-        users_repo.assert_user_exists(db_cursor, parent_email)
-        users_repo.assert_teacher_access(db_cursor, teacher_email, course_id)
-
-        # check if the parent assigned to the course with the student
-        if not users_repo.check_parent_student_access(
-            db_cursor, parent_email, student_email, course_id
-        ):
-            raise HTTPException(
-                status_code=404,
-                detail="Parent is not assigned to this student at this course",
-            )
-
-        # remove parent
-        db_cursor.execute(
-            "DELETE FROM parent_of_at_course WHERE courseid = %s AND studentemail = %s AND parentemail = %s",
-            (course_id, student_email, parent_email),
+        return user_logic.remove_parent_logic(
+            db_cursor, db_conn, course_id, student_email, parent_email, teacher_email
         )
-        db_conn.commit()
-
-    return {"success": True}
 
 
 @router.get("/get_course_teachers", response_model=List[models.api.User])
@@ -263,30 +127,9 @@ async def get_course_teachers(
     Get the list of teachers teaching the course with the provided course_id.
     """
 
-    # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constraints
-        courses_repo.assert_course_exists(db_cursor, course_id)
-        courses_repo.assert_course_access(db_cursor, user_email, course_id)
-
-        # finding assigned teachers
-        db_cursor.execute(
-            """
-            SELECT
-                t.email,
-                u.publicname
-            FROM teaches t
-            JOIN users u ON t.email = u.email
-            WHERE t.courseid = %s
-            GROUP BY t.email, u.publicname
-        """,
-            (course_id,),
-        )
-        teachers = db_cursor.fetchall()
-
-    res = [{"email": tch[0], "name": tch[1]} for tch in teachers]
-    return res
+        return user_logic.get_course_teachers_logic(db_cursor, course_id, user_email)
 
 
 @router.post("/invite_teacher", response_model=models.api.Success)
@@ -301,41 +144,11 @@ async def invite_teacher(
     Teacher role required.
     """
 
-    # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constraints
-        courses_repo.assert_course_exists(db_cursor, course_id)
-        users_repo.assert_user_exists(db_cursor, new_teacher_email)
-        users_repo.assert_teacher_access(db_cursor, teacher_email, course_id)
-
-        # check if the teacher already assigned to course
-        if users_repo.check_teacher_access(db_cursor, new_teacher_email, course_id):
-            raise HTTPException(
-                status_code=404,
-                detail="User to invite already has teacher right at this course",
-            )
-
-        # check if the potential teacher already has student rights at this course
-        if users_repo.check_student_access(db_cursor, new_teacher_email, course_id):
-            raise HTTPException(
-                status_code=404, detail="Can't invite course student as a teacher"
-            )
-
-        # check if the potential teacher already has parent rights at this course
-        if users_repo.check_parent_access(db_cursor, new_teacher_email, course_id):
-            raise HTTPException(
-                status_code=404, detail="Can't invite parent as a teacher"
-            )
-
-        # invite teacher
-        db_cursor.execute(
-            "INSERT INTO teaches (email, courseid) VALUES (%s, %s)",
-            (new_teacher_email, course_id),
+        return user_logic.invite_teacher_logic(
+            db_cursor, db_conn, course_id, new_teacher_email, teacher_email
         )
-        db_conn.commit()
-
-    return {"success": True}
 
 
 @router.post("/remove_teacher", response_model=models.api.Success)
@@ -354,37 +167,8 @@ async def remove_teacher(
     At least one teacher should stay in the course.
     """
 
-    # connection to database
     with get_db() as (db_conn, db_cursor):
 
-        # checking constraints
-        courses_repo.assert_course_exists(db_cursor, course_id)
-        users_repo.assert_user_exists(db_cursor, removing_teacher_email)
-        users_repo.assert_teacher_access(db_cursor, teacher_email, course_id)
-
-        # check if the teacher assigned to the course
-        if not users_repo.check_teacher_access(
-            db_cursor, removing_teacher_email, course_id
-        ):
-            raise HTTPException(
-                status_code=404, detail="User to remove is not a teacher at this course"
-            )
-
-        # ensuring that at least one teacher remains in the course
-        db_cursor.execute(
-            "SELECT COUNT(*) FROM teaches WHERE courseid = %s", (course_id,)
+        return user_logic.remove_teacher_logic(
+            db_cursor, db_conn, course_id, removing_teacher_email, teacher_email
         )
-        teachers_left = db_cursor.fetchone()[0]
-        if teachers_left == 1:
-            raise HTTPException(
-                status_code=404, detail="Cannot remove the last teacher at the course"
-            )
-
-        # remove teacher
-        db_cursor.execute(
-            "DELETE FROM teaches WHERE courseid = %s AND email = %s",
-            (course_id, removing_teacher_email),
-        )
-        db_conn.commit()
-
-    return {"success": True}

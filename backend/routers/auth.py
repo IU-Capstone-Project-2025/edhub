@@ -1,12 +1,9 @@
 from fastapi import HTTPException, Depends, APIRouter
 from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
-from datetime import datetime, timedelta
 from contextlib import contextmanager
-from secrets import token_hex
-from jose import jwt
 import psycopg2
 import models.api
+import logic.auth as auth_logic
 
 
 @contextmanager
@@ -23,98 +20,21 @@ def get_db():
 
 
 router = APIRouter()
-
-# setting for JWT and autorization
-SECRET_KEY = token_hex(32)
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-pwd_hasher = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_email = payload.get("email")
-        if user_email is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    # checking whether such user exists
     with get_db() as (db_conn, db_cursor):
-        db_cursor.execute(
-            "SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (user_email,)
-        )
-        user_exists = db_cursor.fetchone()[0]
-        if not user_exists:
-            raise HTTPException(status_code=401, detail="User not exists")
-
-    return user_email
+        return auth_logic.verify_token_logic(db_cursor, token)
 
 
 @router.post("/create_user", response_model=models.api.Account)
 async def create_user(user: models.api.UserCreate):
-    """
-    Creates a user account with provided email, name, and password.
-
-    Returns email and JWT access token for 30 minutes.
-    """
-
     with get_db() as (db_conn, db_cursor):
-
-        # checking whether such user exists
-        db_cursor.execute(
-            "SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (user.email,)
-        )
-        user_exists = db_cursor.fetchone()[0]
-        if user_exists:
-            raise HTTPException(status_code=400, detail="User already exists")
-
-        # hashing password
-        hashed_password = pwd_hasher.hash(user.password)
-        db_cursor.execute(
-            "INSERT INTO users (email, publicname, isadmin, timeregistered, passwordhash) VALUES (%s, %s, %s, now(), %s)",
-            (user.email, user.name, False, hashed_password),
-        )
-        db_conn.commit()
-
-    # giving access_token
-    data = {
-        "email": user.email,
-        "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
-    }
-    access_token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-    return {"email": user.email, "access_token": access_token}
+        return auth_logic.create_user_logic(db_conn, db_cursor, user)
 
 
 @router.post("/login", response_model=models.api.Account)
 async def login(user: models.api.UserLogin):
-    """
-    Log into user account with provided email and password.
-
-    Returns email and JWT access token for 30 minutes.
-    """
-
     with get_db() as (db_conn, db_cursor):
-        db_cursor.execute(
-            "SELECT passwordhash FROM users WHERE email = %s", (user.email,)
-        )
-        result = db_cursor.fetchone()
-
-        # checking whether such user exists
-        if not result:
-            raise HTTPException(status_code=401, detail="Invalid user email")
-
-        # checking password
-        hashed_password = result[0]
-        if not pwd_hasher.verify(user.password, hashed_password):
-            raise HTTPException(status_code=401, detail="Invalid password")
-
-    # giving access token
-    data = {
-        "email": user.email,
-        "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
-    }
-    access_token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-    return {"email": user.email, "access_token": access_token}
+        return auth_logic.login_logic(db_cursor, user)
