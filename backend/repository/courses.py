@@ -79,26 +79,22 @@ def create_course_add_teacher(db_cursor, db_conn, title, user_email):
 
 # TODO: separate into multiple methods
 def remove_course(db_cursor, db_conn, course_id):
-    # remove course
-    db_cursor.execute("DELETE FROM courses WHERE courseid = %s", (course_id,))
+    db_cursor.execute("DELETE FROM course_materials_attachments WHERE courseid = %s", (course_id,))
     db_conn.commit()
 
-    # remove materials
     db_cursor.execute("DELETE FROM course_materials WHERE courseid = %s", (course_id,))
     db_conn.commit()
 
-    # remove teachers
-    db_cursor.execute("DELETE FROM teaches WHERE courseid = %s", (course_id,))
+    db_cursor.execute("DELETE FROM parent_of_at_course WHERE courseid = %s", (course_id,))
     db_conn.commit()
 
-    # remove students
     db_cursor.execute("DELETE FROM student_at WHERE courseid = %s", (course_id,))
     db_conn.commit()
 
-    # remove parents
-    db_cursor.execute(
-        "DELETE FROM parent_of_at_course WHERE courseid = %s", (course_id,)
-    )
+    db_cursor.execute("DELETE FROM teaches WHERE courseid = %s", (course_id,))
+    db_conn.commit()
+
+    db_cursor.execute("DELETE FROM courses WHERE courseid = %s", (course_id,))
     db_conn.commit()
 
 
