@@ -60,6 +60,7 @@ async def create_course(title: str, user_email: str = Depends(get_current_user))
     return {"course_id": course_id}
 
 
+# WARNING: update if new elements appear
 @app.post('/remove_course', response_model=json_classes.Success)
 async def remove_course(course_id: str, user_email: str = Depends(get_current_user)):
     '''
@@ -83,6 +84,14 @@ async def remove_course(course_id: str, user_email: str = Depends(get_current_us
 
         # remove materials
         db_cursor.execute("DELETE FROM course_materials WHERE courseid = %s", (course_id, ))
+        db_conn.commit()
+
+        # remove assignments
+        db_cursor.execute("DELETE FROM course_assignments WHERE courseid = %s", (course_id, ))
+        db_conn.commit()
+
+        # remove submissions
+        db_cursor.execute("DELETE FROM course_assignments_submissions WHERE courseid = %s", (course_id, ))
         db_conn.commit()
 
         # remove teachers
@@ -143,7 +152,7 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
 
     Materials are ordered by creation_date, the first posts are new.
 
-    Returns the list of (course_id, post_id, type) for each material.
+    Returns the list of (course_id, post_id, type, timeadded, author) for each material.
 
     Type can be 'mat' for material and 'ass' for assignment.
     '''
@@ -157,13 +166,13 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
 
         # finding course feed
         db_cursor.execute("""
-            SELECT courseid AS cid, matid as postid, 'mat' as type, timeadded
+            SELECT courseid AS cid, matid as postid, 'mat' as type, timeadded, author
             FROM course_materials
             WHERE courseid = %s
 
             UNION
 
-            SELECT courseid AS cid, assid as postid, 'ass' as type, timeadded 
+            SELECT courseid AS cid, assid as postid, 'ass' as type, timeadded, author
             FROM course_assignments 
             WHERE courseid = %s
 
@@ -171,7 +180,7 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
         """, (course_id, course_id))
         course_feed = db_cursor.fetchall()
 
-    res = [{'course_id': str(mat[0]), 'post_id': mat[1], 'type': mat[2]} for mat in course_feed]
+    res = [{'course_id': str(mat[0]), 'post_id': mat[1], 'type': mat[2], 'timeadded': mat[3], 'author': mat[4]} for mat in course_feed]
     return res
 
 
@@ -194,8 +203,8 @@ async def create_material(course_id: str, title: str, description: str, user_ema
 
         # create material
         db_cursor.execute(
-            "INSERT INTO course_materials (courseid, name, description, timeadded) VALUES (%s, %s, %s, now()) RETURNING matid",
-            (course_id, title, description)
+            "INSERT INTO course_materials (courseid, name, description, timeadded, author) VALUES (%s, %s, %s, now(), %s) RETURNING matid",
+            (course_id, title, description, user_email)
         )
         material_id = db_cursor.fetchone()[0]
         db_conn.commit()
@@ -244,7 +253,7 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
 
         # searching for materials
         db_cursor.execute("""
-            SELECT courseid, matid, timeadded, name, description
+            SELECT courseid, matid, timeadded, name, description, author
             FROM course_materials
             WHERE courseid = %s AND matid = %s
         """, (course_id, material_id))
@@ -257,7 +266,8 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
         "material_id": material[1],
         "creation_time": material[2].strftime(TIME_FORMAT),
         "title": material[3],
-        "description": material[4]
+        "description": material[4],
+        "author": material[5]
     }
     return res
 
@@ -281,8 +291,8 @@ async def create_assignment(course_id: str, title: str, description: str, user_e
 
         # create material
         db_cursor.execute(
-            "INSERT INTO course_assignments (courseid, name, description, timeadded) VALUES (%s, %s, %s, now()) RETURNING assid",
-            (course_id, title, description)
+            "INSERT INTO course_assignments (courseid, name, description, timeadded, author) VALUES (%s, %s, %s, now(), %s) RETURNING assid",
+            (course_id, title, description, user_email)
         )
         assignment_id = db_cursor.fetchone()[0]
         db_conn.commit()
@@ -335,7 +345,7 @@ async def get_assignment(course_id: str, assignment_id: str, user_email: str = D
 
         # searching for assignments
         db_cursor.execute("""
-            SELECT courseid, assid, timeadded, name, description
+            SELECT courseid, assid, timeadded, name, description, author
             FROM course_assignments
             WHERE courseid = %s AND assid = %s
         """, (course_id, assignment_id))
@@ -348,7 +358,8 @@ async def get_assignment(course_id: str, assignment_id: str, user_email: str = D
         "assignment_id": assignment[1],
         "creation_time": assignment[2].strftime(TIME_FORMAT),
         "title": assignment[3],
-        "description": assignment[4]
+        "description": assignment[4],
+        'author': assignment[5]
     }
     return res
 
