@@ -120,12 +120,14 @@ async def get_course_info(course_id: str, user_email: str = Depends(get_current_
 
 @app.get('/get_course_feed', response_model=List[json_classes.CoursePost])
 async def get_course_feed(course_id: str, user_email: str = Depends(get_current_user)):
-    '''
+    f'''
     Get the course feed with all its materials.
 
     Materials are ordered by creation_date, the first posts are new.
 
     Returns the list of (course_id, post_id, type, timeadded, author) for each material.
+
+    The format of timeadded is "{TIME_FORMAT}".
 
     Type can be 'mat' for material and 'ass' for assignment.
     '''
@@ -152,7 +154,14 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
         """, (course_id, course_id))
         course_feed = db_cursor.fetchall()
 
-    res = [{'course_id': str(mat[0]), 'post_id': mat[1], 'type': mat[2], 'timeadded': mat[3], 'author': mat[4]} for mat in course_feed]
+    res = [{
+        'course_id': str(mat[0]), 
+        'post_id': mat[1], 
+        'type': mat[2], 
+        'timeadded': mat[3].strftime(TIME_FORMAT),
+        'author': mat[4]
+    } for mat in course_feed]
+
     return res
 
 
