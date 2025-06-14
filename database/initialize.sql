@@ -7,7 +7,7 @@ create table course_materials(courseid uuid references courses on delete cascade
 create table course_assignments(courseid uuid references courses on delete cascade, assid serial, timeadded timestamp, author text references users(email) on delete set null,
     name text, description text, primary key (courseid, assid));
 create table course_assignments_submissions(courseid uuid references courses on delete cascade, assid int references course_assignments,
-    email text references users on delete cascade, timeadded timestamp, timemodified timestamp, comment text, grade int, gradedby text references users
+    email text references users on delete cascade, timeadded timestamp, timemodified timestamp, comment text, grade int, gradedby text references users on delete set null,
     primary key (courseid, assid, email));
 create table teaches(email text references users on delete cascade, courseid uuid references courses on delete cascade,
     primary key (email, courseid));
