@@ -563,6 +563,36 @@ async def remove_parent(course_id: str, student_email: str, parent_email: str, t
     return {"success": True}
 
 
+@app.get('/get_parents_children', response_model=List[json_classes.User])
+async def get_parents_children(course_id: str, user_email: str = Depends(get_current_user)):
+    '''
+    Get the list of students for the parent with provided email on course with provided course_id.
+
+    Parent role required.
+    '''
+
+    # connection to database
+    with get_db() as (db_conn, db_cursor):
+
+        # checking constraints
+        constraints.assert_course_exists(db_cursor, course_id)
+
+        db_cursor.execute("""
+            SELECT
+                p.studentemail,
+                u.publicname
+            FROM parent_of_at_course p
+            JOIN users u ON p.studentemail = u.email
+            WHERE p.courseid = %s AND p.parentemail = %s
+        """, (course_id, user_email))
+        parents = db_cursor.fetchall()
+        if not parents:
+            raise HTTPException(status_code=404, detail="User is not a parent at this course")
+
+    res = [{'email': par[0], 'name': par[1]} for par in parents]
+    return res
+
+
 @app.get('/get_course_teachers', response_model=List[json_classes.User])
 async def get_course_teachers(course_id: str, user_email: str = Depends(get_current_user)):
     '''
