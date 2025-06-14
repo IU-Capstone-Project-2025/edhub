@@ -23,6 +23,7 @@ def get_db():
 router = APIRouter()
 
 # setting for JWT and autorization
+# TODO: insert secret key from .env (in production)
 SECRET_KEY = token_hex(32)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30

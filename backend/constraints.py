@@ -6,7 +6,6 @@ def assert_user_exists(db_cursor, user_email: str):
     user_exists = db_cursor.fetchone()[0]
     if not user_exists:
         raise HTTPException(status_code=404, detail="No user with provided email")
-    return True
 
 
 # checking whether the course exists in our LMS
@@ -15,7 +14,6 @@ def assert_course_exists(db_cursor, course_id: str):
     course_exists = db_cursor.fetchone()[0]
     if not course_exists:
         raise HTTPException(status_code=404, detail="No course with provided ID")
-    return True
 
 
 # checking whether the course exists in our LMS
@@ -30,7 +28,27 @@ def assert_material_exists(db_cursor, course_id: str, material_id: str):
     material_exists = db_cursor.fetchone()[0]
     if not material_exists:
         raise HTTPException(status_code=404, detail="No material with provided ID in this course")
-    return True
+
+# checking whether the assignment exists in our LMS
+def assert_assignment_exists(db_cursor, course_id: str, assignment_id: str):
+    try:
+        assignment_id = int(assignment_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Assignment ID should be integer")
+
+    assert_course_exists(db_cursor, course_id)
+    db_cursor.execute("SELECT EXISTS(SELECT 1 FROM course_assignments WHERE courseid = %s AND assid = %s)", (course_id, assignment_id))
+    assignment_exists = db_cursor.fetchone()[0]
+    if not assignment_exists:
+        raise HTTPException(status_code=404, detail="No assignment with provided ID in this course")
+
+# checking whether the student's submission exists in our LMS
+def assert_submission_exists(db_cursor, course_id: str, assignment_id: str, student_email: str):
+    assert_assignment_exists(db_cursor, course_id)
+    db_cursor.execute("SELECT EXISTS(SELECT 1 FROM course_assignments_submissions WHERE courseid = %s AND assid = %s AND email = %s)", (course_id, assignment_id, student_email))
+    submission_exists = db_cursor.fetchone()[0]
+    if not submission_exists:
+        raise HTTPException(status_code=404, detail="Submission of this user is not found")
 
 
 # checking whether the user has general access to the course
@@ -47,7 +65,6 @@ def assert_course_access(db_cursor, user_email: str, course_id: str):
     has_access = db_cursor.fetchone()[0]
     if not has_access:
         raise HTTPException(status_code=403, detail="User does not have access to this course")
-    return True
 
 
 # checking whether the user has teacher access to the course
