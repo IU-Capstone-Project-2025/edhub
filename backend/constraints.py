@@ -28,7 +28,6 @@ def assert_material_exists(db_cursor, course_id: str, material_id: str):
     material_exists = db_cursor.fetchone()[0]
     if not material_exists:
         raise HTTPException(status_code=404, detail="No material with provided ID in this course")
-    return True
 
 # checking whether the assignment exists in our LMS
 def assert_assignment_exists(db_cursor, course_id: str, assignment_id: str):
