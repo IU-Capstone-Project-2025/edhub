@@ -135,7 +135,7 @@ async def remove_user(user_email: str = Depends(get_current_user)):
 
         # remove teacher role preparation: remove courses with 1 teacher left
         for course_id in single_teacher_courses:
-            db_cursor.execute("DELETE FROM student_at WHERE courseid = %s", (course_id,))
+            db_cursor.execute("DELETE FROM courses WHERE courseid = %s", (course_id,))
 
         # remove user
         db_cursor.execute("DELETE FROM users WHERE email = %s", (user_email,))
