@@ -426,7 +426,8 @@ async def remove_student(course_id: str, student_email: str, teacher_email: str 
         constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
 
         # check if the student is enrolled to course
-        constraints.assert_student_access(db_cursor, student_email, course_id)
+        if not constraints.check_student_access(db_cursor, student_email, course_id):
+            raise HTTPException(status_code=404, detail="User to remove is not a student at this course")
 
         # remove student
         db_cursor.execute(
@@ -459,7 +460,8 @@ async def get_students_parents(course_id: str, student_email: str, user_email: s
         constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
         # check if the student is enrolled to course
-        constraints.assert_student_access(db_cursor, student_email, course_id)
+        if not constraints.check_student_access(db_cursor, student_email, course_id):
+            raise HTTPException(status_code=404, detail="Provided user in not a student at this course")
 
         # finding student's parents
         db_cursor.execute("""
