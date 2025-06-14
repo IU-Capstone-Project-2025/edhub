@@ -87,6 +87,12 @@ def check_material_exists(db_cursor, course_id: str, material_id: str) -> bool:
 
 # checking whether the user has general access to the course,
 def value_assert_course_access(db_cursor, user_email: str, course_id: str) -> Union[None, HTTPException]:
+    err = value_assert_user_exists(user_email)
+    if err is not None:
+        return err
+    err = value_assert_course_exists(course_id)
+    if err is not None:
+        return err
     db_cursor.execute("""
         SELECT EXISTS(
             SELECT 1 FROM teaches WHERE email = %s AND courseid = %s
@@ -116,6 +122,12 @@ def check_course_access(db_cursor, user_email: str, course_id: str) -> bool:
 
 # checking whether the user has teacher access to the course
 def value_assert_teacher_access(db_cursor, teacher_email: str, course_id: str) -> Union[None, HTTPException]:
+    err = value_assert_user_exists(teacher_email)
+    if err is not None:
+        return err
+    err = value_assert_course_exists(course_id)
+    if err is not None:
+        return err
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM teaches WHERE email = %s AND courseid = %s)", (teacher_email, course_id))
     has_access = db_cursor.fetchone()[0]
     if not has_access:
@@ -137,6 +149,12 @@ def check_teacher_access(db_cursor, teacher_email: str, course_id: str) -> bool:
 
 # checking whether the user has student access to the course
 def value_assert_student_access(db_cursor, student_email: str, course_id: str) -> Union[None, HTTPException]:
+    err = value_assert_user_exists(student_email)
+    if err is not None:
+        return err
+    err = value_assert_course_exists(course_id)
+    if err is not None:
+        return err
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM student_at WHERE email = %s AND courseid = %s)", (student_email, course_id))
     has_access = db_cursor.fetchone()[0]
     if not has_access:
@@ -158,6 +176,12 @@ def check_student_access(db_cursor, student_email: str, course_id: str) -> bool:
 
 # checking whether the user has parent access to the course
 def value_assert_parent_access(db_cursor, parent_email: str, course_id: str) -> Union[None, HTTPException]:
+    err = value_assert_user_exists(parent_email)
+    if err is not None:
+        return err
+    err = value_assert_course_exists(course_id)
+    if err is not None:
+        return err
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND courseid = %s)", (parent_email, course_id))
     has_access = db_cursor.fetchone()[0]
     if not has_access:
@@ -179,6 +203,15 @@ def check_parent_access(db_cursor, parent_email: str, course_id: str) -> bool:
 
 # checking whether the user has parent access with the student in the course
 def value_assert_parent_student_access(db_cursor, parent_email: str, student_email: str, course_id: str) -> Union[None, HTTPException]:
+    err = value_assert_user_exists(parent_email)
+    if err is not None:
+        return err
+    err = value_assert_user_exists(student_email)
+    if err is not None:
+        return err
+    err = value_assert_course_exists(course_id)
+    if err is not None:
+        return err
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND studentemail = %s AND courseid = %s)", (parent_email, student_email, course_id))
     has_access = db_cursor.fetchone()[0]
     if not has_access:
