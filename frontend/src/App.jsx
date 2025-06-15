@@ -1,17 +1,24 @@
-// src/App.jsx
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import CoursesPage from "./pages/CoursesPage"
+import RegisterPage from "./pages/RegisterPage"
+import AuthPage from "./pages/AuthPage"
+import CoursePage from "./pages/OneCoursePage"
+import CreateCoursePage from "./pages/CreateCoursePage"
+import axios from "axios"
+axios.defaults.baseURL = "http://localhost:8000";
 
 
-export default function App() {
+function App() {
   return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Привет, shadcn!</h1>
-      <Button>Нажми меня</Button>
-      <h1 className="text-2xl font-bold">Форма входа</h1>
-      <Input placeholder="Логин" />
-      <Input placeholder="Пароль" type="password" />
-      <Button>Войти</Button>
-    </main>
-  );
+    <Router>
+      <Routes>
+        <Route path="/" element={<AuthPage />} />
+        <Route path="/courses" element={<CoursesPage />} />
+        <Route path="/create-course" element={<CreateCoursePage />} />
+        <Route path="/courses/:id" element={<CoursePage />} />
+      </Routes>
+    </Router>
+  )
 }
+
+export default App
