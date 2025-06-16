@@ -144,6 +144,8 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
 
     Returns the list of (course_id, post_id, type, timeadded, author) for each material.
 
+    Author can be 'null' if the author deleted their account.
+
     The format of timeadded is "{TIME_FORMAT}".
 
     Type can be 'mat' for material and 'ass' for assignment.
@@ -236,7 +238,9 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
     f'''
     Get the material details by the provided (course_id, material_id).
 
-    Returns course_id, material_id, creation_time, title, and description.
+    Returns course_id, material_id, creation_time, title, description, and email of the author.
+
+    Author can be 'null' if the author deleted their account.
 
     The format of creation time is "{TIME_FORMAT}".
     '''
@@ -326,7 +330,9 @@ async def get_assignment(course_id: str, assignment_id: str, user_email: str = D
     f'''
     Get the assignment details by the provided (course_id, assignment_id).
 
-    Returns course_id, assignment_id, creation_time, title, and description.
+    Returns course_id, assignment_id, creation_time, title, description, and email of the author.
+
+    Author can be 'null' if the author deleted their account.
 
     The format of creation time is "{TIME_FORMAT}".
     '''
