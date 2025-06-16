@@ -9,6 +9,11 @@ class User(BaseModel):
     email: str
     name: str
 
+class CourseRole(BaseModel):
+    is_teacher: bool
+    is_student: bool
+    is_parent: bool
+
 
 class CourseId(BaseModel):
     course_id: str

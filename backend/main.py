@@ -118,6 +118,23 @@ async def get_course_info(course_id: str, user_email: str = Depends(get_current_
     return res
 
 
+@app.get('/get_user_role', response_model=json_classes.CourseRole)
+async def get_user_role(course_id: str, user_email: str = Depends(get_current_user)):
+    f'''
+    Get the user's role in the provided course.
+    '''
+
+    # getting info about the roles
+    with get_db() as (db_conn, db_cursor):
+        res = {
+            "is_teacher": constraints.check_teacher_access(db_cursor, user_email, course_id),
+            "is_student": constraints.check_student_access(db_cursor, user_email, course_id),
+            "is_parent": constraints.check_parent_access(db_cursor, user_email, course_id)
+        }
+
+    return res
+
+
 @app.get('/get_course_feed', response_model=List[json_classes.CoursePost])
 async def get_course_feed(course_id: str, user_email: str = Depends(get_current_user)):
     f'''
