@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 import constraints
+import repo.parents as repo_parents
 
 
 def get_students_parents(
@@ -16,18 +17,9 @@ def get_students_parents(
         )
 
     # finding student's parents
-    db_cursor.execute(
-        """
-        SELECT
-            p.parentemail,
-            u.publicname
-        FROM parent_of_at_course p
-        JOIN users u ON p.parentemail = u.email
-        WHERE p.courseid = %s AND p.studentemail = %s
-    """,
-        (course_id, student_email),
+    parents = repo_parents.sql_select_students_parents(
+        db_cursor, course_id, student_email
     )
-    parents = db_cursor.fetchall()
 
     res = [{"email": par[0], "name": par[1]} for par in parents]
     return res
@@ -68,9 +60,8 @@ def invite_parent(
         )
 
     # invite parent
-    db_cursor.execute(
-        "INSERT INTO parent_of_at_course (parentemail, studentemail, courseid) VALUES (%s, %s, %s)",
-        (parent_email, student_email, course_id),
+    repo_parents.sql_insert_parent_of_at_course(
+        db_cursor, parent_email, student_email, course_id
     )
     db_conn.commit()
 
@@ -95,9 +86,8 @@ def remove_parent(
     )
 
     # remove parent
-    db_cursor.execute(
-        "DELETE FROM parent_of_at_course WHERE courseid = %s AND studentemail = %s AND parentemail = %s",
-        (course_id, student_email, parent_email),
+    repo_parents.sql_delete_parent_of_at_course(
+        db_cursor, course_id, student_email, parent_email
     )
     db_conn.commit()
 
@@ -109,18 +99,9 @@ def get_parents_children(db_cursor, course_id: str, user_email: str):
     # checking constraints
     constraints.assert_course_exists(db_cursor, course_id)
 
-    db_cursor.execute(
-        """
-        SELECT
-            p.studentemail,
-            u.publicname
-        FROM parent_of_at_course p
-        JOIN users u ON p.studentemail = u.email
-        WHERE p.courseid = %s AND p.parentemail = %s
-    """,
-        (course_id, user_email),
+    parents_children = repo_parents.sql_select_parents_children(
+        db_cursor, course_id, user_email
     )
-    parents_children = db_cursor.fetchall()  # Renamed variable for clarity
 
     res = [{"email": child[0], "name": child[1]} for child in parents_children]
     return res

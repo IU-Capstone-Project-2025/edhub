@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 import constraints
+import repo.teachers as repo_teachers
 
 
 def get_course_teachers(db_cursor, course_id: str, user_email: str):
@@ -7,19 +8,7 @@ def get_course_teachers(db_cursor, course_id: str, user_email: str):
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # finding assigned teachers
-    db_cursor.execute(
-        """
-        SELECT
-            t.email,
-            u.publicname
-        FROM teaches t
-        JOIN users u ON t.email = u.email
-        WHERE t.courseid = %s
-        GROUP BY t.email, u.publicname
-    """,
-        (course_id,),
-    )
-    teachers = db_cursor.fetchall()
+    teachers = repo_teachers.sql_select_course_teachers(db_cursor, course_id)
 
     res = [{"email": tch[0], "name": tch[1]} for tch in teachers]
     return res
@@ -50,10 +39,7 @@ def invite_teacher(
         raise HTTPException(status_code=403, detail="Can't invite parent as a teacher")
 
     # invite teacher
-    db_cursor.execute(
-        "INSERT INTO teaches (email, courseid) VALUES (%s, %s)",
-        (new_teacher_email, course_id),
-    )
+    repo_teachers.sql_insert_teacher(db_cursor, new_teacher_email, course_id)
     db_conn.commit()
 
     return {"success": True}
@@ -75,18 +61,14 @@ def remove_teacher(
         )
 
     # ensuring that at least one teacher remains in the course
-    db_cursor.execute("SELECT COUNT(*) FROM teaches WHERE courseid = %s", (course_id,))
-    teachers_left = db_cursor.fetchone()[0]
+    teachers_left = repo_teachers.sql_count_teachers(db_cursor, course_id)
     if teachers_left == 1:
         raise HTTPException(
             status_code=404, detail="Cannot remove the last teacher at the course"
         )
 
     # remove teacher
-    db_cursor.execute(
-        "DELETE FROM teaches WHERE courseid = %s AND email = %s",
-        (course_id, removing_teacher_email),
-    )
+    repo_teachers.sql_delete_teacher(db_cursor, course_id, removing_teacher_email)
     db_conn.commit()
 
     return {"success": True}

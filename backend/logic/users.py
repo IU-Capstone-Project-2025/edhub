@@ -6,6 +6,7 @@ from secrets import token_hex
 from jose import jwt
 import constraints
 from auth import pwd_hasher, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
+import repo.users as repo_users
 
 
 def get_user_role(db_cursor, course_id: str, user_email: str):
@@ -26,19 +27,13 @@ def get_user_role(db_cursor, course_id: str, user_email: str):
 def create_user(db_conn, db_cursor, user):
 
     # checking whether such user exists
-    db_cursor.execute(
-        "SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (user.email,)
-    )
-    user_exists = db_cursor.fetchone()[0]
+    user_exists = repo_users.sql_select_user_exists(db_cursor, user.email)
     if user_exists:
         raise HTTPException(status_code=400, detail="User already exists")
 
     # hashing password
     hashed_password = pwd_hasher.hash(user.password)
-    db_cursor.execute(
-        "INSERT INTO users (email, publicname, isadmin, timeregistered, passwordhash) VALUES (%s, %s, %s, now(), %s)",
-        (user.email, user.name, False, hashed_password),
-    )
+    repo_users.sql_insert_user(db_cursor, user.email, user.name, hashed_password)
     db_conn.commit()
 
     # giving access_token
@@ -52,8 +47,7 @@ def create_user(db_conn, db_cursor, user):
 
 def login(db_cursor, user):
 
-    db_cursor.execute("SELECT passwordhash FROM users WHERE email = %s", (user.email,))
-    result = db_cursor.fetchone()
+    result = repo_users.sql_select_passwordhash(db_cursor, user.email)
 
     # checking whether such user exists
     if not result:
@@ -79,22 +73,16 @@ def remove_user(db_conn, db_cursor, user_email: str):
     constraints.assert_user_exists(db_cursor, user_email)
 
     # remove teacher role preparation: find courses with 1 teacher left
-    db_cursor.execute(
-        "SELECT t.courseid FROM teaches t WHERE t.email = %s AND (SELECT COUNT(*) FROM teaches WHERE courseid = t.courseid) = 1",
-        (user_email,),
+    single_teacher_courses = repo_users.sql_select_single_teacher_courses(
+        db_cursor, user_email
     )
-    single_teacher_courses = [row[0] for row in db_cursor.fetchall()]
-
-    # remove teacher role preparation: remove courses with 1 teacher left
     for (
         course_id_to_delete
     ) in single_teacher_courses:  # Renamed variable to avoid conflict
-        db_cursor.execute(
-            "DELETE FROM courses WHERE courseid = %s", (course_id_to_delete,)
-        )
+        repo_users.sql_delete_course(db_cursor, course_id_to_delete)
 
     # remove user
-    db_cursor.execute("DELETE FROM users WHERE email = %s", (user_email,))
+    repo_users.sql_delete_user(db_cursor, user_email)
 
     db_conn.commit()
 

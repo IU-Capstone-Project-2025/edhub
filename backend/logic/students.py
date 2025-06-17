@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 import constraints
+import repo.students as repo_students
 
 
 def get_enrolled_students(db_cursor, course_id: str, user_email: str):
@@ -7,18 +8,7 @@ def get_enrolled_students(db_cursor, course_id: str, user_email: str):
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # finding enrolled students
-    db_cursor.execute(
-        """
-        SELECT
-            s.email,
-            u.publicname
-        FROM student_at s
-        JOIN users u ON s.email = u.email
-        WHERE s.courseid = %s
-    """,
-        (course_id,),
-    )
-    students = db_cursor.fetchall()
+    students = repo_students.sql_select_enrolled_students(db_cursor, course_id)
 
     res = [{"email": st[0], "name": st[1]} for st in students]
     return res
@@ -49,10 +39,7 @@ def invite_student(
         raise HTTPException(status_code=403, detail="Can't invite parent as a student")
 
     # invite student
-    db_cursor.execute(
-        "INSERT INTO student_at (email, courseid) VALUES (%s, %s)",
-        (student_email, course_id),
-    )
+    repo_students.sql_insert_student_at(db_cursor, student_email, course_id)
     db_conn.commit()
 
     return {"success": True}
@@ -71,15 +58,9 @@ def remove_student(
         )
 
     # remove student
-    db_cursor.execute(
-        "DELETE FROM student_at WHERE courseid = %s AND email = %s",
-        (course_id, student_email),
-    )
-
-    # remove student's parents
-    db_cursor.execute(
-        "DELETE FROM parent_of_at_course WHERE courseid = %s AND studentemail = %s",
-        (course_id, student_email),
+    repo_students.sql_delete_student_at(db_cursor, course_id, student_email)
+    repo_students.sql_delete_parent_of_at_course_by_student(
+        db_cursor, course_id, student_email
     )
     db_conn.commit()
 

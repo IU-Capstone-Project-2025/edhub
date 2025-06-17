@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from constants import TIME_FORMAT
 import constraints
+import repo.assignments as repo_ass
 
 
 def create_assignment(
@@ -14,13 +15,10 @@ def create_assignment(
     # checking constraints
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
-    # create material
-    db_cursor.execute(
-        "INSERT INTO course_assignments (courseid, name, description, timeadded, author) VALUES (%s, %s, %s, now(), %s) RETURNING assid",
-        (course_id, title, description, user_email),
+    # create assignment
+    assignment_id = repo_ass.sql_insert_assignment(
+        db_cursor, course_id, title, description, user_email
     )
-    assignment_id = db_cursor.fetchone()[0]
-    db_conn.commit()
 
     return {"course_id": course_id, "assignment_id": assignment_id}
 
@@ -32,19 +30,11 @@ def remove_assignment(
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
-    # remove material
-    db_cursor.execute(
-        "DELETE FROM course_assignments WHERE courseid = %s AND assid = %s",
-        (course_id, assignment_id),
-    )
-    db_conn.commit()
-
     # remove students' submissions
-    db_cursor.execute(
-        "DELETE FROM course_assignments_submissions WHERE courseid = %s AND assid = %s",
-        (course_id, assignment_id),
-    )
-    db_conn.commit()
+    repo_ass.sql_delete_assignment_submissions(db_cursor, course_id, assignment_id)
+
+    # reomve assignment
+    repo_ass.sql_delete_assignment(db_cursor, course_id, assignment_id)
 
     return {"success": True}
 
@@ -55,15 +45,7 @@ def get_assignment(db_cursor, course_id: str, assignment_id: str, user_email: st
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # searching for assignments
-    db_cursor.execute(
-        """
-        SELECT courseid, assid, timeadded, name, description, author
-        FROM course_assignments
-        WHERE courseid = %s AND assid = %s
-    """,
-        (course_id, assignment_id),
-    )
-    assignment = db_cursor.fetchone()
+    assignment = repo_ass.sql_select_assignment(db_cursor, course_id, assignment_id)
     if not assignment:
         raise HTTPException(status_code=404, detail="Assignment not found")
 
@@ -91,29 +73,21 @@ def submit_assignment(
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_student_access(db_cursor, student_email, course_id)
 
-    db_cursor.execute(
-        "SELECT grade FROM course_assignments_submissions WHERE courseid = %s AND assid = %s AND email = %s",
-        (course_id, assignment_id, student_email),
+    submission = repo_ass.sql_select_submission_grade(
+        db_cursor, course_id, assignment_id, student_email
     )
-    submission = db_cursor.fetchone()
 
     # inserting submission
     if submission is None:
-        db_cursor.execute(
-            "INSERT INTO course_assignments_submissions (courseid, assid, email, timeadded, timemodified, comment, grade, gradedby) VALUES (%s, %s, %s, now(), now(), %s, null, null)",
-            (course_id, assignment_id, student_email, comment),
+        repo_ass.sql_insert_submission(
+            db_cursor, course_id, assignment_id, student_email, comment
         )
         db_conn.commit()
 
     # updating submission if not graded
     elif submission and submission[0] in (None, "null"):
-        db_cursor.execute(
-            """
-            UPDATE course_assignments_submissions
-            SET comment = %s, timemodified = now()
-            WHERE courseid = %s AND assid = %s AND email = %s
-        """,
-            (comment, course_id, assignment_id, student_email),
+        repo_ass.sql_update_submission_comment(
+            db_cursor, comment, course_id, assignment_id, student_email
         )
         db_conn.commit()
 
@@ -133,24 +107,7 @@ def get_assignment_submissions(
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
     # finding students' submissions
-    db_cursor.execute(
-        """
-        SELECT
-            s.email,
-            u.publicname,
-            s.timeadded,
-            s.timemodified,
-            s.comment,
-            s.grade,
-            s.gradedby
-        FROM course_assignments_submissions s
-        JOIN users u ON s.email = u.email
-        WHERE s.courseid = %s AND s.assid = %s
-        ORDER BY s.timeadded DESC
-    """,
-        (course_id, assignment_id),
-    )
-    submissions = db_cursor.fetchall()
+    submissions = repo_ass.sql_select_submissions(db_cursor, course_id, assignment_id)
 
     res = [
         {
@@ -191,23 +148,9 @@ def get_submission(
         )
 
     # finding student's submission
-    db_cursor.execute(
-        """
-        SELECT
-            s.email,
-            u.publicname,
-            s.timeadded,
-            s.timemodified,
-            s.comment,
-            s.grade,
-            s.gradedby
-        FROM course_assignments_submissions s
-        JOIN users u ON s.email = u.email
-        WHERE s.courseid = %s AND s.assid = %s AND s.email = %s
-    """,
-        (course_id, assignment_id, student_email),
+    submission = repo_ass.sql_select_single_submission(
+        db_cursor, course_id, assignment_id, student_email
     )
-    submission = db_cursor.fetchone()
     if not submission:
         raise HTTPException(
             status_code=404, detail="Submission of this user is not found"
@@ -246,20 +189,8 @@ def grade_submission(
             status_code=403, detail="Provided user in not a student at this course"
         )
 
-    # TODO: this is not implemented in the constraints??????????
-    # check submission of student exists
-    # constraints.assert_submission_exists(
-    #     db_cursor, course_id, assignment_id, student_email
-    # )
-
-    # grading submission
-    db_cursor.execute(
-        """
-        UPDATE course_assignments_submissions
-        SET grade = %s, gradedby = %s
-        WHERE courseid = %s AND assid = %s AND email = %s
-    """,
-        (grade, user_email, course_id, assignment_id, student_email),
+    repo_ass.sql_update_submission_grade(
+        db_cursor, grade, user_email, course_id, assignment_id, student_email
     )
     db_conn.commit()
 
