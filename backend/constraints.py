@@ -258,3 +258,33 @@ def assert_parent_student_access(db_cursor, parent_email: str, student_email: st
 # checking whether the user has parent access with the student in the course
 def check_parent_student_access(db_cursor, parent_email: str, student_email: str, course_id: str) -> bool:
     return value_assert_parent_student_access(db_cursor, parent_email, student_email, course_id) is None
+
+
+# checking if the submission exists
+def value_assert_submission_exists(db_cursor, course_id: str, assignment_id: str, student_email: str) -> Union[None, HTTPException]:
+    err = value_assert_assignment_exists(db_cursor, course_id, assignment_id)
+    if err is not None:
+        return err
+    # check if the student is enrolled to course
+    if not check_student_access(db_cursor, student_email, course_id):
+        raise HTTPException(
+            status_code=403, detail="Provided user in not a student at this course"
+        )
+    db_cursor.execute("SELECT EXISTS(SELECT 1 FROM course_assignments_submissions WHERE courseid = %s AND assid = %s AND email = %s)",
+                      (course_id, int(assignment_id), student_email))
+    submitted = db_cursor.fetchone()[0]
+    if not submitted:
+        return HTTPException(status_code=404, detail="The given student has not made a submission to this assignment")
+    return None
+
+
+# checking if the submission exists
+def assert_submission_exists(db_cursor, course_id: str, assignment_id: str, student_email: str):
+    err = value_assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
+    if err is not None:
+        raise err
+
+
+# checking if the submission exists
+def check_submission_exists(db_cursor, course_id: str, assignment_id: str, student_email: str) -> bool:
+    return value_assert_assignment_exists(db_cursor, course_id, assignment_id, student_email) is None

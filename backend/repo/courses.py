@@ -54,7 +54,7 @@ def sql_select_course_feed(db_cursor, course_id):
         UNION
 
         SELECT courseid AS cid, assid as postid, 'ass' as type, timeadded, author
-        FROM course_assignments 
+        FROM course_assignments
         WHERE courseid = %s
 
         ORDER BY timeadded DESC

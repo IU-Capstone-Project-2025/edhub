@@ -136,12 +136,12 @@ def get_submission(
     # checking constraints
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_student_access(db_cursor, student_email, course_id)
-    if (
-        not constraints.check_teacher_access(db_cursor, user_email, course_id)
-        and not constraints.check_parent_student_access(
+    if not (
+        constraints.check_teacher_access(
+            db_cursor, user_email, course_id
+        ) or constraints.check_parent_student_access(
             db_cursor, user_email, student_email, course_id
-        )
-        and not student_email == user_email
+        ) or student_email == user_email
     ):
         raise HTTPException(
             status_code=403, detail="User does not have access to this submission"
@@ -180,14 +180,8 @@ def grade_submission(
     user_email: str,
 ):
     # checking constraints
-    constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
-
-    # check if the student is enrolled to course
-    if not constraints.check_student_access(db_cursor, student_email, course_id):
-        raise HTTPException(
-            status_code=403, detail="Provided user in not a student at this course"
-        )
+    constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
 
     repo_ass.sql_update_submission_grade(
         db_cursor, grade, user_email, course_id, assignment_id, student_email

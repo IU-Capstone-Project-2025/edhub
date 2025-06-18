@@ -1,8 +1,5 @@
 from fastapi import HTTPException
-from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from secrets import token_hex
 from jose import jwt
 import constraints
 from auth import pwd_hasher, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM

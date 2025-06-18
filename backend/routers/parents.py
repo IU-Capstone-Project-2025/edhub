@@ -2,7 +2,6 @@ from typing import List
 from fastapi import APIRouter, Depends
 
 from auth import get_current_user, get_db
-from constants import TIME_FORMAT
 from logic.parents import (
     get_students_parents as logic_get_students_parents,
     invite_parent as logic_invite_parent,

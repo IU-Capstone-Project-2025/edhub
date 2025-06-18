@@ -9,6 +9,7 @@ class User(BaseModel):
     email: str
     name: str
 
+
 class CourseRole(BaseModel):
     is_teacher: bool
     is_student: bool
@@ -54,6 +55,7 @@ class Assignment(AssignmentID):
     title: str
     description: str
     author: str
+
 
 class Submission(BaseModel):
     course_id: str

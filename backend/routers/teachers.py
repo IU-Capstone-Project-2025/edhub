@@ -2,7 +2,6 @@ from typing import List
 from fastapi import APIRouter, Depends
 
 from auth import get_current_user, get_db
-from constants import TIME_FORMAT
 import json_classes
 from logic.teachers import (
     get_course_teachers as logic_get_course_teachers,
