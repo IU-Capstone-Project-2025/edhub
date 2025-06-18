@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from constants import TIME_FORMAT
 import constraints
 import repo.courses as repo_courses
+import repo.teachers as repo_teachers
 
 
 def available_courses(db_cursor, user_email: str):
@@ -12,13 +13,11 @@ def available_courses(db_cursor, user_email: str):
 
 def create_course(db_conn, db_cursor, title: str, user_email: str):
     course_id = repo_courses.sql_insert_course(db_cursor, title)
-    db_conn.commit()
-    repo_courses.sql_insert_teacher(db_cursor, user_email, course_id)
+    repo_teachers.sql_insert_teacher(db_cursor, user_email, course_id)
     db_conn.commit()
     return {"course_id": course_id}
 
 
-# WARNING: update if new elements appear
 def remove_course(db_conn, db_cursor, course_id: str, user_email: str):
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
     repo_courses.sql_delete_course(db_cursor, course_id)

@@ -39,4 +39,4 @@ def sql_select_parents_children(db_cursor, course_id, parent_email):
         """,
         (course_id, parent_email),
     )
-    return
+    return db_cursor.fetchall()

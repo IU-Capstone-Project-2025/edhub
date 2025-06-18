@@ -25,10 +25,3 @@ def sql_delete_student_at(db_cursor, course_id, student_email):
         "DELETE FROM student_at WHERE courseid = %s AND email = %s",
         (course_id, student_email),
     )
-
-
-def sql_delete_parent_of_at_course_by_student(db_cursor, course_id, student_email):
-    db_cursor.execute(
-        "DELETE FROM parent_of_at_course WHERE courseid = %s AND studentemail = %s",
-        (course_id, student_email),
-    )

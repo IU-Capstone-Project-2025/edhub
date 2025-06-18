@@ -17,7 +17,8 @@ def create_assignment(
 
     # create assignment
     assignment_id = repo_ass.sql_insert_assignment(db_cursor, course_id, title, description, user_email)
-
+    db_conn.commit()
+    
     return {"course_id": course_id, "assignment_id": assignment_id}
 
 
@@ -26,11 +27,9 @@ def remove_assignment(db_conn, db_cursor, course_id: str, assignment_id: str, us
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
-    # remove students' submissions
-    repo_ass.sql_delete_assignment_submissions(db_cursor, course_id, assignment_id)
-
     # reomve assignment
     repo_ass.sql_delete_assignment(db_cursor, course_id, assignment_id)
+    db_conn.commit()
 
     return {"success": True}
 

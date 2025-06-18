@@ -20,10 +20,6 @@ def sql_insert_course(db_cursor, title):
     return db_cursor.fetchone()[0]
 
 
-def sql_insert_teacher(db_cursor, user_email, course_id):
-    db_cursor.execute("INSERT INTO teaches (email, courseid) VALUES (%s, %s)", (user_email, course_id))
-
-
 def sql_delete_course(db_cursor, course_id):
     db_cursor.execute("DELETE FROM courses WHERE courseid = %s", (course_id,))
 

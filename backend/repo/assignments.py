@@ -13,13 +13,6 @@ def sql_delete_assignment(db_cursor, course_id, assignment_id):
     )
 
 
-def sql_delete_assignment_submissions(db_cursor, course_id, assignment_id):
-    db_cursor.execute(
-        "DELETE FROM course_assignments_submissions WHERE courseid = %s AND assid = %s",
-        (course_id, assignment_id),
-    )
-
-
 def sql_select_assignment(db_cursor, course_id, assignment_id):
     db_cursor.execute(
         """

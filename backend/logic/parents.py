@@ -34,10 +34,7 @@ def invite_parent(
 
     # check if the parent already assigned to the course with the student
     if constraints.check_parent_student_access(db_cursor, parent_email, student_email, course_id):
-        raise HTTPException(
-            status_code=403,
-            detail="Parent already assigned to this student at this course",
-        )
+        raise HTTPException(status_code=403, detail="Parent already assigned to this student at this course")
 
     # check if the potential parent already has teacher rights at this course
     if constraints.check_teacher_access(db_cursor, parent_email, course_id):

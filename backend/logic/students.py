@@ -51,7 +51,6 @@ def remove_student(db_conn, db_cursor, course_id: str, student_email: str, teach
 
     # remove student
     repo_students.sql_delete_student_at(db_cursor, course_id, student_email)
-    repo_students.sql_delete_parent_of_at_course_by_student(db_cursor, course_id, student_email)
     db_conn.commit()
 
     return {"success": True}

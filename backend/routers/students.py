@@ -43,5 +43,3 @@ async def remove_student(course_id: str, student_email: str, teacher_email: str 
     """
     with get_db() as (db_conn, db_cursor):
         return logic_remove_student(db_conn, db_cursor, course_id, student_email, teacher_email)
-    with get_db() as (db_conn, db_cursor):
-        return ...
