@@ -287,4 +287,4 @@ def assert_submission_exists(db_cursor, course_id: str, assignment_id: str, stud
 
 # checking if the submission exists
 def check_submission_exists(db_cursor, course_id: str, assignment_id: str, student_email: str) -> bool:
-    return value_assert_assignment_exists(db_cursor, course_id, assignment_id, student_email) is None
+    return value_assert_submission_exists(db_cursor, course_id, assignment_id, student_email) is None
