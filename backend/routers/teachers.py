@@ -13,9 +13,7 @@ router = APIRouter()
 
 
 @router.get("/get_course_teachers", response_model=List[json_classes.User])
-async def get_course_teachers(
-    course_id: str, user_email: str = Depends(get_current_user)
-):
+async def get_course_teachers(course_id: str, user_email: str = Depends(get_current_user)):
     """
     Get the list of teachers teaching the course with the provided course_id.
     """
@@ -35,9 +33,7 @@ async def invite_teacher(
     Teacher role required.
     """
     with get_db() as (db_conn, db_cursor):
-        return logic_invite_teacher(
-            db_conn, db_cursor, course_id, new_teacher_email, teacher_email
-        )
+        return logic_invite_teacher(db_conn, db_cursor, course_id, new_teacher_email, teacher_email)
 
 
 @router.post("/remove_teacher", response_model=json_classes.Success)
@@ -56,6 +52,4 @@ async def remove_teacher(
     At least one teacher should stay in the course.
     """
     with get_db() as (db_conn, db_cursor):
-        return logic_remove_teacher(
-            db_conn, db_cursor, course_id, removing_teacher_email, teacher_email
-        )
+        return logic_remove_teacher(db_conn, db_cursor, course_id, removing_teacher_email, teacher_email)

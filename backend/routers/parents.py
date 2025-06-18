@@ -14,9 +14,7 @@ router = APIRouter()
 
 
 @router.get("/get_students_parents", response_model=List[json_classes.User])
-async def get_students_parents(
-    course_id: str, student_email: str, user_email: str = Depends(get_current_user)
-):
+async def get_students_parents(course_id: str, student_email: str, user_email: str = Depends(get_current_user)):
     """
     Get the list of parents observing the student with provided email on course with provided course_id.
 
@@ -25,9 +23,7 @@ async def get_students_parents(
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
-        return logic_get_students_parents(
-            db_cursor, course_id, student_email, user_email
-        )
+        return logic_get_students_parents(db_cursor, course_id, student_email, user_email)
 
 
 @router.post("/invite_parent", response_model=json_classes.Success)
@@ -45,9 +41,7 @@ async def invite_parent(
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
-        return logic_invite_parent(
-            db_conn, db_cursor, course_id, student_email, parent_email, teacher_email
-        )
+        return logic_invite_parent(db_conn, db_cursor, course_id, student_email, parent_email, teacher_email)
 
 
 @router.post("/remove_parent", response_model=json_classes.Success)
@@ -65,15 +59,11 @@ async def remove_parent(
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
-        return logic_remove_parent(
-            db_conn, db_cursor, course_id, student_email, parent_email, teacher_email
-        )
+        return logic_remove_parent(db_conn, db_cursor, course_id, student_email, parent_email, teacher_email)
 
 
 @router.get("/get_parents_children", response_model=List[json_classes.User])
-async def get_parents_children(
-    course_id: str, user_email: str = Depends(get_current_user)
-):
+async def get_parents_children(course_id: str, user_email: str = Depends(get_current_user)):
     """
     Get the list of students for the parent with provided email on course with provided course_id.
 

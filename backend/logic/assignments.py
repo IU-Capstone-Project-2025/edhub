@@ -16,16 +16,12 @@ def create_assignment(
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
     # create assignment
-    assignment_id = repo_ass.sql_insert_assignment(
-        db_cursor, course_id, title, description, user_email
-    )
+    assignment_id = repo_ass.sql_insert_assignment(db_cursor, course_id, title, description, user_email)
 
     return {"course_id": course_id, "assignment_id": assignment_id}
 
 
-def remove_assignment(
-    db_conn, db_cursor, course_id: str, assignment_id: str, user_email: str
-):
+def remove_assignment(db_conn, db_cursor, course_id: str, assignment_id: str, user_email: str):
     # checking constraints
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
@@ -73,35 +69,25 @@ def submit_assignment(
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_student_access(db_cursor, student_email, course_id)
 
-    submission = repo_ass.sql_select_submission_grade(
-        db_cursor, course_id, assignment_id, student_email
-    )
+    submission = repo_ass.sql_select_submission_grade(db_cursor, course_id, assignment_id, student_email)
 
     # inserting submission
     if submission is None:
-        repo_ass.sql_insert_submission(
-            db_cursor, course_id, assignment_id, student_email, comment
-        )
+        repo_ass.sql_insert_submission(db_cursor, course_id, assignment_id, student_email, comment)
         db_conn.commit()
 
     # updating submission if not graded
     elif submission and submission[0] in (None, "null"):
-        repo_ass.sql_update_submission_comment(
-            db_cursor, comment, course_id, assignment_id, student_email
-        )
+        repo_ass.sql_update_submission_comment(db_cursor, comment, course_id, assignment_id, student_email)
         db_conn.commit()
 
     else:
-        raise HTTPException(
-            status_code=404, detail="Can't edit the submission after it was graded."
-        )
+        raise HTTPException(status_code=404, detail="Can't edit the submission after it was graded.")
 
     return {"success": True}
 
 
-def get_assignment_submissions(
-    db_cursor, course_id: str, assignment_id: str, user_email: str
-):
+def get_assignment_submissions(db_cursor, course_id: str, assignment_id: str, user_email: str):
     # checking constraints
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
@@ -137,24 +123,16 @@ def get_submission(
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_student_access(db_cursor, student_email, course_id)
     if not (
-        constraints.check_teacher_access(
-            db_cursor, user_email, course_id
-        ) or constraints.check_parent_student_access(
-            db_cursor, user_email, student_email, course_id
-        ) or student_email == user_email
+        constraints.check_teacher_access(db_cursor, user_email, course_id)
+        or constraints.check_parent_student_access(db_cursor, user_email, student_email, course_id)
+        or student_email == user_email
     ):
-        raise HTTPException(
-            status_code=403, detail="User does not have access to this submission"
-        )
+        raise HTTPException(status_code=403, detail="User does not have access to this submission")
 
     # finding student's submission
-    submission = repo_ass.sql_select_single_submission(
-        db_cursor, course_id, assignment_id, student_email
-    )
+    submission = repo_ass.sql_select_single_submission(db_cursor, course_id, assignment_id, student_email)
     if not submission:
-        raise HTTPException(
-            status_code=404, detail="Submission of this user is not found"
-        )
+        raise HTTPException(status_code=404, detail="Submission of this user is not found")
 
     res = {
         "course_id": course_id,
@@ -183,9 +161,7 @@ def grade_submission(
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
     constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
 
-    repo_ass.sql_update_submission_grade(
-        db_cursor, grade, user_email, course_id, assignment_id, student_email
-    )
+    repo_ass.sql_update_submission_grade(db_cursor, grade, user_email, course_id, assignment_id, student_email)
     db_conn.commit()
 
     return {"success": True}

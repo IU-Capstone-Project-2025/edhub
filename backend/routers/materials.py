@@ -26,30 +26,22 @@ async def create_material(
     Returns the (course_id, material_id) for the new material in case of success.
     """
     with get_db() as (db_conn, db_cursor):
-        return logic_create_material(
-            db_conn, db_cursor, course_id, title, description, user_email
-        )
+        return logic_create_material(db_conn, db_cursor, course_id, title, description, user_email)
 
 
 @router.post("/remove_material", response_model=json_classes.Success)
-async def remove_material(
-    course_id: str, material_id: str, user_email: str = Depends(get_current_user)
-):
+async def remove_material(course_id: str, material_id: str, user_email: str = Depends(get_current_user)):
     """
     Remove the material by the provided course_id and material_id.
 
     Teacher role required.
     """
     with get_db() as (db_conn, db_cursor):
-        return logic_remove_material(
-            db_conn, db_cursor, course_id, material_id, user_email
-        )
+        return logic_remove_material(db_conn, db_cursor, course_id, material_id, user_email)
 
 
 @router.get("/get_material", response_model=json_classes.Material)
-async def get_material(
-    course_id: str, material_id: str, user_email: str = Depends(get_current_user)
-):
+async def get_material(course_id: str, material_id: str, user_email: str = Depends(get_current_user)):
     """
     Get the material details by the provided (course_id, material_id).
 

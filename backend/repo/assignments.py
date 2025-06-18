@@ -47,9 +47,7 @@ def sql_insert_submission(db_cursor, course_id, assignment_id, student_email, co
     )
 
 
-def sql_update_submission_comment(
-    db_cursor, comment, course_id, assignment_id, student_email
-):
+def sql_update_submission_comment(db_cursor, comment, course_id, assignment_id, student_email):
     db_cursor.execute(
         """
         UPDATE course_assignments_submissions
@@ -101,9 +99,7 @@ def sql_select_single_submission(db_cursor, course_id, assignment_id, student_em
     return db_cursor.fetchone()
 
 
-def sql_update_submission_grade(
-    db_cursor, grade, user_email, course_id, assignment_id, student_email
-):
+def sql_update_submission_grade(db_cursor, grade, user_email, course_id, assignment_id, student_email):
     db_cursor.execute(
         """
         UPDATE course_assignments_submissions

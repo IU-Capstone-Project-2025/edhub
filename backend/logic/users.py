@@ -9,12 +9,8 @@ import repo.users as repo_users
 def get_user_role(db_cursor, course_id: str, user_email: str):
     # getting info about the roles
     res = {
-        "is_teacher": constraints.check_teacher_access(
-            db_cursor, user_email, course_id
-        ),
-        "is_student": constraints.check_student_access(
-            db_cursor, user_email, course_id
-        ),
+        "is_teacher": constraints.check_teacher_access(db_cursor, user_email, course_id),
+        "is_student": constraints.check_student_access(db_cursor, user_email, course_id),
         "is_parent": constraints.check_parent_access(db_cursor, user_email, course_id),
     }
 
@@ -70,12 +66,8 @@ def remove_user(db_conn, db_cursor, user_email: str):
     constraints.assert_user_exists(db_cursor, user_email)
 
     # remove teacher role preparation: find courses with 1 teacher left
-    single_teacher_courses = repo_users.sql_select_single_teacher_courses(
-        db_cursor, user_email
-    )
-    for (
-        course_id_to_delete
-    ) in single_teacher_courses:  # Renamed variable to avoid conflict
+    single_teacher_courses = repo_users.sql_select_single_teacher_courses(db_cursor, user_email)
+    for course_id_to_delete in single_teacher_courses:  # Renamed variable to avoid conflict
         repo_users.sql_delete_course(db_cursor, course_id_to_delete)
 
     # remove user

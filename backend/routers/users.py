@@ -29,11 +29,7 @@ async def create_user(user: json_classes.UserCreate):
     Returns email and JWT access token for 30 minutes.
     """
     with get_db() as (db_conn, db_cursor):
-        return logic_create_user(
-            db_conn,
-            db_cursor,
-            user
-        )
+        return logic_create_user(db_conn, db_cursor, user)
 
 
 @router.post("/login", response_model=json_classes.Account)
@@ -44,10 +40,7 @@ async def login(user: json_classes.UserLogin):
     Returns email and JWT access token for 30 minutes.
     """
     with get_db() as (db_conn, db_cursor):
-        return logic_login(
-            db_cursor,
-            user
-        )
+        return logic_login(db_cursor, user)
 
 
 # WARNING: update if new elements appear

@@ -35,15 +35,11 @@ async def create_assignment(
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
-        return logic_create_assignment(
-            db_conn, db_cursor, course_id, title, description, user_email
-        )
+        return logic_create_assignment(db_conn, db_cursor, course_id, title, description, user_email)
 
 
 @router.post("/remove_assignment", response_model=json_classes.Success)
-async def remove_assignment(
-    course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)
-):
+async def remove_assignment(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
     """
     Remove the assignment by the provided course_id and assignment_id.
 
@@ -52,15 +48,11 @@ async def remove_assignment(
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
-        return logic_remove_assignment(
-            db_conn, db_cursor, course_id, assignment_id, user_email
-        )
+        return logic_remove_assignment(db_conn, db_cursor, course_id, assignment_id, user_email)
 
 
 @router.get("/get_assignment", response_model=json_classes.Assignment)
-async def get_assignment(
-    course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)
-):
+async def get_assignment(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
     f"""
     Get the assignment details by the provided (course_id, assignment_id).
 
@@ -93,15 +85,11 @@ async def submit_assignment(
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
-        return logic_submit_assignment(
-            db_conn, db_cursor, course_id, assignment_id, comment, student_email
-        )
+        return logic_submit_assignment(db_conn, db_cursor, course_id, assignment_id, comment, student_email)
 
 
 @router.get("/get_assignment_submissions", response_model=List[json_classes.Submission])
-async def get_assignment_submissions(
-    course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)
-):
+async def get_assignment_submissions(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
     f"""
     Get the list of students submissions of provided assignments.
 
@@ -118,9 +106,7 @@ async def get_assignment_submissions(
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
-        return logic_get_assignment_submissions(
-            db_cursor, course_id, assignment_id, user_email
-        )
+        return logic_get_assignment_submissions(db_cursor, course_id, assignment_id, user_email)
 
 
 @router.get("/get_submission", response_model=json_classes.Submission)
@@ -146,9 +132,7 @@ async def get_submission(
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
-        return logic_get_submission(
-            db_cursor, course_id, assignment_id, student_email, user_email
-        )
+        return logic_get_submission(db_cursor, course_id, assignment_id, student_email, user_email)
 
 
 @router.post("/grade_submission", response_model=json_classes.Success)
