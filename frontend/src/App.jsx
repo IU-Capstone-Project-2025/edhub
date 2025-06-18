@@ -5,6 +5,9 @@ import AuthPage from "./pages/AuthPage"
 import CoursePage from "./pages/OneCoursePage"
 import CreateCoursePage from "./pages/CreateCoursePage"
 import axios from "axios"
+import AddMaterialPage from "./pages/AddMaterialPage"
+import AddStudentPage from "./pages/AddStudentPage"
+import AddParentPage from "./pages/AddParentPage"
 axios.defaults.baseURL = "http://localhost:8000";
 
 
@@ -16,6 +19,9 @@ function App() {
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/create-course" element={<CreateCoursePage />} />
         <Route path="/courses/:id" element={<CoursePage />} />
+        <Route path="/courses/:id/add-material" element={<AddMaterialPage/>}/>
+        <Route path="/courses/:id/add-student" element={<AddStudentPage />} />
+        <Route path="/courses/:id/add-parent" element={<AddParentPage />} />
       </Routes>
     </Router>
   )
