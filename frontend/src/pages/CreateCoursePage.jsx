@@ -8,6 +8,9 @@ import { useNavigate } from "react-router-dom"
 
 export default function CreateCoursePage() {
   const [title, setTitle] = useState("")
+  const [department, setDepartment] = useState("")
+  const [subject, setSubject] = useState("")
+  const [auditorium, setAuditorium] = useState("")
   const navigate = useNavigate()
 
   const handleCreateCourse = async () => {
@@ -16,6 +19,7 @@ export default function CreateCoursePage() {
       const res = await axios({
         method: "post",
         url: `/create_course?title=${encodeURIComponent(title)}`,
+        /* TODO:нужно добавить department, subject и auditorium в запрос*/
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -37,9 +41,24 @@ export default function CreateCoursePage() {
           <CardTitle className="text-center mb-4 text-xl">Create Course</CardTitle>
           <CardContent className="space-y-4">
             <Input
-              placeholder="Enter course title"
+              placeholder="Course title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+            />
+            <Input
+              placeholder="Department"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+            />
+            <Input
+              placeholder="Subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+            />
+            <Input
+              placeholder="Auditorium"
+              value={auditorium}
+              onChange={(e) => setAuditorium(e.target.value)}
             />
             <Button
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
