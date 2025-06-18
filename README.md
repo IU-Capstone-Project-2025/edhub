@@ -34,7 +34,7 @@ docker-compose up --build
 
 ### API Endpoints
 
-You can access the web version of API documentation at http://localhost:8000/docs#/.
+You can access the web version of API documentation at http://localhost:8000/docs/.
 
 ### Maintenance Commands
 ```bash
