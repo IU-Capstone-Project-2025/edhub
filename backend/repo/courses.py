@@ -1,41 +1,144 @@
-def sql_select_available_courses(db_cursor, user_email):
-    db_cursor.execute(
-        """
-        SELECT courseid AS cid FROM teaches WHERE email = %s
-        UNION
-        SELECT courseid AS cid FROM student_at WHERE email = %s
-        UNION
-        SELECT courseid AS cid FROM parent_of_at_course WHERE parentemail = %s
-        """,
-        (user_email, user_email, user_email),
-    )
-    return db_cursor.fetchall()
+from typing import Any, List
+from datetime import datetime
+from repo.database import Database, DBFieldChanges
+import repo.accounts
+import repo.announcements
 
 
-def sql_insert_course(db_cursor, title):
-    db_cursor.execute(
-        "INSERT INTO courses (courseid, name, timecreated) VALUES (gen_random_uuid(), %s, now()) RETURNING courseid",
-        (title,),
-    )
-    return db_cursor.fetchone()[0]
+class CourseGradingScheme:
+    _value: int
+
+    _AVERAGE = 0
+    _SUM = 1
+    _TEXT = ['average', 'sum']
+
+    def __init__(self, value: int):
+        self._value = value
+
+    @staticmethod
+    def Average():
+        return CourseGradingScheme(CourseGradingScheme._AVERAGE)
+
+    @staticmethod
+    def Sum():
+        return CourseGradingScheme(CourseGradingScheme._SUM)
+
+    def __str__(self):
+        return CourseGradingScheme._TEXT[self._value]
+
+    def to_string(self):
+        return str(self)
+
+    def __eq__(self, other):
+        return isinstance(other, CourseGradingScheme) and self._value == other._value
 
 
-def sql_delete_course(db_cursor, course_id):
-    db_cursor.execute("DELETE FROM courses WHERE courseid = %s", (course_id,))
+class CourseDTO:
+    id: str
+    timecreated: datetime
+    name: str
+    nextannid: int
+    nextitemid: int
+    totalgradeenabled: bool
+    coursegradingscheme: CourseGradingScheme
+
+    def __init__(self, id: str, timecreated: datetime, name: str, nextannid: int, nextitemid: int,
+                 totalgradeenabled: bool, coursegradingscheme: CourseGradingScheme):
+        self.id = id
+        self.timecreated = timecreated
+        self.name = name
+        self.nextannid = nextannid
+        self.nextitemid = nextitemid
+        self.totalgradeenabled = totalgradeenabled
+        self.coursegradingscheme = coursegradingscheme
 
 
-def sql_select_course_info(db_cursor, course_id):
-    db_cursor.execute(
-        """
-        SELECT c.courseid, c.name, c.timecreated, COUNT(sa.email) AS student_count
-        FROM courses c
-        LEFT JOIN student_at sa ON c.courseid = sa.courseid
-        WHERE c.courseid = %s
-        GROUP BY c.courseid
-        """,
-        (course_id,),
-    )
-    return db_cursor.fetchone()
+class Course:
+    _db: Database
+    _id: str
+
+    class CourseChanges(DBFieldChanges):
+        def __init__(self):
+            super().__init__()
+
+        def change_name(self, new_value: str):
+            self.change_any_field("name", new_value)
+
+        def change_total_grade_enabled(self, new_value: bool):
+            self.change_any_field("totalgradeenabled", new_value)
+
+        def change_course_grading_scheme(self, new_value: CourseGradingScheme):
+            self.change_any_field("coursegradingscheme", new_value)
+
+        def course_compile_update(self, id: str):
+            return self.compile_update("Course", "id = %s", (id,))
+
+    def __init__(self, db: Database, id: str):
+        self._db = db
+        self._id = id
+
+    def exists(self) -> bool:
+        with self._db.get_connection() as (conn, cur):
+            cur.execute("SELECT EXISTS(SELECT 1 FROM Course WHERE id = %s);", (self._id,))
+            return cur.fetchone()[0]
+
+    def _request_fields(self, *args: str) -> tuple:
+        return self._db.request_fields_one_match("Course", "id = %s", (self._id,), *args)
+
+    def _request_field(self, field: str) -> Any:
+        return self._request_fields(field)[0]
+
+    def get(self) -> CourseDTO:
+        fields = self._request_fields("id", "timecreated", "name", "nextannid", "nextitemid",
+                                      "totalgradeenabled", "coursegradingscheme")
+        fields[-1] = CourseGradingScheme(fields[-1])
+        return CourseDTO(*fields)
+
+    def id(self) -> str:
+        return self._id
+
+    def time_created(self) -> datetime:
+        return self._request_field("timecreated")
+
+    def name(self) -> str:
+        return self._request_field("name")
+
+    def nextannid(self) -> int:
+        return self._request_field("nextannid")
+
+    def nextitemid(self) -> int:
+        return self._request_field("nextitemid")
+
+    def total_grade_enabled(self) -> bool:
+        return self._request_field("totalgradeenabled")
+
+    def course_grading_scheme(self) -> CourseGradingScheme:
+        return CourseGradingScheme(self._request_field("coursegradingscheme"))
+
+    def set(self, changes: CourseChanges):
+        with self._db.get_connection() as (conn, cur):
+            cur.execute(*changes.course_compile_update(self._id))
+            conn.commit()
+
+    def create(self, name: str, total_grade_enabled: bool, course_grading_scheme: CourseGradingScheme):
+        with self._db.get_connection() as (conn, cur):
+            cur.execute("""INSERT INTO Course(id, timecreated, name, totalgradeenabled, coursegradingscheme)
+                        VALUES (%s, now(), %s, %s, %s)""", (self._id, name, total_grade_enabled,
+                                                            str(course_grading_scheme)))
+            conn.commit()
+
+    def delete(self):
+        with self._db.get_connection() as (conn, cur):
+            cur.execute("DELETE FROM Course WHERE id = %s", (self._id,))
+            conn.commit()
+
+    def last_announcements(self, count: int, skip: int) -> List[repo.announcements.Announcement]:
+        res = self._db.request_fields_all_matches("CourseAnnouncements",
+                                                  "courseid = %s ORDER BY timecreated LIMIT %s OFFSET %s",
+                                                  (self._id, count, skip), "annid")
+        return [repo.announcements.Announcement(self._db, self._id, row[0]) for row in res]
+
+    def items(self) -> List[repo.
 
 
 def sql_select_course_feed(db_cursor, course_id):

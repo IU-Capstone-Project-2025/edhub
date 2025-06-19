@@ -1,5 +1,8 @@
+import fastapi
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+import http_errors
 
 import routers.assignments
 import routers.courses
@@ -10,6 +13,13 @@ import routers.teachers
 import routers.users
 
 app = FastAPI()
+
+
+@app.exception_handler(http_errors.EdHubException)
+async def edhub_exception_handler(request: fastapi.Request, exc: http_errors.EdHubException):
+    return exc.json_response()
+
+
 app.include_router(routers.assignments.router)
 app.include_router(routers.courses.router)
 app.include_router(routers.materials.router)
