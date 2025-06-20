@@ -27,8 +27,6 @@ CREATE TABLE Course(
     id uuid PRIMARY KEY,
     timecreated timestamp NOT NULL,
     name varchar(128) NOT NULL,
-    lastannid int NOT NULL DEFAULT 0,
-    lastitemid int NOT NULL DEFAULT 0,
     totalgradeenabled bool NOT NULL DEFAULT 'f',
     coursegradingscheme GradingScheme NOT NULL
     -- uses CourseGradeThresholds if coursegradingscheme = 'sum'
@@ -42,7 +40,8 @@ CREATE TABLE CourseGradeThresholds(
 
 CREATE TABLE CourseAnnouncement(
     courseid uuid NOT NULL REFERENCES Course ON DELETE CASCADE,
-    annid int NOT NULL,
+    annid uuid NOT NULL,
+    author varchar(128) NULL REFERENCES Account ON DELETE SET NULL,
     timecreated timestamp NOT NULL,
     title text NOT NULL CHECK (length(title) <= 100),
     content text NOT NULL CHECK (length(content) <= 1000),
@@ -53,7 +52,7 @@ CREATE TYPE CourseItemKind AS ENUM('material', 'assignment', 'customgrade');
 
 CREATE TABLE CourseItem(
     courseid uuid NOT NULL REFERENCES Course ON DELETE CASCADE,
-    itemid int NOT NULL,
+    itemid uuid NOT NULL,
     ordering int NOT NULL,
     timecreated timestamp NOT NULL,
     title text NOT NULL CHECK (length(title) <= 100),
@@ -62,9 +61,11 @@ CREATE TABLE CourseItem(
     PRIMARY KEY (courseid, itemid)
 );
 
-CREATE TABLE AssignmentCourseItem( -- extends CourseItemKind
+-- MaterialCourseItem would have nothing extra, so not defined
+
+CREATE TABLE AssignmentCourseItem( -- extends CourseItem
     courseid uuid NOT NULL,
-    itemid int NOT NULL,
+    itemid uuid NOT NULL,
     maxpoints int NULL CHECK (maxpoints IS NULL OR maxpoints >= 0),
     PRIMARY KEY (courseid, itemid),
     FOREIGN KEY (courseid, itemid) REFERENCES CourseItem ON DELETE CASCADE
@@ -72,16 +73,16 @@ CREATE TABLE AssignmentCourseItem( -- extends CourseItemKind
 
 CREATE TABLE AssignmentCriterion(
     courseid uuid NOT NULL,
-    itemid int NOT NULL,
+    itemid uuid NOT NULL,
     points int NOT NULL, -- sorted by this
     comment text NOT NULL CHECK (length(comment) <= 200),
     PRIMARY KEY (courseid, itemid, points),
     FOREIGN KEY (courseid, itemid) REFERENCES AssignmentCourseItem
 );
 
-CREATE TABLE CustomGradeCourseItem( -- extends CourseItemKind
+CREATE TABLE CustomGradeCourseItem( -- extends CourseItem
     courseid uuid NOT NULL,
-    itemid int NOT NULL,
+    itemid uuid NOT NULL,
     maxpoints int NULL CHECK (maxpoints IS NULL OR maxpoints >= 0),
     PRIMARY KEY (courseid, itemid),
     FOREIGN KEY (courseid, itemid) REFERENCES CourseItem ON DELETE CASCADE
@@ -89,7 +90,7 @@ CREATE TABLE CustomGradeCourseItem( -- extends CourseItemKind
 
 CREATE TABLE CourseItemAttachment(
     courseid uuid NOT NULL,
-    itemid int NOT NULL,
+    itemid uuid NOT NULL,
     file uuid NOT NULL REFERENCES FileWithName ON DELETE RESTRICT,
     FOREIGN KEY (courseid, itemid) REFERENCES CourseItem ON DELETE CASCADE
 );

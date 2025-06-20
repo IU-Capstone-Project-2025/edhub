@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union
 from datetime import datetime
 from database import Cursor
 import repo.courses
@@ -7,13 +7,16 @@ import repo.courses
 class AnnouncementDTO:
     courseid: str
     annid: str
+    author: Union[None, str]
     timecreated: datetime
     title: str
     content: str
 
-    def __init__(self, courseid: str, annid: str, timecreated: datetime, title: str, content: str):
+    def __init__(self, courseid: str, annid: str, author: Union[None, str],
+                 timecreated: datetime, title: str, content: str):
         self.courseid = courseid
         self.annid = annid
+        self.author = author
         self.timecreated = timecreated
         self.title = title
         self.content = content
@@ -40,13 +43,19 @@ class Announcement:
         return self._request_fields(field)[0]
 
     def get(self) -> AnnouncementDTO:
-        return AnnouncementDTO(*self._request_fields("courseid", "annid", "timecreated", "title", "content"))
+        return AnnouncementDTO(*self._request_fields("courseid", "annid", "author", "timecreated", "title", "content"))
 
     def course(self) -> repo.courses.Course:
         return repo.courses.Course(self._cur, self._courseid)
 
     def announcement_id(self) -> str:
         return self._annid
+
+    def author(self) -> Union[None, repo.accounts.Account]:
+        login = self._requeset_field("author")
+        if login is None:
+            return None
+        return repo.courses.Account(self._cur, login)
 
     def time_created(self) -> datetime:
         return self._request_field("timecreated")
@@ -57,10 +66,12 @@ class Announcement:
     def content(self) -> str:
         return self._request_field("content")
 
-    def create(self, title: str, content: str):
-        self._cur.execute("""WITH aid AS (UPDATE Course SET lastannid = lastannid + 1 WHERE id = %s RETURNING lastannid)
-                          INSERT INTO CourseAnnouncement SELECT %s, aid.lastannid, now(), %s, %s FROM aid""",
-                          (self._courseid, self._courseid, title, content))
+    @staticmethod
+    def create(cursor: Cursor, course_id: str, author_login: str, title: str, content: str) -> "Announcement":
+        cursor.execute("""INSERT INTO CourseAnnouncement VALUES (%s, gen_random_uuid(), %s, now(), %s, %s)
+                       RETURNING annid""", course_id, author_login, title, content)
+        annid = cursor.fetchone()[0]
+        return Announcement(cursor, course_id, annid)
 
     def delete(self):
-        self._cur.execute("DELETE FROM CourseAnnouncement WHERE courseid = %s, annid = %s", (self._courseid, self._annid))
+        self._cur.delete("CourseAnnouncement", courseid=self._courseid, annid=self._annid)

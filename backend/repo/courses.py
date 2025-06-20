@@ -10,7 +10,7 @@ class CourseGradingScheme:
 
     _AVERAGE = 0
     _SUM = 1
-    _TEXT = ['average', 'sum']
+    _TEXT = ["average", "sum"]
 
     def __init__(self, value: int):
         self._value = value
@@ -31,6 +31,10 @@ class CourseGradingScheme:
 
     def __eq__(self, other):
         return isinstance(other, CourseGradingScheme) and self._value == other._value
+
+    @staticmethod
+    def from_string(value: str) -> "CourseGradingScheme":
+        return CourseGradingScheme(CourseGradingScheme._TEXT.index(value))
 
 
 class CourseDTO:
@@ -87,9 +91,9 @@ class Course:
         return self._request_fields(field)[0]
 
     def get(self) -> CourseDTO:
-        fields = self._request_fields("id", "timecreated", "name", "nextannid", "nextitemid",
-                                      "totalgradeenabled", "coursegradingscheme")
-        fields[-1] = CourseGradingScheme(fields[-1])
+        fields = list(self._request_fields("id", "timecreated", "name", "nextannid", "nextitemid",
+                                           "totalgradeenabled", "coursegradingscheme"))
+        fields[-1] = CourseGradingScheme.from_string(fields[-1])
         return CourseDTO(*fields)
 
     def id(self) -> str:
