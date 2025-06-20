@@ -3,6 +3,7 @@ from datetime import datetime
 from repo.database import Cursor, DBFieldChanges
 import repo.accounts
 import repo.announcements
+import repo.courseitems
 
 
 class CourseGradingScheme:
@@ -129,12 +130,15 @@ class Course:
         self._cur.execute("DELETE FROM Course WHERE id = %s", (self._id,))
 
     def last_announcements(self, count: int, skip: int) -> List[repo.announcements.Announcement]:
-        res = self._cur.request_fields_all_matches("CourseAnnouncements",
+        res = self._cur.request_fields_all_matches("CourseAnnouncement",
                                                    "courseid = %s ORDER BY timecreated LIMIT %s OFFSET %s",
                                                    (self._id, count, skip), "annid")
         return [repo.announcements.Announcement(self._cur, self._id, row[0]) for row in res]
 
-    def items(self) -> List[repo.
+    def items(self) -> List[repo.courseitems.CourseItem]:
+        res = self._cur.request_fields_all_matches("CourseItem", "courseid = %s ORDER BY ordering, timecreated",
+                                                   (self._id,), "itemid")
+        return [repo.courseitems.CourseItem(self._cur, self._id, row[0]) for row in res]
 
 
 def sql_select_course_feed(db_cursor, course_id):
