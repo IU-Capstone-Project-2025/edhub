@@ -67,13 +67,13 @@ class Course:
             super().__init__()
 
         def change_name(self, new_value: str):
-            self.change_any_field("name", new_value)
+            return self.change_any_field("name", new_value)
 
         def change_total_grade_enabled(self, new_value: bool):
-            self.change_any_field("totalgradeenabled", new_value)
+            return self.change_any_field("totalgradeenabled", new_value)
 
         def change_course_grading_scheme(self, new_value: CourseGradingScheme):
-            self.change_any_field("coursegradingscheme", new_value)
+            return self.change_any_field("coursegradingscheme", new_value)
 
         def course_compile_update(self, id: str):
             return self.compile_update("Course", "id = %s", (id,))
