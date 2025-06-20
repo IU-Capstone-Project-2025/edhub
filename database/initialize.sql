@@ -95,12 +95,6 @@ CREATE TABLE CourseItemAttachment(
     FOREIGN KEY (courseid, itemid) REFERENCES CourseItem ON DELETE CASCADE
 );
 
-create table course_assignments_submissions(courseid uuid references courses on
-    delete cascade, assid int references course_assignments on delete cascade,
-    email text references users on delete cascade, timeadded timestamp,
-    timemodified timestamp, comment text, grade int, gradedby text references
-    users on delete set null, primary key (courseid, assid, email));
-
 CREATE TABLE AssignmentSubmission(
     courseid uuid NOT NULL REFERENCES Course ON DELETE CASCADE,
     itemid uuid NOT NULL REFERENCES AssignmentCourseItem ON DELETE CASCADE,
@@ -116,6 +110,7 @@ CREATE TABLE AssignmentGrade(
     itemid uuid NOT NULL REFERENCES AssignmentCourseItem ON DELETE CASCADE,
     submittedby varchar(128) NOT NULL REFERENCES Account ON DELETE CASCADE,
     grade int NOT NULL,
+    gradedby varchar(128) NULL REFERENCES Account ON DELETE SET NULL,
     timecreated timestamp NOT NULL,
     -- gradestale bool = AssignmentGrade.timecreated < AssignmentSubmission.timemodified
     comment text NULL CHECK (comment IS NULL OR length(comment) <= 1024),
