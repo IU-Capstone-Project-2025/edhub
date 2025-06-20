@@ -95,6 +95,34 @@ CREATE TABLE CourseItemAttachment(
     FOREIGN KEY (courseid, itemid) REFERENCES CourseItem ON DELETE CASCADE
 );
 
+create table course_assignments_submissions(courseid uuid references courses on
+    delete cascade, assid int references course_assignments on delete cascade,
+    email text references users on delete cascade, timeadded timestamp,
+    timemodified timestamp, comment text, grade int, gradedby text references
+    users on delete set null, primary key (courseid, assid, email));
+
+CREATE TABLE AssignmentSubmission(
+    courseid uuid NOT NULL REFERENCES Course ON DELETE CASCADE,
+    itemid uuid NOT NULL REFERENCES AssignmentCourseItem ON DELETE CASCADE,
+    submittedby varchar(128) NOT NULL REFERENCES Account ON DELETE CASCADE,
+    timecreated timestamp NOT NULL,
+    timemodified timestamp NOT NULL,
+    comment text NOT NULL CHECK (length(comment) <= 65536),
+    PRIMARY KEY (courseid, itemid, submittedby)
+);
+
+CREATE TABLE AssignmentGrade(
+    courseid uuid NOT NULL REFERENCES Course ON DELETE CASCADE,
+    itemid uuid NOT NULL REFERENCES AssignmentCourseItem ON DELETE CASCADE,
+    submittedby varchar(128) NOT NULL REFERENCES Account ON DELETE CASCADE,
+    grade int NOT NULL,
+    timecreated timestamp NOT NULL,
+    -- gradestale bool = AssignmentGrade.timecreated < AssignmentSubmission.timemodified
+    comment text NULL CHECK (comment IS NULL OR length(comment) <= 1024),
+    PRIMARY KEY (courseid, itemid, submittedby),
+    FOREIGN KEY (courseid, itemid, submittedby) REFERENCES AssignmentSubmission ON DELETE CASCADE
+);
+
 CREATE TABLE Notification(
     id uuid PRIMARY KEY,
     read bool NOT NULL DEFAULT 'f',
@@ -140,5 +168,6 @@ CREATE TABLE ParentOfAt(
     parentlogin varchar(128) NOT NULL REFERENCES Account ON DELETE CASCADE,
     studentlogin varchar(128) NOT NULL REFERENCES Account ON DELETE CASCADE,
     courseid uuid NOT NULL REFERENCES Course ON DELETE CASCADE,
-    PRIMARY KEY (parentlogin, studentlogin, courseid)
+    PRIMARY KEY (parentlogin, studentlogin, courseid),
+    FOREIGN KEY (studentlogin, courseid) REFERENCES StudentAt ON DELETE CASCADE
 );
