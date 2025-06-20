@@ -56,7 +56,7 @@ class CourseItemDTO:
 
 
 class CourseItem:
-    _db: Database
+    _cur: Cursor
     _courseid: str
     _itemid: int
 

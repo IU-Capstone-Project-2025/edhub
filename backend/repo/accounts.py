@@ -1,5 +1,5 @@
 from typing import Union, Any, List, Tuple
-from repo.database import Database, DBFieldChanges
+from repo.database import Cursor, DBFieldChanges
 from datetime import datetime
 import repo.courses
 
@@ -27,7 +27,7 @@ class AccountDTO:
 
 
 class Account:
-    _db: Database
+    _cur: Cursor
     _login: str
 
     class AccountChanges(DBFieldChanges):
@@ -55,20 +55,19 @@ class Account:
         def account_compile_update(self, login: str):
             return self.compile_update("Account", "login = %s", (login,))
 
-    def __init__(self, db: Database, login: str):
-        self._db = Database
+    def __init__(self, cur: Cursor, login: str):
+        self._cur = cur
         self._login = login
 
     def _request_fields(self, *args: str) -> tuple:
-        return self._db.request_fields_one_match("Account", "login = %s", (self._login,), *args)
+        return self._cur.request_fields_one_match("Account", "login = %s", (self._login,), *args)
 
     def _request_field(self, field: str) -> Any:
         return self._request_fields(field)[0]
 
     def exists(self) -> bool:
-        with self._db.get_connection() as (conn, cur):
-            cur.execute("SELECT EXISTS(SELECT 1 FROM Account WHERE login = %s)", (self._login,))
-            return cur.fetchone()[0]
+        self._cur.execute("SELECT EXISTS(SELECT 1 FROM Account WHERE login = %s)", (self._login,))
+        return self._cur.fetchone()[0]
 
     def get(self) -> AccountDTO:
         return AccountDTO(*self._request_fields("login", "passwordhash", "publicname", "timeregistered", "contactinfo",
@@ -99,31 +98,26 @@ class Account:
         return self._request_field("verified")
 
     def set(self, changes: AccountChanges):
-        with self._db.get_connection() as (conn, cur):
-            cur.execute(*changes.account_compile_update(self._login))
-            conn.commit()
+        self._cur.execute(*changes.account_compile_update(self._login))
 
     def create(self, passwordhash: bytes, publicname: str, institutional: bool, verified: bool):
-        with self._db.get_connection() as (conn, cur):
-            cur.execute("INSERT INTO Account VALUES (%s, %s, %s, now(), '', null, %s, %s);",
-                        (self._login, passwordhash, publicname, institutional, verified))
-            conn.commit()
+        self._cur.execute("INSERT INTO Account VALUES (%s, %s, %s, now(), '', null, %s, %s);",
+                          (self._login, passwordhash, publicname, institutional, verified))
 
     def get_all_courses(self) -> List[repo.courses.Course]:
-        with self._db.get_connection() as (conn, cur):
-            cur.execute("""SELECT courseid FROM StudentAt WHERE studentlogin = %s
-                        UNION SELECT courseid FROM TeacherAt WHERE teacherlogin = %s
-                        UNION SELECT courseid FROM ParentOfAt WHERE parentlogin = %s""",
-                        (self._login,) * 3)
-            return [repo.courses.Course(self._db, row[0]) for row in cur.fetchall()]
+        self._cur.execute("""SELECT courseid FROM StudentAt WHERE studentlogin = %s
+                          UNION SELECT courseid FROM TeacherAt WHERE teacherlogin = %s
+                          UNION SELECT courseid FROM ParentOfAt WHERE parentlogin = %s""",
+                          (self._login,) * 3)
+        return [repo.courses.Course(self._cur, row[0]) for row in self._cur.fetchall()]
 
     def student_at_courses(self) -> List[repo.courses.Course]:
-        return [repo.courses.Course(self._db, row[0]) for row in
-                self._db.request_fields_all_matches("StudentAt", "studentlogin = %s", (self._login,), "courseid")]
+        return [repo.courses.Course(self._cur, row[0]) for row in
+                self._cur.request_fields_all_matches("StudentAt", "studentlogin = %s", (self._login,), "courseid")]
 
     def teacher_at_courses(self) -> List[repo.courses.Course]:
-        return [repo.courses.Course(self._db, row[0]) for row in
-                self._db.request_fields_all_matches("TeacherAt", "studentlogin = %s", (self._login,), "courseid")]
+        return [repo.courses.Course(self._cur, row[0]) for row in
+                self._cur.request_fields_all_matches("TeacherAt", "studentlogin = %s", (self._login,), "courseid")]
 
     def parent_at_courses_of_students(self) -> "List[Tuple[repo.courses.Course, List[Account]]]":
         """
@@ -131,13 +125,13 @@ class Account:
         The children are returned alongside the course in which they are enrolled.
         """
 
-        pairs = self._db.request_fields_all_matches("ParentOfAt", "parentlogin = %s ORDER BY courseid", (self._login,),
-                                                    "courseid", "studentlogin")
+        pairs = self._cur.request_fields_all_matches("ParentOfAt", "parentlogin = %s ORDER BY courseid", (self._login,),
+                                                     "courseid", "studentlogin")
         res = []
         for cid, child in pairs:
-            child_acc = Account(self._db, child)
+            child_acc = Account(self._cur, child)
             if not res or res[-1][0].id() != cid:
-                res.append((repo.courses.Course(self._db, cid), [child_acc]))
+                res.append((repo.courses.Course(self._cur, cid), [child_acc]))
             else:
                 res[-1][1].append(child_acc)
         return res
@@ -147,8 +141,8 @@ class Account:
         Returns a list of all courses in which this user is a parent of some student(s).
         The children are not returned.
         """
-        res = self._db.request_fields_all_matches("ParentOfAt", "parentlogin = %s", (self._login,), "DISTINCT courseid")
-        return [repo.courses.Course(self._db, row[0]) for row in res]
+        res = self._cur.request_fields_all_matches("ParentOfAt", "parentlogin = %s", (self._login,), "DISTINCT courseid")
+        return [repo.courses.Course(self._cur, row[0]) for row in res]
 
 
 """

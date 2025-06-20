@@ -1,6 +1,6 @@
 from typing import Any, List
 from datetime import datetime
-from repo.database import Database, DBFieldChanges
+from repo.database import Cursor, DBFieldChanges
 import repo.accounts
 import repo.announcements
 
@@ -54,7 +54,7 @@ class CourseDTO:
 
 
 class Course:
-    _db: Database
+    _cur: Cursor
     _id: str
 
     class CourseChanges(DBFieldChanges):
@@ -73,17 +73,16 @@ class Course:
         def course_compile_update(self, id: str):
             return self.compile_update("Course", "id = %s", (id,))
 
-    def __init__(self, db: Database, id: str):
-        self._db = db
+    def __init__(self, cur: Cursor, id: str):
+        self._cur = cur
         self._id = id
 
     def exists(self) -> bool:
-        with self._db.get_connection() as (conn, cur):
-            cur.execute("SELECT EXISTS(SELECT 1 FROM Course WHERE id = %s);", (self._id,))
-            return cur.fetchone()[0]
+        self._cur.execute("SELECT EXISTS(SELECT 1 FROM Course WHERE id = %s);", (self._id,))
+        return self._cur.fetchone()[0]
 
     def _request_fields(self, *args: str) -> tuple:
-        return self._db.request_fields_one_match("Course", "id = %s", (self._id,), *args)
+        return self._cur.request_fields_one_match("Course", "id = %s", (self._id,), *args)
 
     def _request_field(self, field: str) -> Any:
         return self._request_fields(field)[0]
@@ -116,27 +115,21 @@ class Course:
         return CourseGradingScheme(self._request_field("coursegradingscheme"))
 
     def set(self, changes: CourseChanges):
-        with self._db.get_connection() as (conn, cur):
-            cur.execute(*changes.course_compile_update(self._id))
-            conn.commit()
+        self._cur.execute(*changes.course_compile_update(self._id))
 
     def create(self, name: str, total_grade_enabled: bool, course_grading_scheme: CourseGradingScheme):
-        with self._db.get_connection() as (conn, cur):
-            cur.execute("""INSERT INTO Course(id, timecreated, name, totalgradeenabled, coursegradingscheme)
-                        VALUES (%s, now(), %s, %s, %s)""", (self._id, name, total_grade_enabled,
-                                                            str(course_grading_scheme)))
-            conn.commit()
+        self._cur.execute("""INSERT INTO Course(id, timecreated, name, totalgradeenabled, coursegradingscheme)
+                          VALUES (%s, now(), %s, %s, %s)""", (self._id, name, total_grade_enabled,
+                                                              str(course_grading_scheme)))
 
     def delete(self):
-        with self._db.get_connection() as (conn, cur):
-            cur.execute("DELETE FROM Course WHERE id = %s", (self._id,))
-            conn.commit()
+        self._cur.execute("DELETE FROM Course WHERE id = %s", (self._id,))
 
     def last_announcements(self, count: int, skip: int) -> List[repo.announcements.Announcement]:
-        res = self._db.request_fields_all_matches("CourseAnnouncements",
-                                                  "courseid = %s ORDER BY timecreated LIMIT %s OFFSET %s",
-                                                  (self._id, count, skip), "annid")
-        return [repo.announcements.Announcement(self._db, self._id, row[0]) for row in res]
+        res = self._cur.request_fields_all_matches("CourseAnnouncements",
+                                                   "courseid = %s ORDER BY timecreated LIMIT %s OFFSET %s",
+                                                   (self._id, count, skip), "annid")
+        return [repo.announcements.Announcement(self._cur, self._id, row[0]) for row in res]
 
     def items(self) -> List[repo.
 
