@@ -78,8 +78,7 @@ class Course:
         self._id = id
 
     def exists(self) -> bool:
-        self._cur.execute("SELECT EXISTS(SELECT 1 FROM Course WHERE id = %s);", (self._id,))
-        return self._cur.fetchone()[0]
+        return self._cur.exists("Course", id=self._id)
 
     def _request_fields(self, *args: str) -> tuple:
         return self._cur.request_fields_one_match("Course", "id = %s", (self._id,), *args)

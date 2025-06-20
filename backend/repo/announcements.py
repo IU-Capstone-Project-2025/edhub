@@ -30,9 +30,7 @@ class Announcement:
         self._annid = announcement_id
 
     def exists(self) -> bool:
-        self._cur.execute("SELECT EXISTS(SELECT 1 FROM CourseAnnouncement WHERE courseid = %s AND annid = %s)",
-                          (self._courseid, self._annid))
-        return self._cur.fetchone()[0]
+        return self._cur.exists("CourseAnnouncement", courseid=self._courseid, annid=self._annid)
 
     def _request_fields(self, *fields: str) -> tuple:
         return self._cur.request_fields_one_match("CourseAnnouncement", "courseid = %s AND annid = %s",

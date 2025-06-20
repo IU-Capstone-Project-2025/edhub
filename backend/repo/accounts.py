@@ -66,8 +66,7 @@ class Account:
         return self._request_fields(field)[0]
 
     def exists(self) -> bool:
-        self._cur.execute("SELECT EXISTS(SELECT 1 FROM Account WHERE login = %s)", (self._login,))
-        return self._cur.fetchone()[0]
+        return self._cur.exists("Account", login=self._login)
 
     def get(self) -> AccountDTO:
         return AccountDTO(*self._request_fields("login", "passwordhash", "publicname", "timeregistered", "contactinfo",
