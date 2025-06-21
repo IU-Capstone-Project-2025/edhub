@@ -65,7 +65,7 @@ def remove_parent(
         constraints.check_teacher_access(db_cursor, user_email, course_id) or
         (constraints.check_parent_access(db_cursor, user_email, course_id) and parent_email == user_email)
     ):
-        raise HTTPException(status_code=404, detail="User does not have permissions to delete this parent")
+        raise HTTPException(status_code=403, detail="User does not have permissions to delete this parent")
 
     # check if the parent assigned to the course with the student
     constraints.assert_parent_student_access(db_cursor, parent_email, student_email, course_id)
