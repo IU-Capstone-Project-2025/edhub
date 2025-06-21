@@ -27,7 +27,7 @@ def remove_assignment(db_conn, db_cursor, course_id: str, assignment_id: str, us
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
-    # reomve assignment
+    # remove assignment
     repo_ass.sql_delete_assignment(db_cursor, course_id, assignment_id)
     db_conn.commit()
 
