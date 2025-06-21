@@ -48,14 +48,6 @@ async def login(user: json_classes.UserLogin):
         return logic_login(db_cursor, user)
 
 
-@router.post("/logout", response_model=json_classes.Success)
-async def logout(user_email: str = Depends(get_current_user)):
-    """
-    Log out from the current device.
-    """
-    return {"success": True}
-
-
 @router.post("/change_password", response_model=json_classes.Success)
 async def change_password(user: json_classes.UserNewPassword):
     """
