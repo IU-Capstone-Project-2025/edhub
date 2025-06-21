@@ -3,8 +3,9 @@ from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from contextlib import contextmanager
 from secrets import token_hex
-from jose import jwt
+from jose import jwt, JWTError
 import psycopg2
+from datetime import datetime
 
 
 @contextmanager
@@ -31,11 +32,20 @@ pwd_hasher = CryptContext(schemes=["bcrypt"], deprecated="auto")
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        expire_timestamp = payload.get("exp")
         user_email = payload.get("email")
-        if user_email is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid token")
+
+        # checking the fields
+        if expire_timestamp is None or user_email is None:
+            raise ValueError("Invalid token structure")
+        
+        # checking token expiration time
+        if datetime.utcnow() > datetime.fromtimestamp(expire_timestamp):
+            raise ValueError("Token expired")
+
+    except (JWTError, ValueError) as e:
+        detail = str(e) if str(e) else "Invalid token"
+        raise HTTPException(status_code=401, detail=detail)
 
     # checking whether such user exists
     with get_db() as (db_conn, db_cursor):

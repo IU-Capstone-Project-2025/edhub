@@ -19,18 +19,18 @@ git clone https://github.com/IU-Capstone-Project-2025/edhub.git
 cd edhub
 
 # Build and start containers
-docker-compose up --build
+docker compose up --build
 
 # To run in detached mode:
-# docker-compose up --build -d
+# docker compose up --build -d
 ```
 
 ### Services Overview
-| Service       | Access URL                     | Port  | Notes                     |
-|---------------|--------------------------------|-------|---------------------------|
-| **Frontend**  | http://localhost:5173         | 5173  | React application      |
-| **Backend**   | http://localhost:8000         | 8000  | FastAPI application       |
-| **Database**  | postgresql://db:5432/edhub    | 5432  | PostgreSQL container      |
+| Service       | Access URL                  | Port  | Notes                  |
+|---------------|-----------------------------|-------|------------------------|
+| **Frontend**  | http://localhost:5173       | 5173  | React application      |
+| **Backend**   | http://localhost:8000       | 8000  | FastAPI application    |
+| **Database**  | postgresql://db:5432/edhub  | 5432  | PostgreSQL container   |
 
 ### API Endpoints
 
@@ -39,14 +39,14 @@ You can access the web version of API documentation at http://localhost:8000/doc
 ### Maintenance Commands
 ```bash
 # Stop all services
-docker-compose down
+docker compose down
 
 # Stop and remove volumes
-docker-compose down -v
+docker compose down -v
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Rebuild from scratch
-docker-compose down -v && docker-compose up --build
+docker compose down -v && docker compose up --build
 ```
