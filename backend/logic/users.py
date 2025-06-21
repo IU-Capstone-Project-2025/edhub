@@ -4,7 +4,7 @@ from jose import jwt
 import constraints
 from auth import pwd_hasher, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 import repo.users as repo_users
-from re import match, search
+from re import match, search, UNICODE
 
 
 def get_user_role(db_cursor, course_id: str, user_email: str):
@@ -32,7 +32,7 @@ def create_user(db_conn, db_cursor, user):
     # validation of password complexity (length, digit(s), letter(s), special symbol(s))
     if not (len(user.password) >= 8 and
             search(r'\d', user.password) and 
-            search(r'[a-zA-Zа-яА-Я]', user.password) and
+            search(r'\p{L}', user.password, UNICODE) and
             search(r'[!@#$%^&*(),.?":{}|<>]', user.password)
     ):
         raise HTTPException(status_code=400, detail="Password is too weak")
