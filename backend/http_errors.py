@@ -15,21 +15,22 @@ NO_SUBMISSION_TO_ASSIGNMENT = "NO_SUBMISSION_TO_ASSIGNMENT"
 class EdHubException(Exception):
     _code: int
     _detail: str
-    _sysmessage: str
+    _exc_name: str
+    _kwargs: object
 
-    def __init__(self, code: int, detail: str, exc_name: str, *args: object):
+    def __init__(self, code: int, detail: str, exc_name: str, **kwargs: object):
         super().__init__(code)
         self._code = code
         self._detail = detail
-        self._sysmessage = f"{exc_name}:{";;;".join(map(str, args))}"
+        self._exc_name = exc_name
+        self._kwargs = kwargs
 
     def json_response(self) -> JSONResponse:
         return JSONResponse(status_code=self._code,
-                            content={"detail": self._detail,
-                                     "sysmessage": self._sysmessage})
+                            content={"detail": self._detail, "exc_name": self._exc_name, "args": self._kwargs})
 
 
-class UserNotFoundException(EdHubException):
+class AccountNotFoundException(EdHubException):
     def __init__(self, user_login: str):
         super().__init__(404, f"The following user login is not registered in the system: {user_login}",
                          USER_NOT_FOUND, user_login)
