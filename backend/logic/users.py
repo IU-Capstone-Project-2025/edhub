@@ -33,7 +33,7 @@ def create_user(db_conn, db_cursor, user):
     if not (len(user.password) >= 8 and
             search(r'\d', user.password) and 
             search(r'\p{L}', user.password, UNICODE) and
-            search(r'[!@#$%^&*(),.?":{}|<>]', user.password)
+            search(r'[^\p{L}\p{N}\s]', user.password, UNICODE)
     ):
         raise HTTPException(status_code=400, detail="Password is too weak")
     
