@@ -4,6 +4,7 @@ from jose import jwt
 import constraints
 from auth import pwd_hasher, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 import repo.users as repo_users
+from re import match, search
 
 
 def get_user_role(db_cursor, course_id: str, user_email: str):
@@ -18,6 +19,24 @@ def get_user_role(db_cursor, course_id: str, user_email: str):
 
 
 def create_user(db_conn, db_cursor, user):
+
+    # validation of email format
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not (match(pattern, user.email) and
+            len(user.email) <= 254 and 
+            not '..' in user.email and
+            len(user.email.split('@')[0]) <= 64
+    ):
+        raise HTTPException(status_code=400, detail="Incorrect email format")
+    
+    # validation of password complexity (length, digit(s), letter(s), special symbol(s))
+    if not (len(user.password) >= 8 and
+            search(r'\d', user.password) and 
+            search(r'[a-zA-Zа-яА-Я]', user.password) and
+            search(r'[!@#$%^&*(),.?":{}|<>]', user.password)
+    ):
+        raise HTTPException(status_code=400, detail="Password is too weak")
+    
 
     # checking whether such user exists
     user_exists = repo_users.sql_select_user_exists(db_cursor, user.email)

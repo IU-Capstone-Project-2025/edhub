@@ -26,6 +26,10 @@ async def create_user(user: json_classes.UserCreate):
     """
     Creates a user account with provided email, name, and password.
 
+    User email should be in the correct format.
+
+    User password should have at least 8 symbols and contain digits, letters, and special symbols.
+
     Returns email and JWT access token for 30 minutes.
     """
     with get_db() as (db_conn, db_cursor):
