@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Union, Tuple
 from datetime import datetime
 from repo.database import Cursor, DBFieldChanges
 import repo.accounts
@@ -9,12 +9,18 @@ import repo.courseitems
 class CourseGradingScheme:
     _value: int
 
-    _AVERAGE = 0
-    _SUM = 1
-    _TEXT = ["average", "sum"]
+    _DISABLED = 0
+    _AVERAGE = 1
+    _SUM = 2
+    _MANUAL = 3
+    _TEXT = ["disabled", "average", "sum", "manual"]
 
     def __init__(self, value: int):
         self._value = value
+
+    @staticmethod
+    def Disabled():
+        return CourseGradingScheme(CourseGradingScheme._DISABLED)
 
     @staticmethod
     def Average():
@@ -23,6 +29,10 @@ class CourseGradingScheme:
     @staticmethod
     def Sum():
         return CourseGradingScheme(CourseGradingScheme._SUM)
+
+    @staticmethod
+    def Manual():
+        return CourseGradingScheme(CourseGradingScheme._MANUAL)
 
     def __str__(self):
         return CourseGradingScheme._TEXT[self._value]
@@ -42,19 +52,12 @@ class CourseDTO:
     id: str
     timecreated: datetime
     name: str
-    nextannid: int
-    nextitemid: int
-    totalgradeenabled: bool
     coursegradingscheme: CourseGradingScheme
 
-    def __init__(self, id: str, timecreated: datetime, name: str, nextannid: int, nextitemid: int,
-                 totalgradeenabled: bool, coursegradingscheme: CourseGradingScheme):
+    def __init__(self, id: str, timecreated: datetime, name: str, coursegradingscheme: CourseGradingScheme):
         self.id = id
         self.timecreated = timecreated
         self.name = name
-        self.nextannid = nextannid
-        self.nextitemid = nextitemid
-        self.totalgradeenabled = totalgradeenabled
         self.coursegradingscheme = coursegradingscheme
 
 
@@ -69,11 +72,8 @@ class Course:
         def change_name(self, new_value: str):
             return self.change_any_field("name", new_value)
 
-        def change_total_grade_enabled(self, new_value: bool):
-            return self.change_any_field("totalgradeenabled", new_value)
-
         def change_course_grading_scheme(self, new_value: CourseGradingScheme):
-            return self.change_any_field("coursegradingscheme", new_value)
+            return self.change_any_field("coursegradingscheme", str(new_value))
 
         def course_compile_update(self, id: str):
             return self.compile_update("Course", "id = %s", (id,))
@@ -92,8 +92,7 @@ class Course:
         return self._request_fields(field)[0]
 
     def get(self) -> CourseDTO:
-        fields = list(self._request_fields("id", "timecreated", "name", "nextannid", "nextitemid",
-                                           "totalgradeenabled", "coursegradingscheme"))
+        fields = list(self._request_fields("id", "timecreated", "name", "coursegradingscheme"))
         fields[-1] = CourseGradingScheme.from_string(fields[-1])
         return CourseDTO(*fields)
 
@@ -106,56 +105,120 @@ class Course:
     def name(self) -> str:
         return self._request_field("name")
 
-    def nextannid(self) -> int:
-        return self._request_field("nextannid")
-
-    def nextitemid(self) -> int:
-        return self._request_field("nextitemid")
-
-    def total_grade_enabled(self) -> bool:
-        return self._request_field("totalgradeenabled")
-
     def course_grading_scheme(self) -> CourseGradingScheme:
-        return CourseGradingScheme(self._request_field("coursegradingscheme"))
+        return CourseGradingScheme.from_string(self._request_field("coursegradingscheme"))
 
     def set(self, changes: CourseChanges):
         self._cur.execute(*changes.course_compile_update(self._id))
 
-    def create(self, name: str, total_grade_enabled: bool, course_grading_scheme: CourseGradingScheme):
-        self._cur.execute("""INSERT INTO Course(id, timecreated, name, totalgradeenabled, coursegradingscheme)
-                          VALUES (%s, now(), %s, %s, %s)""", (self._id, name, total_grade_enabled,
-                                                              str(course_grading_scheme)))
+    def create(self, name: str, course_grading_scheme: CourseGradingScheme):
+        self._cur.execute("INSERT INTO Course VALUES (%s, now(), %s, %s)",
+                          (self._id, name, str(course_grading_scheme)))
 
     def delete(self):
         self._cur.execute("DELETE FROM Course WHERE id = %s", (self._id,))
 
     def last_announcements(self, count: int, skip: int) -> List[repo.announcements.Announcement]:
         res = self._cur.request_fields_all_matches("CourseAnnouncement",
-                                                   "courseid = %s ORDER BY timecreated LIMIT %s OFFSET %s",
+                                                   "courseid = %s ORDER BY timecreated DESC LIMIT %s OFFSET %s",
                                                    (self._id, count, skip), "annid")
         return [repo.announcements.Announcement(self._cur, self._id, row[0]) for row in res]
 
-    def items(self) -> List[repo.courseitems.CourseItem]:
-        res = self._cur.request_fields_all_matches("CourseItem", "courseid = %s ORDER BY ordering, timecreated",
-                                                   (self._id,), "itemid")
-        return [repo.courseitems.CourseItem(self._cur, self._id, row[0]) for row in res]
+    def items(self) -> List[Union[repo.courseitems.MaterialCourseItem, repo.courseitems.GradeableCourseItem]]:
+        rows = self._cur.request_fields_all_matches("CourseItem", "courseid = %s ORDER BY ordering, timecreated",
+                                                    (self._id,), "itemid", "kind")
+        res = []
+        for itemid, kind_s in rows:
+            kind = repo.courseitems.CourseItemKind.from_string(kind_s)
+            if kind == repo.courseitems.CourseItemKind.Gradeable():
+                res.append(repo.courseitems.GradeableCourseItem(self._cur, self._id, itemid))
+            else:
+                res.append(repo.courseitems.MaterialCourseItem(self._cur, self._id, itemid))
+        return res
 
+    def course_items(self) -> List[repo.courseitems.CourseItem]:
+        rows = self._cur.request_fields_all_matches("CourseItem", "courseid = %s ORDER BY ordering, timecreated",
+                                                    (self._id,), "itemid")
+        return [repo.courseitems.CourseItem(self._cur, self._id, row[0]) for row in rows]
 
-def sql_select_course_feed(db_cursor, course_id):
-    db_cursor.execute(
+    def has_teacher(self, user: repo.accounts.Account) -> bool:
+        return self._cur.exists("TeacherAt", teacherlogin=user.login(), courseid=self._id)
+
+    def has_student(self, user: repo.accounts.Account) -> bool:
+        return self._cur.exists("StudentAt", studentlogin=user.login(), courseid=self._id)
+
+    def has_parent(self, user: repo.accounts.Account) -> bool:
+        return self._cur.exists("ParentOfAt", parentlogin=user.login(), courseid=self._id)
+
+    def all_students(self) -> List[repo.accounts.Account]:
+        return [repo.accounts.Account(row[0]) for row in
+                self._cur.request_fields_all_matches("StudentAt", "courseid = %s", (self._id,), "studentlogin")]
+
+    def all_teachers(self) -> List[repo.accounts.Account]:
+        return [repo.accounts.Account(row[0]) for row in
+                self._cur.request_fields_all_matches("TeacherAt", "courseid = %s", (self._id,), "teacherlogin")]
+
+    def all_parents(self) -> List[repo.accounts.Account]:
+        return [repo.accounts.Account(row[0]) for row in
+                self._cur.request_fields_all_matches("ParentOfAt", "courseid = %s", (self._id,),
+                                                     "DISTINCT parentlogin")]
+
+    def all_parents_of_students_pairs(self) -> List[Tuple[repo.accounts.Account, repo.accounts.Account]]:
         """
-        SELECT courseid AS cid, matid as postid, 'mat' as type, timeadded, author
-        FROM course_materials
-        WHERE courseid = %s
+        Returns a list of pairs of accounts where the first account is the student and the second one is their parent.
+        """
+        return [tuple(map(repo.accounts.Account, row)) for row in
+                self._cur.request_fields_all_matches("ParentOfAt", "courseid = %s", (self._id,),
+                                                     "studentlogin", "parentlogin")]
 
-        UNION
+    def all_parents_of_students(self, allow_no_parents: bool) -> \
+            List[Tuple[repo.accounts.Account, List[repo.accounts.Account]]]:
+        """
+        Returns a list of pairs: (student, list of parents).
+        If allow_no_parents is set, then all students are returned, some with empty lists of parents.
+        If allow_no_parents is not set, then only students that have parents in this course are returned.
+        """
 
-        SELECT courseid AS cid, assid as postid, 'ass' as type, timeadded, author
-        FROM course_assignments
-        WHERE courseid = %s
+        if allow_no_parents:
+            rows = self._cur.request_fields_all_matches(
+                "StudentAt s LEFT JOIN ParentOfAt p ON s.studentlogin = p.studentlogin",
+                "s.courseid = %s ORDER BY studentlogin", (self._id,), "s.studentlogin", "p.parentlogin"
+            )
+        else:
+            rows = self._cur.request_fields_all_matches("ParentOfAt", "courseid = %s ORDER BY studentlogin",
+                                                        (self._id,), "studentlogin", "parentlogin")
+        res = []
+        for stud, par in rows:
+            if par is None:
+                res.append((repo.accounts.Account(self._cur, stud), []))
+                continue
+            par = repo.accounts.Account(self._cur, par)
+            if res and res[-1][0].login() == stud:
+                res[-1].append(par)
+            else:
+                res.append((repo.accounts.Account(self._cur, stud), [par]))
+        return res
 
-        ORDER BY timeadded DESC
-        """,
-        (course_id, course_id),
-    )
-    return db_cursor.fetchall()
+    def add_student(self, acc: repo.accounts.Account):
+        self._cur.execute("INSERT INTO StudentAt VALUES (%s, %s)", (acc.login(), self._id))
+
+    def add_teacher(self, acc: repo.accounts.Account):
+        self._cur.execute("INSERT INTO TeacherAt VALUES (%s, %s)", (acc.login(), self._id))
+
+    def add_parent(self, parent: repo.accounts.Account, student: repo.accounts.Account):
+        self._cur.execute("INSERT INTO ParentOfAt VALUES (%s, %s, %s)", (parent.login(), student.login(), self._id))
+
+    def remove_parent(self, parent: repo.accounts.Account):
+        self._cur.delete("ParentOfAt", parentlogin=parent.login())
+
+    def remove_parent_of_student(self, parent: repo.accounts.Account, student: repo.accounts.Account):
+        self._cur.delete("ParentOfAt", parentlogin=parent.login(), studentlogin=student.login(), courseid=self._id)
+
+    def remove_parents_of(self, student: repo.accounts.Account):
+        self._cur.delete("ParentOfAt", studentlogin=student.login(), courseid=self._id)
+
+    def remove_student(self, student: repo.accounts.Account):
+        self._cur.delete("StudentAt", studentlogin=student.login(), courseid=self._id)
+
+    def remove_teacher(self, teacher: repo.accounts.Teacher):
+        self._cur.delete("TeacherAt", teacherlogin=teacher.login(), courseid=self._id)

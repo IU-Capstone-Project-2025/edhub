@@ -156,6 +156,14 @@ class CourseItem:
         itemid = cursor.fetchone()[0]
         return CourseItem(cursor, courseid, itemid)
 
+    @staticmethod
+    def polymorphic_init(cursor: Cursor, courseid: str, itemid: str) -> "Union[MaterialCourseItem, GradeableCourseItem]":
+        kind_s = cursor.request_field("CourseItem", "courseid = %s AND itemid = %s", (courseid, itemid), "kind")
+        kind = CourseItemKind.from_string(kind_s)
+        if kind == CourseItemKind.Gradeable():
+            return GradeableCourseItem(cursor, courseid, itemid)
+        return MaterialCourseItem(cursor, courseid, itemid)
+
 
 class CourseItemGradeCriterion:
     _cur: Cursor
