@@ -1,6 +1,6 @@
 from typing import Union, Any, Tuple, override
 from datetime import datetime
-from repo.database import Cursor, DBFieldChanges
+from orm.database import Cursor, DBFieldChanges
 
 
 class AssignmentSubmissionDTO:

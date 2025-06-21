@@ -1,7 +1,7 @@
 from typing import Tuple, Any, List, Union
 from datetime import datetime
-from repo.database import Cursor, DBFieldChanges
-import repo.submissions
+from orm.database import Cursor, DBFieldChanges
+import orm.submissions
 
 
 class CourseItemKind:
@@ -288,10 +288,10 @@ class GradeableCourseItem:
                        (courseid, itemid, maxpoints, assignment))
         return GradeableCourseItem(cursor, courseid, itemid)
 
-    def all_submissions(self) -> List[repo.submissions.AssignmentSubmission]:
+    def all_submissions(self) -> List[orm.submissions.AssignmentSubmission]:
         emails = self._cur.request_fields_all_matches("AssignmentSubmission", "courseid = %s AND itemid = %s",
                                                       (self._courseid, self._itemid), "submittedby")
-        return [repo.submissions.AssignmentSubmission(self._cur, self._courseid, self._itemid, row[0])
+        return [orm.submissions.AssignmentSubmission(self._cur, self._courseid, self._itemid, row[0])
                 for row in emails]
 
 

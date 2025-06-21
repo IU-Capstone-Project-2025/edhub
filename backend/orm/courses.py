@@ -1,9 +1,9 @@
 from typing import Any, List, Union, Tuple
 from datetime import datetime
-from repo.database import Cursor, DBFieldChanges
-import repo.accounts
-import repo.announcements
-import repo.courseitems
+from orm.database import Cursor, DBFieldChanges
+import orm.accounts
+import orm.announcements
+import orm.courseitems
 
 
 class CourseGradingScheme:
@@ -118,61 +118,61 @@ class Course:
     def delete(self):
         self._cur.execute("DELETE FROM Course WHERE id = %s", (self._id,))
 
-    def last_announcements(self, count: int, skip: int) -> List[repo.announcements.Announcement]:
+    def last_announcements(self, count: int, skip: int) -> List[orm.announcements.Announcement]:
         res = self._cur.request_fields_all_matches("CourseAnnouncement",
                                                    "courseid = %s ORDER BY timecreated DESC LIMIT %s OFFSET %s",
                                                    (self._id, count, skip), "annid")
-        return [repo.announcements.Announcement(self._cur, self._id, row[0]) for row in res]
+        return [orm.announcements.Announcement(self._cur, self._id, row[0]) for row in res]
 
-    def items(self) -> List[Union[repo.courseitems.MaterialCourseItem, repo.courseitems.GradeableCourseItem]]:
+    def items(self) -> List[Union[orm.courseitems.MaterialCourseItem, orm.courseitems.GradeableCourseItem]]:
         rows = self._cur.request_fields_all_matches("CourseItem", "courseid = %s ORDER BY ordering, timecreated",
                                                     (self._id,), "itemid", "kind")
         res = []
         for itemid, kind_s in rows:
-            kind = repo.courseitems.CourseItemKind.from_string(kind_s)
-            if kind == repo.courseitems.CourseItemKind.Gradeable():
-                res.append(repo.courseitems.GradeableCourseItem(self._cur, self._id, itemid))
+            kind = orm.courseitems.CourseItemKind.from_string(kind_s)
+            if kind == orm.courseitems.CourseItemKind.Gradeable():
+                res.append(orm.courseitems.GradeableCourseItem(self._cur, self._id, itemid))
             else:
-                res.append(repo.courseitems.MaterialCourseItem(self._cur, self._id, itemid))
+                res.append(orm.courseitems.MaterialCourseItem(self._cur, self._id, itemid))
         return res
 
-    def course_items(self) -> List[repo.courseitems.CourseItem]:
+    def course_items(self) -> List[orm.courseitems.CourseItem]:
         rows = self._cur.request_fields_all_matches("CourseItem", "courseid = %s ORDER BY ordering, timecreated",
                                                     (self._id,), "itemid")
-        return [repo.courseitems.CourseItem(self._cur, self._id, row[0]) for row in rows]
+        return [orm.courseitems.CourseItem(self._cur, self._id, row[0]) for row in rows]
 
-    def has_teacher(self, user: repo.accounts.Account) -> bool:
+    def has_teacher(self, user: orm.accounts.Account) -> bool:
         return self._cur.exists("TeacherAt", teacherlogin=user.login(), courseid=self._id)
 
-    def has_student(self, user: repo.accounts.Account) -> bool:
+    def has_student(self, user: orm.accounts.Account) -> bool:
         return self._cur.exists("StudentAt", studentlogin=user.login(), courseid=self._id)
 
-    def has_parent(self, user: repo.accounts.Account) -> bool:
+    def has_parent(self, user: orm.accounts.Account) -> bool:
         return self._cur.exists("ParentOfAt", parentlogin=user.login(), courseid=self._id)
 
-    def all_students(self) -> List[repo.accounts.Account]:
-        return [repo.accounts.Account(row[0]) for row in
+    def all_students(self) -> List[orm.accounts.Account]:
+        return [orm.accounts.Account(row[0]) for row in
                 self._cur.request_fields_all_matches("StudentAt", "courseid = %s", (self._id,), "studentlogin")]
 
-    def all_teachers(self) -> List[repo.accounts.Account]:
-        return [repo.accounts.Account(row[0]) for row in
+    def all_teachers(self) -> List[orm.accounts.Account]:
+        return [orm.accounts.Account(row[0]) for row in
                 self._cur.request_fields_all_matches("TeacherAt", "courseid = %s", (self._id,), "teacherlogin")]
 
-    def all_parents(self) -> List[repo.accounts.Account]:
-        return [repo.accounts.Account(row[0]) for row in
+    def all_parents(self) -> List[orm.accounts.Account]:
+        return [orm.accounts.Account(row[0]) for row in
                 self._cur.request_fields_all_matches("ParentOfAt", "courseid = %s", (self._id,),
                                                      "DISTINCT parentlogin")]
 
-    def all_parents_of_students_pairs(self) -> List[Tuple[repo.accounts.Account, repo.accounts.Account]]:
+    def all_parents_of_students_pairs(self) -> List[Tuple[orm.accounts.Account, orm.accounts.Account]]:
         """
         Returns a list of pairs of accounts where the first account is the student and the second one is their parent.
         """
-        return [tuple(map(repo.accounts.Account, row)) for row in
+        return [tuple(map(orm.accounts.Account, row)) for row in
                 self._cur.request_fields_all_matches("ParentOfAt", "courseid = %s", (self._id,),
                                                      "studentlogin", "parentlogin")]
 
     def all_parents_of_students(self, allow_no_parents: bool) -> \
-            List[Tuple[repo.accounts.Account, List[repo.accounts.Account]]]:
+            List[Tuple[orm.accounts.Account, List[orm.accounts.Account]]]:
         """
         Returns a list of pairs: (student, list of parents).
         If allow_no_parents is set, then all students are returned, some with empty lists of parents.
@@ -190,37 +190,37 @@ class Course:
         res = []
         for stud, par in rows:
             if par is None:
-                res.append((repo.accounts.Account(self._cur, stud), []))
+                res.append((orm.accounts.Account(self._cur, stud), []))
                 continue
-            par = repo.accounts.Account(self._cur, par)
+            par = orm.accounts.Account(self._cur, par)
             if res and res[-1][0].login() == stud:
                 res[-1].append(par)
             else:
-                res.append((repo.accounts.Account(self._cur, stud), [par]))
+                res.append((orm.accounts.Account(self._cur, stud), [par]))
         return res
 
-    def add_student(self, acc: repo.accounts.Account):
+    def add_student(self, acc: orm.accounts.Account):
         self._cur.execute("INSERT INTO StudentAt VALUES (%s, %s)", (acc.login(), self._id))
 
-    def add_teacher(self, acc: repo.accounts.Account):
+    def add_teacher(self, acc: orm.accounts.Account):
         self._cur.execute("INSERT INTO TeacherAt VALUES (%s, %s)", (acc.login(), self._id))
 
-    def add_parent(self, parent: repo.accounts.Account, student: repo.accounts.Account):
+    def add_parent(self, parent: orm.accounts.Account, student: orm.accounts.Account):
         self._cur.execute("INSERT INTO ParentOfAt VALUES (%s, %s, %s)", (parent.login(), student.login(), self._id))
 
-    def remove_parent(self, parent: repo.accounts.Account):
+    def remove_parent(self, parent: orm.accounts.Account):
         self._cur.delete("ParentOfAt", parentlogin=parent.login())
 
-    def remove_parent_of_student(self, parent: repo.accounts.Account, student: repo.accounts.Account):
+    def remove_parent_of_student(self, parent: orm.accounts.Account, student: orm.accounts.Account):
         self._cur.delete("ParentOfAt", parentlogin=parent.login(), studentlogin=student.login(), courseid=self._id)
 
-    def remove_parents_of(self, student: repo.accounts.Account):
+    def remove_parents_of(self, student: orm.accounts.Account):
         self._cur.delete("ParentOfAt", studentlogin=student.login(), courseid=self._id)
 
-    def remove_student(self, student: repo.accounts.Account):
+    def remove_student(self, student: orm.accounts.Account):
         self._cur.delete("StudentAt", studentlogin=student.login(), courseid=self._id)
 
-    def remove_teacher(self, teacher: repo.accounts.Teacher):
+    def remove_teacher(self, teacher: orm.accounts.Teacher):
         self._cur.delete("TeacherAt", teacherlogin=teacher.login(), courseid=self._id)
 
     def teacher_count(self) -> int:

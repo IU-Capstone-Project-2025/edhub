@@ -1,7 +1,7 @@
 from typing import Any, Union
 from datetime import datetime
 from database import Cursor
-import repo.courses
+import orm.courses
 
 
 class AnnouncementDTO:
@@ -45,17 +45,17 @@ class Announcement:
     def get(self) -> AnnouncementDTO:
         return AnnouncementDTO(*self._request_fields("courseid", "annid", "author", "timecreated", "title", "content"))
 
-    def course(self) -> repo.courses.Course:
-        return repo.courses.Course(self._cur, self._courseid)
+    def course(self) -> orm.courses.Course:
+        return orm.courses.Course(self._cur, self._courseid)
 
     def announcement_id(self) -> str:
         return self._annid
 
-    def author(self) -> Union[None, repo.accounts.Account]:
+    def author(self) -> Union[None, orm.accounts.Account]:
         login = self._requeset_field("author")
         if login is None:
             return None
-        return repo.courses.Account(self._cur, login)
+        return orm.courses.Account(self._cur, login)
 
     def time_created(self) -> datetime:
         return self._request_field("timecreated")

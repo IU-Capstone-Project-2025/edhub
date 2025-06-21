@@ -1,7 +1,7 @@
 from typing import Union, Any, List, Tuple
-from repo.database import Cursor, DBFieldChanges
+from orm.database import Cursor, DBFieldChanges
 from datetime import datetime
-import repo.courses
+import orm.courses
 
 
 class AccountDTO:
@@ -103,22 +103,22 @@ class Account:
         self._cur.execute("INSERT INTO Account VALUES (%s, %s, %s, now(), '', null, %s, %s);",
                           (self._login, passwordhash, publicname, institutional, verified))
 
-    def get_all_courses(self) -> List[repo.courses.Course]:
+    def get_all_courses(self) -> List[orm.courses.Course]:
         self._cur.execute("""SELECT courseid FROM StudentAt WHERE studentlogin = %s
                           UNION SELECT courseid FROM TeacherAt WHERE teacherlogin = %s
                           UNION SELECT courseid FROM ParentOfAt WHERE parentlogin = %s""",
                           (self._login,) * 3)
-        return [repo.courses.Course(self._cur, row[0]) for row in self._cur.fetchall()]
+        return [orm.courses.Course(self._cur, row[0]) for row in self._cur.fetchall()]
 
-    def student_at_courses(self) -> List[repo.courses.Course]:
-        return [repo.courses.Course(self._cur, row[0]) for row in
+    def student_at_courses(self) -> List[orm.courses.Course]:
+        return [orm.courses.Course(self._cur, row[0]) for row in
                 self._cur.request_fields_all_matches("StudentAt", "studentlogin = %s", (self._login,), "courseid")]
 
-    def teacher_at_courses(self) -> List[repo.courses.Course]:
-        return [repo.courses.Course(self._cur, row[0]) for row in
+    def teacher_at_courses(self) -> List[orm.courses.Course]:
+        return [orm.courses.Course(self._cur, row[0]) for row in
                 self._cur.request_fields_all_matches("TeacherAt", "studentlogin = %s", (self._login,), "courseid")]
 
-    def parent_at_courses_of_students(self) -> "List[Tuple[repo.courses.Course, List[Account]]]":
+    def parent_at_courses_of_students(self) -> "List[Tuple[orm.courses.Course, List[Account]]]":
         """
         Returns a list of all courses in which this user is a parent of some student(s).
         The children are returned alongside the course in which they are enrolled.
@@ -130,18 +130,18 @@ class Account:
         for cid, child in pairs:
             child_acc = Account(self._cur, child)
             if not res or res[-1][0].id() != cid:
-                res.append((repo.courses.Course(self._cur, cid), [child_acc]))
+                res.append((orm.courses.Course(self._cur, cid), [child_acc]))
             else:
                 res[-1][1].append(child_acc)
         return res
 
-    def parent_at_courses(self) -> List[repo.courses.Course]:
+    def parent_at_courses(self) -> List[orm.courses.Course]:
         """
         Returns a list of all courses in which this user is a parent of some student(s).
         The children are not returned.
         """
         res = self._cur.request_fields_all_matches("ParentOfAt", "parentlogin = %s", (self._login,), "DISTINCT courseid")
-        return [repo.courses.Course(self._cur, row[0]) for row in res]
+        return [orm.courses.Course(self._cur, row[0]) for row in res]
 
     def delete(self):
         self._cur.delete("Account", login=self._login)
