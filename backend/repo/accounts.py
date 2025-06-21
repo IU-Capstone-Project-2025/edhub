@@ -145,13 +145,3 @@ class Account:
 
     def delete(self):
         self._cur.delete("Account", login=self._login)
-
-
-"""
-def sql_select_single_teacher_courses(db_cursor, user_email):
-    db_cursor.execute(
-        "SELECT t.courseid FROM teaches t WHERE t.email = %s AND (SELECT COUNT(*) FROM teaches WHERE courseid = t.courseid) = 1",
-        (user_email,),
-    )
-    return [row[0] for row in db_cursor.fetchall()]
-"""
