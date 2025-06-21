@@ -41,9 +41,14 @@ def invite_student(db_conn, db_cursor, course_id: str, student_email: str, teach
     return {"success": True}
 
 
-def remove_student(db_conn, db_cursor, course_id: str, student_email: str, teacher_email: str):
+def remove_student(db_conn, db_cursor, course_id: str, student_email: str, user_email: str):
     # checking constraints
-    constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
+    if not (
+        constraints.check_teacher_access(db_cursor, user_email, course_id) or
+        (constraints.check_student_access(db_cursor, user_email, course_id) and student_email == user_email)
+    ):
+        raise HTTPException(status_code=403, detail="User does not have permissions to delete this student")
+    
 
     # check if the student is enrolled to course
     if not constraints.check_student_access(db_cursor, student_email, course_id):
