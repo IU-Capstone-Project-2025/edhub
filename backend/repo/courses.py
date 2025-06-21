@@ -222,3 +222,6 @@ class Course:
 
     def remove_teacher(self, teacher: repo.accounts.Teacher):
         self._cur.delete("TeacherAt", teacherlogin=teacher.login(), courseid=self._id)
+
+    def teacher_count(self) -> int:
+        return self._cur.request_field("TeacherAt", "courseid = %s", (self._id), "count(*)")

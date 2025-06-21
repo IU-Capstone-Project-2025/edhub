@@ -1,6 +1,7 @@
 from typing import Tuple, Any, List, Union
 from datetime import datetime
 from repo.database import Cursor, DBFieldChanges
+import repo.submissions
 
 
 class CourseItemKind:
@@ -286,6 +287,12 @@ class GradeableCourseItem:
         cursor.execute("INSERT INTO GradeableCourseItem VALUES (%s, %s, %s, %s)",
                        (courseid, itemid, maxpoints, assignment))
         return GradeableCourseItem(cursor, courseid, itemid)
+
+    def all_submissions(self) -> List[repo.submissions.AssignmentSubmission]:
+        emails = self._cur.request_fields_all_matches("AssignmentSubmission", "courseid = %s AND itemid = %s",
+                                                      (self._courseid, self._itemid), "submittedby")
+        return [repo.submissions.AssignmentSubmission(self._cur, self._courseid, self._itemid, row[0])
+                for row in emails]
 
 
 class MaterialCourseItem:
