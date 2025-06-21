@@ -79,6 +79,27 @@ def login(db_cursor, user):
     return {"email": user.email, "access_token": access_token}
 
 
+def change_password(db_conn, db_cursor, user):
+
+    result = repo_users.sql_select_passwordhash(db_cursor, user.email)
+
+    # checking whether such user exists
+    if not result:
+        raise HTTPException(status_code=401, detail="Invalid user email")
+
+    # checking password
+    hashed_password = result[0]
+    if not pwd_hasher.verify(user.password, hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid password")
+    
+    # changing the password to a new one
+    hashed_new_password = pwd_hasher.hash(user.new_password)
+    repo_users.sql_update_password(db_cursor, user.email, hashed_new_password)
+    db_conn.commit()
+
+    return {"success": True}
+
+
 def remove_user(db_conn, db_cursor, user_email: str):
 
     # checking constraints

@@ -6,6 +6,7 @@ from logic.users import (
     get_user_role as logic_get_user_role,
     create_user as logic_create_user,
     login as logic_login,
+    change_password as logic_change_password,
     remove_user as logic_remove_user,
 )
 
@@ -47,7 +48,23 @@ async def login(user: json_classes.UserLogin):
         return logic_login(db_cursor, user)
 
 
-# WARNING: update if new elements appear
+@router.post("/logout", response_model=json_classes.Success)
+async def logout(user_email: str = Depends(get_current_user)):
+    """
+    Log out from the current device.
+    """
+    return {"success": True}
+
+
+@router.post("/change_password", response_model=json_classes.Success)
+async def change_password(user: json_classes.UserNewPassword):
+    """
+    Change the user password to a new one.
+    """
+    with get_db() as (db_conn, db_cursor):
+        return logic_change_password(db_conn, db_cursor, user)
+
+
 @router.post("/remove_user", response_model=json_classes.Success)
 async def remove_user(user_email: str = Depends(get_current_user)):
     """
