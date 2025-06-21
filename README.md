@@ -19,10 +19,10 @@ git clone https://github.com/IU-Capstone-Project-2025/edhub.git
 cd edhub
 
 # Build and start containers
-docker-compose up --build
+docker compose up --build
 
 # To run in detached mode:
-# docker-compose up --build -d
+# docker compose up --build -d
 ```
 
 ### Services Overview
