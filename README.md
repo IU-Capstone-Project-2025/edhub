@@ -39,14 +39,14 @@ You can access the web version of API documentation at http://localhost:8000/doc
 ### Maintenance Commands
 ```bash
 # Stop all services
-docker-compose down
+docker compose down
 
 # Stop and remove volumes
-docker-compose down -v
+docker compose down -v
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Rebuild from scratch
-docker-compose down -v && docker-compose up --build
+docker compose down -v && docker compose up --build
 ```
