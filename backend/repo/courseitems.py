@@ -5,9 +5,8 @@ from repo.database import Cursor, DBFieldChanges
 
 class CourseItemKind:
     _MATERIAL = 0
-    _ASSIGNMENT = 1
-    _CUSTOM_GRADE = 2
-    _TEXT = ["material", "assignment", "customgrade"]
+    _GRADEABLE = 1
+    _TEXT = ["material", "gradeable"]
 
     _value: int
 
@@ -32,12 +31,8 @@ class CourseItemKind:
         return CourseItemKind(CourseItemKind._MATERIAL)
 
     @staticmethod
-    def Assignment():
-        return CourseItemKind(CourseItemKind._ASSIGNMENT)
-
-    @staticmethod
-    def CustomGrade():
-        return CourseItemKind(CourseItemKind._CUSTOM_GRADE)
+    def Gradeable():
+        return CourseItemKind(CourseItemKind._GRADEABLE)
 
 
 class CourseItemDTO:
@@ -60,7 +55,7 @@ class CourseItemDTO:
         self.comment = comment
 
 
-class AssignmentCriterionDTO:
+class CourseItemGradeCriterionDTO:
     courseid: str
     itemid: str
     points: int
@@ -73,22 +68,15 @@ class AssignmentCriterionDTO:
         self.comment = comment
 
 
-class AssignmentCourseItemDTO:
+class GradeableCourseItemDTO:
     maxpoints: Union[None, int]
+    assignment: bool
     courseitem: CourseItemDTO
 
-    def __init__(self, courseitem: CourseItemDTO, maxpoints: Union[None, int]):
+    def __init__(self, courseitem: CourseItemDTO, maxpoints: Union[None, int], assignment: bool):
         self.courseitem = courseitem
         self.maxpoints = maxpoints
-
-
-class CustomGradeCourseItemDTO:
-    maxpoints: Union[None, int]
-    courseitem: CourseItemDTO
-
-    def __init__(self, courseitem: CourseItemDTO, maxpoints: Union[None, int]):
-        self.courseitem = courseitem
-        self.maxpoints = maxpoints
+        self.assignment = assignment
 
 
 class CourseItem:
@@ -169,13 +157,13 @@ class CourseItem:
         return CourseItem(cursor, courseid, itemid)
 
 
-class AssignmentCriterion:
+class CourseItemGradeCriterion:
     _cur: Cursor
     _courseid: str
     _itemid: str
     _points: int
 
-    _AFTER_WHERE = "courseid = %s AND itemid = %s AND points = %s"
+    _PRIMARY_KEY_SQL = "courseid = %s AND itemid = %s AND points = %s"
 
     def __init__(self, cursor: Cursor, course_id: str, item_id: str, points: int):
         self._cur = cursor
@@ -184,14 +172,14 @@ class AssignmentCriterion:
         self._points = points
 
     def request_fields(self, *fields: str) -> tuple:
-        return self._cur.request_fields_one_match("AssignmentCriterion", AssignmentCriterion._AFTER_WHERE,
+        return self._cur.request_fields_one_match("CourseItemGradeCriterion", CourseItemGradeCriterion._PRIMARY_KEY_SQL,
                                                   (self._courseid, self._itemid, self._points), *fields)
 
     def request_field(self, field: str) -> Any:
-        return request_fields(field)[0]
+        return self.request_fields(field)[0]
 
-    def get(self) -> AssignmentCriterionDTO:
-        return AssignmentCriterionDTO(*self.request_fields("courseid", "itemid", "points", "comment"))
+    def get(self) -> CourseItemGradeCriterionDTO:
+        return CourseItemGradeCriterionDTO(*self.request_fields("courseid", "itemid", "points", "comment"))
 
     def courseid(self) -> str:
         return self.request_field("courseid")
@@ -206,24 +194,27 @@ class AssignmentCriterion:
         return self.request_field("comment")
 
     def set_comment(self, new_comment: str):
-        self._cur.execute(f"UPDATE AssignmentCriterion SET comment = %s WHERE {AssignmentCriterion._AFTER_WHERE}",
+        self._cur.execute(f"UPDATE CourseItemGradeCriterion SET comment = %s WHERE {CourseItemGradeCriterion._PRIMARY_KEY_SQL}",
                           (new_comment, self._courseid, self._itemid, self._points))
 
 
-class AssignmentCourseItem:
+class GradeableCourseItem:
     _cur: Cursor
     _courseid: str
     _itemid: str
 
-    class AssignmentCourseItemChanges(DBFieldChanges):
+    class GradeableCourseItemChanges(DBFieldChanges):
         def __init__(self):
             super().__init__()
 
         def change_maxpoints(self, new_value: Union[None, int]):
             return self.change_any_field("maxpoints", new_value)
 
-        def assignment_course_item_compile_update(self, courseid: str, itemid: str) -> Tuple[str, tuple]:
-            return self.compile_update("AssignmentCourseItem", "courseid = %s AND itemid = %s", (courseid, itemid))
+        def change_is_assignment(self, new_value: bool):
+            return self.change_any_field("assignment", new_value)
+
+        def gradeable_course_item_compile_update(self, courseid: str, itemid: str) -> Tuple[str, tuple]:
+            return self.compile_update("GradeableCourseItem", "courseid = %s AND itemid = %s", (courseid, itemid))
 
     def __init__(self, cursor: Cursor, course_id: str, item_id: str):
         self._cur = cursor
@@ -231,34 +222,37 @@ class AssignmentCourseItem:
         self._itemid = item_id
 
     def exists(self) -> bool:
-        return self._cur.exists("AssignmentCourseItem", courseid=self._courseid, itemid=self._itemid)
+        return self._cur.exists("GradeableCourseItem", courseid=self._courseid, itemid=self._itemid)
 
     def course_item(self) -> CourseItem:
         return CourseItem(self._cur, self._courseid, self._itemid)
 
     def request_fields(self, *fields: str) -> tuple:
-        return self._cur.request_fields_one_match("AssignmentCourseItem", "courseid = %s AND itemid = %s",
+        return self._cur.request_fields_one_match("GradeableCourseItem", "courseid = %s AND itemid = %s",
                                                   (self._courseid, self._itemid), *fields)
 
     def request_field(self, field: str) -> Any:
         return self.request_fields(field)[0]
 
-    def get(self) -> AssignmentCourseItemDTO:
-        return AssignmentCourseItemDTO(self._course_item.get(), self.maxpoints())
+    def get(self) -> GradeableCourseItemDTO:
+        return GradeableCourseItemDTO(self._course_item.get(), *self.request_fields("maxpoints", "assignment"))
 
     def maxpoints(self) -> Union[None, int]:
         return self.request_field("maxpoints")
 
-    def set(self, changes: AssignmentCourseItemChanges):
-        self._cur.execute(*changes.assignment_course_item_compile_update(self._courseid, self._itemid))
+    def assignment(self) -> bool:
+        return self.request_field("assignment")
+
+    def set(self, changes: GradeableCourseItemChanges):
+        self._cur.execute(*changes.gradeable_course_item_compile_update(self._courseid, self._itemid))
 
     def delete(self):
         self.course_item().delete()
 
-    def criteria(self) -> List[AssignmentCriterion]:
-        rows = self._cur.request_fields_all_matches("AssignmentCriterion", "courseid = %s AND itemid = %s",
+    def criteria(self) -> List[CourseItemGradeCriterion]:
+        rows = self._cur.request_fields_all_matches("CourseItemGradeCriterion", "courseid = %s AND itemid = %s",
                                                     (self._courseid, self._itemid), "points")
-        return [AssignmentCriterion(self._cur, self._courseid, self._itemid, row[0]) for row in rows]
+        return [CourseItemGradeCriterion(self._cur, self._courseid, self._itemid, row[0]) for row in rows]
 
     def add_criteria(self, criteria: List[Tuple[int, str]]):
         if not criteria:
@@ -266,11 +260,11 @@ class AssignmentCourseItem:
         values = []
         for points, comment in criteria:
             values.extend([self._courseid, self._itemid, points, comment])
-        self._cur.execute(f"INSERT INTO AssignmentCriterion VALUES {", ".join(("(%s, %s, %s, %s)",) * len(criteria))}",
+        self._cur.execute(f"INSERT INTO CourseItemGradeCriterion VALUES {", ".join(("(%s, %s, %s, %s)",) * len(criteria))}",
                           tuple(values))
 
     def clear_criteria(self):
-        self._cur.delete("AssignmentCriterion", courseid=self._courseid, itemid=self._itemid)
+        self._cur.delete("CourseItemGradeCriterion", courseid=self._courseid, itemid=self._itemid)
 
     def set_criteria(self, criteria: List[Tuple[int, str]]):
         self.clear_criteria()
@@ -278,11 +272,12 @@ class AssignmentCourseItem:
 
     @staticmethod
     def create(cursor: Cursor, courseid: str, title: str, comment: str,
-               maxpoints: Union[None, int]) -> "AssignmentCourseItem":
-        courseitem = CourseItem.create(cursor, courseid, title, comment, CourseItemKind.Assignment())
+               maxpoints: Union[None, int], assignment: bool) -> "GradeableCourseItem":
+        courseitem = CourseItem.create(cursor, courseid, title, comment, CourseItemKind.Gradeable())
         itemid = courseitem.itemid()
-        cursor.execute("INSERT INTO AssignmentCourseItem VALUES (%s, %s, %s)", (courseid, itemid, maxpoints))
-        return AssignmentCourseItem(cursor, courseid, itemid)
+        cursor.execute("INSERT INTO GradeableCourseItem VALUES (%s, %s, %s, %s)",
+                       (courseid, itemid, maxpoints, assignment))
+        return GradeableCourseItem(cursor, courseid, itemid)
 
 
 class MaterialCourseItem:
@@ -305,57 +300,3 @@ class MaterialCourseItem:
     def create(cursor: Cursor, course_id: str, title: str, comment: str):
         courseitem = CourseItem.create(cursor, course_id, title, comment, CourseItemKind.Material())
         return MaterialCourseItem(cursor, course_id, courseitem.itemid())
-
-
-class CustomGradeCourseItem:
-    _cur: Cursor
-    _courseid: str
-    _itemid: str
-
-    class CustomGradeCourseItemChanges(DBFieldChanges):
-        def __init__(self):
-            super().__init__()
-
-        def change_maxpoints(self, new_value: Union[None, int]):
-            return self.change_any_field("maxpoints", new_value)
-
-        def course_grade_course_item_compile_update(self, courseid: str, itemid: str) -> Tuple[str, tuple]:
-            return self.compile_update("CustomGradeCourseItem", "courseid = %s AND itemid = %s", (courseid, itemid))
-
-    def __init__(self, cursor: Cursor, course_id: str, item_id: str):
-        self._cur = cursor
-        self._courseid = course_id
-        self._itemid = item_id
-
-    def exists(self) -> bool:
-        return self._cur.exists("CustomGradeCourseItem", courseid=self._courseid, itemid=self._itemid)
-
-    def course_item(self) -> CourseItem:
-        return CourseItem(self._cur, self._courseid, self._itemid)
-
-    def request_fields(self, *fields: str) -> tuple:
-        return self._cur.request_fields_one_match("CustomGradeCourseItem", "courseid = %s AND itemid = %s",
-                                                  (self._courseid, self._itemid), *fields)
-
-    def request_field(self, field: str) -> Any:
-        return self.request_fields(field)[0]
-
-    def get(self) -> CustomGradeCourseItemDTO:
-        return CustomGradeCourseItemDTO(self._course_item.get(), self.maxpoints())
-
-    def maxpoints(self) -> Union[None, int]:
-        return self.request_field("maxpoints")
-
-    def set(self, changes: CustomGradeCourseItemChanges):
-        self._cur.execute(*changes.course_grade_course_item_compile_update(self._courseid, self._itemid))
-
-    def delete(self):
-        self.course_item().delete()
-
-    @staticmethod
-    def create(cursor: Cursor, courseid: str, title: str, comment: str,
-               maxpoints: Union[None, int]) -> "CustomGradeCourseItem":
-        courseitem = CourseItem.create(cursor, courseid, title, comment, CourseItemKind.CustomGrade())
-        itemid = courseitem.itemid()
-        cursor.execute("INSERT INTO CustomGradeCourseItem VALUES (%s, %s, %s)", (courseid, itemid, maxpoints))
-        return CustomGradeCourseItem(cursor, courseid, itemid)

@@ -21,21 +21,36 @@ CREATE TABLE Account(
     verified bool NOT NULL DEFAULT 'f'
 );
 
-CREATE TYPE GradingScheme AS ENUM('average', 'sum');
+CREATE TYPE GradingScheme AS ENUM('disabled', 'average', 'sum', 'manual');
 
 CREATE TABLE Course(
     id uuid PRIMARY KEY,
     timecreated timestamp NOT NULL,
     name varchar(128) NOT NULL,
-    totalgradeenabled bool NOT NULL DEFAULT 'f',
-    coursegradingscheme GradingScheme NOT NULL
-    -- uses CourseGradeThresholds if coursegradingscheme = 'sum'
+    coursegradingscheme GradingScheme NOT NULL DEFAULT 'disabled'
+    -- uses CourseGradeThresholds if there are any and coursegradingscheme IN ('average', 'sum')
+    -- uses CourseManualGrade and CourseGradeCriterion if coursegradingscheme = 'manual'
 );
 
 CREATE TABLE CourseGradeThresholds(
     courseid uuid NOT NULL REFERENCES Course ON DELETE CASCADE,
     threshold int NOT NULL CHECK (threshold >= 0),
-    grade varchar(32) NOT NULL
+    grade varchar(32) NOT NULL,
+    PRIMARY KEY (courseid, grade)
+);
+
+CREATE TABLE CourseManualGrade(
+    courseid uuid NOT NULL REFERENCES Course ON DELETE CASCADE,
+    studentlogin varchar(128) NOT NULL REFERENCES Account ON DELETE CASCADE,
+    grade varchar(32) NOT NULL,
+    PRIMARY KEY (courseid, studentlogin)
+);
+
+CREATE TABLE CourseGradeCriterion(
+    courseid uuid NOT NULL REFERENCES Course ON DELETE CASCADE,
+    grade varchar(128) NOT NULL,
+    comment text NOT NULL CHECK (length(comment) <= 1024),
+    PRIMARY KEY (courseid, grade)
 );
 
 CREATE TABLE CourseAnnouncement(
@@ -48,7 +63,7 @@ CREATE TABLE CourseAnnouncement(
     PRIMARY KEY (courseid, annid)
 );
 
-CREATE TYPE CourseItemKind AS ENUM('material', 'assignment', 'customgrade');
+CREATE TYPE CourseItemKind AS ENUM('material', 'gradeable');
 
 CREATE TABLE CourseItem(
     courseid uuid NOT NULL REFERENCES Course ON DELETE CASCADE,
@@ -63,29 +78,22 @@ CREATE TABLE CourseItem(
 
 -- MaterialCourseItem would have nothing extra, so not defined
 
-CREATE TABLE AssignmentCourseItem( -- extends CourseItem
+CREATE TABLE GradeableCourseItem( -- extends CourseItem
     courseid uuid NOT NULL,
     itemid uuid NOT NULL,
     maxpoints int NULL CHECK (maxpoints IS NULL OR maxpoints >= 0),
+    assignment bool NOT NULL,  -- true if accepts submissions
     PRIMARY KEY (courseid, itemid),
     FOREIGN KEY (courseid, itemid) REFERENCES CourseItem ON DELETE CASCADE
 );
 
-CREATE TABLE AssignmentCriterion(
+CREATE TABLE CourseItemGradeCriterion(
     courseid uuid NOT NULL,
     itemid uuid NOT NULL,
     points int NOT NULL, -- sorted by this
     comment text NOT NULL CHECK (length(comment) <= 200),
     PRIMARY KEY (courseid, itemid, points),
-    FOREIGN KEY (courseid, itemid) REFERENCES AssignmentCourseItem
-);
-
-CREATE TABLE CustomGradeCourseItem( -- extends CourseItem
-    courseid uuid NOT NULL,
-    itemid uuid NOT NULL,
-    maxpoints int NULL CHECK (maxpoints IS NULL OR maxpoints >= 0),
-    PRIMARY KEY (courseid, itemid),
-    FOREIGN KEY (courseid, itemid) REFERENCES CourseItem ON DELETE CASCADE
+    FOREIGN KEY (courseid, itemid) REFERENCES GradeableCourseItem ON DELETE CASCADE
 );
 
 CREATE TABLE CourseItemAttachment(
@@ -97,25 +105,27 @@ CREATE TABLE CourseItemAttachment(
 
 CREATE TABLE AssignmentSubmission(
     courseid uuid NOT NULL REFERENCES Course ON DELETE CASCADE,
-    itemid uuid NOT NULL REFERENCES AssignmentCourseItem ON DELETE CASCADE,
+    itemid uuid NOT NULL,
     submittedby varchar(128) NOT NULL REFERENCES Account ON DELETE CASCADE,
     timecreated timestamp NOT NULL,
     timemodified timestamp NOT NULL,
     comment text NOT NULL CHECK (length(comment) <= 65536),
-    PRIMARY KEY (courseid, itemid, submittedby)
+    PRIMARY KEY (courseid, itemid, submittedby),
+    FOREIGN KEY (courseid, itemid) REFERENCES GradeableCourseItem ON DELETE CASCADE
 );
 
-CREATE TABLE AssignmentGrade(
+CREATE TABLE CourseItemGrade(
     courseid uuid NOT NULL REFERENCES Course ON DELETE CASCADE,
-    itemid uuid NOT NULL REFERENCES AssignmentCourseItem ON DELETE CASCADE,
-    submittedby varchar(128) NOT NULL REFERENCES Account ON DELETE CASCADE,
+    itemid uuid NOT NULL,
+    studentlogin varchar(128) NOT NULL REFERENCES Account ON DELETE CASCADE,
     grade int NOT NULL,
     gradedby varchar(128) NULL REFERENCES Account ON DELETE SET NULL,
     timecreated timestamp NOT NULL,
-    -- gradestale bool = AssignmentGrade.timecreated < AssignmentSubmission.timemodified
-    comment text NULL CHECK (comment IS NULL OR length(comment) <= 1024),
-    PRIMARY KEY (courseid, itemid, submittedby),
-    FOREIGN KEY (courseid, itemid, submittedby) REFERENCES AssignmentSubmission ON DELETE CASCADE
+    -- gradestale bool = ItemGrade.timecreated < AssignmentSubmission.timemodified
+    comment text NOT NULL CHECK (length(comment) <= 1024),
+    PRIMARY KEY (courseid, itemid, studentlogin),
+    FOREIGN KEY (courseid, itemid) REFERENCES GradeableCourseItem ON DELETE CASCADE
+    -- cannot reference AssignmentSubmission because GradeableCourseItem are also gradeable
 );
 
 CREATE TABLE Notification(
