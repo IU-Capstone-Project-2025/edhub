@@ -49,17 +49,19 @@ async def remove_parent(
     course_id: str,
     student_email: str,
     parent_email: str,
-    teacher_email: str = Depends(get_current_user),
+    user_email: str = Depends(get_current_user),
 ):
     """
     Remove the parent identified by parent_email from the tracking of student with provided student_email on course with provided course_id.
 
-    Teacher role required.
+    Teacher OR Parent role required.
+
+    Parent can only remove themselves.
     """
 
     # connection to database
     with get_db() as (db_conn, db_cursor):
-        return logic_remove_parent(db_conn, db_cursor, course_id, student_email, parent_email, teacher_email)
+        return logic_remove_parent(db_conn, db_cursor, course_id, student_email, parent_email, user_email)
 
 
 @router.get("/get_parents_children", response_model=List[json_classes.User])
