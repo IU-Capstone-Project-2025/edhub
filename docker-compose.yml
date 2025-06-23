@@ -1,13 +1,23 @@
 services:
-  db:
-    build: ./database
+  db_main:
+    build: ./db_main
     restart: always
     environment:
       - POSTGRES_PASSWORD=12345678
       - POSTGRES_USER=postgres
       - PGDATA=/var/lib/postgresql/data
     volumes:
-      - edhub_postgres_storage:/var/lib/postgresql/data
+      - edhub_main_storage:/var/lib/postgresql/data
+
+  db_attachments:
+    build: ./db_attachments
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_USER=postgres
+      - PGDATA=/var/lib/postgresql/data
+    volumes:
+      - edhub_attachments_storage:/var/lib/postgresql/data
 
   backend:
     build: ./backend
@@ -15,9 +25,11 @@ services:
     ports:
       - 8000:8000
     environment:
-      - DATABASE_URL=postgresql://postgres:12345678@db:5432/edhub
+      - MAIN_DATABASE_URL=postgresql://postgres:12345678@db_main:5432/edhub
+      - ATTACHMENTS_DB_URL=postgresql://postgres:12345678@db_attachments:5432/edhub_attachments
     depends_on:
-      - db
+      - db_main
+      - db_attachments
 
   frontend:
     build: ./frontend
@@ -25,8 +37,10 @@ services:
     ports:
       - 5173:5173
     depends_on:
-      - db
+      - db_main
+      - db_attachments
       - backend
 
 volumes:
-  edhub_postgres_storage:
+  edhub_main_storage:
+  edhub_attachments_storage:

@@ -10,7 +10,18 @@ from datetime import datetime
 
 @contextmanager
 def get_db():
-    conn = psycopg2.connect(dbname="edhub", user="postgres", password="12345678", host="db", port="5432")
+    conn = psycopg2.connect(dbname="edhub", user="postgres", password="12345678", host="db_main", port="5432")
+    cursor = conn.cursor()
+    try:
+        yield conn, cursor
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@contextmanager
+def get_attachment_db():
+    conn = psycopg2.connect(dbname="edhub_attachments", user="postgres", password="12345678", host="db_main", port="5432")
     cursor = conn.cursor()
     try:
         yield conn, cursor
