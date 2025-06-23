@@ -14,12 +14,5 @@ export default defineConfig({
     },
   },
   server: {
-    proxy: {
-      '/create_user': 'http://localhost:8000',
-      '/login': 'http://localhost:8000',
-      '/available_courses': 'http://localhost:8000',
-      '/get_course_info': 'http://localhost:8000',
-      '/create_course': 'http://localhost:8000',
-    },
   },
 })

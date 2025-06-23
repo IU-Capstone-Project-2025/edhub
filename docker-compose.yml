@@ -1,10 +1,4 @@
 services:
-  nginx:
-    build: ./nginx
-    container_name: nginx_cont
-    ports:
-      - 80:80
-
   db:
     build: ./database
     restart: always
@@ -28,6 +22,14 @@ services:
     restart: always
     depends_on:
       - db
+      - backend
+
+  nginx:
+    build: ./nginx
+    ports:
+      - 80:80
+    depends_on:
+      - frontend
       - backend
 
 volumes:
