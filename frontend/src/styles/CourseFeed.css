@@ -1,0 +1,53 @@
+.course-feed-columns {
+  display: flex;
+  gap: 36px;
+  width: 100%;
+  margin-top: 48px;
+  min-height: 350px;
+  max-height: 400px;
+  overflow: hidden;
+}
+
+.feed-column {
+  flex: 1;
+  background: #fafaff;
+  border-radius: 18px;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+}
+
+.feed-column h2 {
+  font-size: 1.3rem;
+  margin-bottom: 14px;
+  color: #4C97B0;
+}
+
+.feed-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.feed-placeholder {
+  color: #bbb;
+  font-size: 1.08rem;
+  text-align: center;
+  margin-top: 18px;
+}
+
+.feed-card {
+  background: #f3efff;
+  border-radius: 14px;
+  padding: 18px 28px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: box-shadow 0.15s, background 0.15s;
+  box-shadow: 0 1px 4px #0001;
+}
+
+.feed-card:hover {
+  box-shadow: 0 4px 16px #b1e4f577;
+  background: #ece6fd;
+}
