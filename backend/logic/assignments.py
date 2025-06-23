@@ -1,5 +1,8 @@
-from fastapi import HTTPException
-from constants import TIME_FORMAT
+from fastapi import HTTPException, UploadFile
+from typing import List
+import os
+
+from constants import TIME_FORMAT, ASSIGNMENTS_DIR, SUBMISSIONS_DIR, MAX_FILE_SIZE
 import constraints
 import repo.assignments as repo_ass
 
@@ -20,6 +23,39 @@ def create_assignment(
     db_conn.commit()
     
     return {"course_id": course_id, "assignment_id": assignment_id}
+
+
+def create_assignment_attachments(db_conn, db_cursor, course_id: str, assignment_id: str, user_email: str, files: List[UploadFile]):
+    # checking constraints
+    constraints.assert_teacher_access(db_cursor, user_email, course_id)
+
+    # creating a folder
+    mat_dir = os.path.join(ASSIGNMENTS_DIR, 'course' + course_id + 'assignment' + assignment_id)
+    os.makedirs(mat_dir, exist_ok=True)
+    for file in files:
+
+        # checking file type
+        file_ext = os.path.splitext(file.filename)[1].lower()
+        if not file.filename or not file_ext:
+            raise HTTPException(status_code=422, detail="File has no name or extension")
+        if file_ext not in {'.pdf', '.docx', '.pptx', '.jpg', '.png'}:
+            raise HTTPException(status_code=415, detail="Unsupported Media Type")
+
+        # checking file size
+        if len(file.content) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=413, detail="File is too large")
+
+        # putting file into database and getting fileid
+        fileid = repo_ass.sql_insert_assignment_attachment(db_cursor, course_id, assignment_id)
+
+        # creating file path
+        file_path = os.path.join(mat_dir, fileid) + file_ext
+
+        # saving file
+        with open(file_path, "wb") as buffer:
+            buffer.write(file.read())
+
+    db_conn.commit()
 
 
 def remove_assignment(db_conn, db_cursor, course_id: str, assignment_id: str, user_email: str):
@@ -84,6 +120,40 @@ def submit_assignment(
         raise HTTPException(status_code=404, detail="Can't edit the submission after it was graded.")
 
     return {"success": True}
+
+
+def submit_assignment_attachment(db_conn, db_cursor, course_id: str, assignment_id: str, student_email: str, files: List[UploadFile]):
+    # checking constraints
+    constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
+    constraints.assert_student_access(db_cursor, student_email, course_id)
+
+    # creating a folder
+    mat_dir = os.path.join(SUBMISSIONS_DIR, 'course' + course_id + 'assignment' + assignment_id + 'submission' + student_email)
+    os.makedirs(mat_dir, exist_ok=True)
+    for file in files:
+
+        # checking file type
+        file_ext = os.path.splitext(file.filename)[1].lower()
+        if not file.filename or not file_ext:
+            raise HTTPException(status_code=422, detail="File has no name or extension")
+        if file_ext not in {'.pdf', '.docx', '.pptx', '.jpg', '.png'}:
+            raise HTTPException(status_code=415, detail="Unsupported Media Type")
+
+        # checking file size
+        if len(file.content) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=413, detail="File is too large")
+
+        # putting file into database and getting fileid
+        fileid = repo_ass.sql_insert_submission_attachment(db_cursor, course_id, assignment_id, student_email)
+
+        # creating file path
+        file_path = os.path.join(mat_dir, fileid) + file_ext
+
+        # saving file
+        with open(file_path, "wb") as buffer:
+            buffer.write(file.read())
+
+    db_conn.commit()
 
 
 def get_assignment_submissions(db_cursor, course_id: str, assignment_id: str, user_email: str):

@@ -1,5 +1,5 @@
+from fastapi import APIRouter, Depends, UploadFile, File
 from typing import List
-from fastapi import APIRouter, Depends
 
 from auth import get_current_user, get_db, get_attachment_db
 from constants import TIME_FORMAT
@@ -7,6 +7,8 @@ import json_classes
 from logic.assignments import (
     create_assignment as logic_create_assignment,
     remove_assignment as logic_remove_assignment,
+    submit_assignment_attachment as logic_submit_assignment_attachment,
+    create_assignment_attachments as logic_create_assignment_attachments,
     get_assignment as logic_get_assignment,
     submit_assignment as logic_submit_assignment,
     get_assignment_submissions as logic_get_assignment_submissions,
@@ -23,6 +25,7 @@ async def create_assignment(
     course_id: str,
     title: str,
     description: str,
+    files: List[UploadFile] = File(default=[]),
     user_email: str = Depends(get_current_user),
 ):
     """
@@ -33,9 +36,16 @@ async def create_assignment(
     Returns the (course_id, assignment_id) for the new material in case of success.
     """
 
-    # connection to database
-    with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
-        return logic_create_assignment(db_conn, db_cursor, course_id, title, description, user_email)
+    # creating assignment
+    with get_db() as (db_conn, db_cursor):
+        result = logic_create_assignment(db_conn, db_cursor, course_id, title, description, user_email)
+    
+    # uploading files
+    if files:
+        with get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
+            logic_create_assignment_attachments(attachment_db_conn, attachment_db_cursor, course_id, result['assignment_id'], user_email, files)
+
+    return result
 
 
 @router.post("/remove_assignment", response_model=json_classes.Success)
@@ -47,10 +57,11 @@ async def remove_assignment(course_id: str, assignment_id: str, user_email: str 
     """
 
     # connection to database
-    with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
+    with get_db() as (db_conn, db_cursor):
         return logic_remove_assignment(db_conn, db_cursor, course_id, assignment_id, user_email)
 
 
+# TODO: возвращать файлы с ассайментом
 @router.get("/get_assignment", response_model=json_classes.Assignment)
 async def get_assignment(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
     f"""
@@ -73,6 +84,7 @@ async def submit_assignment(
     course_id: str,
     assignment_id: str,
     comment: str,
+    files: List[UploadFile] = File(default=[]),
     student_email: str = Depends(get_current_user),
 ):
     """
@@ -83,9 +95,16 @@ async def submit_assignment(
     Student cannot submit already graded assignment.
     """
 
-    # connection to database
-    with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
-        return logic_submit_assignment(db_conn, db_cursor, course_id, assignment_id, comment, student_email)
+    # creating submission
+    with get_db() as (db_conn, db_cursor):
+        result = logic_submit_assignment(db_conn, db_cursor, course_id, assignment_id, comment, student_email)
+
+    # uploading files
+    if files:
+        with get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
+            logic_submit_assignment_attachment(attachment_db_conn, attachment_db_cursor, course_id, assignment_id, student_email, files)
+
+    return result
 
 
 @router.get("/get_assignment_submissions", response_model=List[json_classes.Submission])
@@ -109,6 +128,7 @@ async def get_assignment_submissions(course_id: str, assignment_id: str, user_em
         return logic_get_assignment_submissions(db_cursor, course_id, assignment_id, user_email)
 
 
+# TODO: возвращать файлы с отправками
 @router.get("/get_submission", response_model=json_classes.Submission)
 async def get_submission(
     course_id: str,

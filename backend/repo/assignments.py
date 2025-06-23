@@ -5,6 +5,13 @@ def sql_insert_assignment(db_cursor, course_id, title, description, user_email):
     )
     return db_cursor.fetchone()[0]
 
+def sql_insert_assignment_attachment(db_cursor, course_id, assignment_id):
+    db_cursor.execute(
+        "INSERT INTO assignment_files (courseid, assid) VALUES (%s, %s) RETURNING fileid",
+        (course_id, assignment_id),
+    )
+    return db_cursor.fetchone()[0]
+
 
 def sql_delete_assignment(db_cursor, course_id, assignment_id):
     db_cursor.execute(
@@ -38,6 +45,13 @@ def sql_insert_submission(db_cursor, course_id, assignment_id, student_email, co
         "INSERT INTO course_assignments_submissions (courseid, assid, email, timeadded, timemodified, comment, grade, gradedby) VALUES (%s, %s, %s, now(), now(), %s, null, null)",
         (course_id, assignment_id, student_email, comment),
     )
+
+def sql_insert_submission_attachment(db_cursor, course_id, assignment_id, student_email):
+    db_cursor.execute(
+        "INSERT INTO submissions_files (courseid, assid, email) VALUES (%s, %s, %s) RETURNING fileid",
+        (course_id, assignment_id, student_email),
+    )
+    return db_cursor.fetchone()[0]
 
 
 def sql_update_submission_comment(db_cursor, comment, course_id, assignment_id, student_email):

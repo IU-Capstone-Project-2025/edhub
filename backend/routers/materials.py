@@ -18,8 +18,8 @@ async def create_material(
     course_id: str,
     title: str,
     description: str,
-    user_email: str = Depends(get_current_user),
     files: List[UploadFile] = File(default=[]),
+    user_email: str = Depends(get_current_user),
 ):
     """
     Create the material with provided title and description in the course with provided course_id.
@@ -28,12 +28,15 @@ async def create_material(
 
     Returns the (course_id, material_id) for the new material in case of success.
     """
+
+    # creating material
     with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
         result = logic_create_material(db_conn, db_cursor, course_id, title, description, user_email)
     
+    # uploading files
     if files:
         with get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
-            logic_create_material_attachments(attachment_db_conn, attachment_db_cursor, course_id, result['material_id'], files)
+            logic_create_material_attachments(attachment_db_conn, attachment_db_cursor, course_id, result['material_id'], user_email, files)
 
     return result
 
@@ -45,10 +48,11 @@ async def remove_material(course_id: str, material_id: str, user_email: str = De
 
     Teacher role required.
     """
-    with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
+    with get_db() as (db_conn, db_cursor):
         return logic_remove_material(db_conn, db_cursor, course_id, material_id, user_email)
 
 
+# TODO: возвращать файлы с материалами
 @router.get("/get_material", response_model=json_classes.Material)
 async def get_material(course_id: str, material_id: str, user_email: str = Depends(get_current_user)):
     """

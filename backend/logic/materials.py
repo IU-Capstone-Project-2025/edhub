@@ -17,7 +17,9 @@ def create_material(db_conn, db_cursor, course_id: str, title: str, description:
     return {"course_id": course_id, "material_id": material_id}
 
 
-def create_material_attachments(db_conn, db_cursor, course_id: str, material_id: str, files: List[UploadFile]):
+def create_material_attachments(db_conn, db_cursor, course_id: str, material_id: str, user_email: str, files: List[UploadFile]):
+    # checking constraints
+    constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
     # creating a folder
     mat_dir = os.path.join(MATERIALS_DIR, 'course' + course_id + 'material' + material_id)
