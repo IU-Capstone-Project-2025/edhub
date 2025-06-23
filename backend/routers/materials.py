@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File
+from typing import List
 
-from auth import get_current_user, get_db
+from auth import get_current_user, get_db, get_attachment_db
 import json_classes
 from logic.materials import (
     create_material as logic_create_material,
+    create_material_attachments as logic_create_material_attachments,
     remove_material as logic_remove_material,
     get_material as logic_get_material,
 )
@@ -17,6 +19,7 @@ async def create_material(
     title: str,
     description: str,
     user_email: str = Depends(get_current_user),
+    files: List[UploadFile] = File(default=[]),
 ):
     """
     Create the material with provided title and description in the course with provided course_id.
@@ -25,8 +28,14 @@ async def create_material(
 
     Returns the (course_id, material_id) for the new material in case of success.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_create_material(db_conn, db_cursor, course_id, title, description, user_email)
+    with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
+        result = logic_create_material(db_conn, db_cursor, course_id, title, description, user_email)
+    
+    if files:
+        with get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
+            logic_create_material_attachments(attachment_db_conn, attachment_db_cursor, course_id, result['material_id'], files)
+
+    return result
 
 
 @router.post("/remove_material", response_model=json_classes.Success)
@@ -36,7 +45,7 @@ async def remove_material(course_id: str, material_id: str, user_email: str = De
 
     Teacher role required.
     """
-    with get_db() as (db_conn, db_cursor):
+    with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
         return logic_remove_material(db_conn, db_cursor, course_id, material_id, user_email)
 
 
@@ -51,5 +60,5 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
 
     The format of creation time is "{TIME_FORMAT}".
     """
-    with get_db() as (db_conn, db_cursor):
+    with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
         return logic_get_material(db_cursor, course_id, material_id, user_email)

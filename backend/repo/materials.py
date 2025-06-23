@@ -5,6 +5,13 @@ def sql_insert_material(db_cursor, course_id, title, description, user_email):
     )
     return db_cursor.fetchone()[0]
 
+def sql_insert_material_attachment(db_cursor, course_id, materials_id):
+    db_cursor.execute(
+        "INSERT INTO material_files (courseid, matid) VALUES (%s, %s) RETURNING fileid",
+        (course_id, materials_id),
+    )
+    return db_cursor.fetchone()[0]
+
 
 def sql_delete_material(db_cursor, course_id, material_id):
     db_cursor.execute(

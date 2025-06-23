@@ -27,6 +27,8 @@ services:
     environment:
       - MAIN_DATABASE_URL=postgresql://postgres:12345678@db_main:5432/edhub
       - ATTACHMENTS_DB_URL=postgresql://postgres:12345678@db_attachments:5432/edhub_attachments
+    volumes:
+      - uploads_volume:/app/uploads
     depends_on:
       - db_main
       - db_attachments
@@ -44,3 +46,4 @@ services:
 volumes:
   edhub_main_storage:
   edhub_attachments_storage:
+  uploads_volume:

@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends
 
-from auth import get_current_user, get_db
+from auth import get_current_user, get_db, get_attachment_db
 from constants import TIME_FORMAT
 import json_classes
 from logic.assignments import (
@@ -34,7 +34,7 @@ async def create_assignment(
     """
 
     # connection to database
-    with get_db() as (db_conn, db_cursor):
+    with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
         return logic_create_assignment(db_conn, db_cursor, course_id, title, description, user_email)
 
 
@@ -47,7 +47,7 @@ async def remove_assignment(course_id: str, assignment_id: str, user_email: str 
     """
 
     # connection to database
-    with get_db() as (db_conn, db_cursor):
+    with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
         return logic_remove_assignment(db_conn, db_cursor, course_id, assignment_id, user_email)
 
 
@@ -64,7 +64,7 @@ async def get_assignment(course_id: str, assignment_id: str, user_email: str = D
     """
 
     # connection to database
-    with get_db() as (db_conn, db_cursor):
+    with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
         return logic_get_assignment(db_cursor, course_id, assignment_id, user_email)
 
 
@@ -84,7 +84,7 @@ async def submit_assignment(
     """
 
     # connection to database
-    with get_db() as (db_conn, db_cursor):
+    with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
         return logic_submit_assignment(db_conn, db_cursor, course_id, assignment_id, comment, student_email)
 
 
@@ -131,7 +131,7 @@ async def get_submission(
     """
 
     # connection to database
-    with get_db() as (db_conn, db_cursor):
+    with get_db() as (db_conn, db_cursor), get_attachment_db() as (attachment_db_conn, attachment_db_cursor):
         return logic_get_submission(db_cursor, course_id, assignment_id, student_email, user_email)
 
 
