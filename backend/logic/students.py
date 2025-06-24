@@ -1,6 +1,9 @@
 from fastapi import HTTPException
 import constraints
 import repo.students as repo_students
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_enrolled_students(db_cursor, course_id: str, user_email: str):
@@ -38,6 +41,7 @@ def invite_student(db_conn, db_cursor, course_id: str, student_email: str, teach
     repo_students.sql_insert_student_at(db_cursor, student_email, course_id)
     db_conn.commit()
 
+    logger.info(f"Teacher {teacher_email} invited a student {student_email}")
     return {"success": True}
 
 
@@ -57,5 +61,7 @@ def remove_student(db_conn, db_cursor, course_id: str, student_email: str, user_
     # remove student
     repo_students.sql_delete_student_at(db_cursor, course_id, student_email)
     db_conn.commit()
+
+    logger.info(f"Teacher {user_email} removed a student {student_email}")
 
     return {"success": True}

@@ -1,6 +1,9 @@
 from fastapi import HTTPException
 import constraints
 import repo.parents as repo_parents
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_students_parents(db_cursor, course_id: str, student_email: str, user_email: str):
@@ -48,6 +51,8 @@ def invite_parent(
     repo_parents.sql_insert_parent_of_at_course(db_cursor, parent_email, student_email, course_id)
     db_conn.commit()
 
+    logger.info(f"Teacher {teacher_email} invited a parent {parent_email} for student {student_email}")
+
     return {"success": True}
 
 
@@ -62,8 +67,8 @@ def remove_parent(
 
     # checking constraints
     if not (
-        constraints.check_teacher_access(db_cursor, user_email, course_id) or
-        (constraints.check_parent_access(db_cursor, user_email, course_id) and parent_email == user_email)
+        constraints.check_teacher_access(db_cursor, user_email, course_id)
+        or (constraints.check_parent_access(db_cursor, user_email, course_id) and parent_email == user_email)
     ):
         raise HTTPException(status_code=403, detail="User does not have permissions to delete this parent")
 
@@ -73,6 +78,8 @@ def remove_parent(
     # remove parent
     repo_parents.sql_delete_parent_of_at_course(db_cursor, course_id, student_email, parent_email)
     db_conn.commit()
+
+    logger.info(f"Teacher {user_email} removed a parent {parent_email} for student {student_email}")
 
     return {"success": True}
 

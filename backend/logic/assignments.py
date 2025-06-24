@@ -88,6 +88,8 @@ def submit_assignment(
 
     else:
         raise HTTPException(status_code=404, detail="Can't edit the submission after it was graded.")
+    
+    logger.info(f"Student {student_email} submitted an assignment{assignment_id} in {course_id}")
 
     return {"success": True}
 

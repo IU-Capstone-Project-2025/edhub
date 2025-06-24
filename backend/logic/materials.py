@@ -2,6 +2,9 @@ from fastapi import HTTPException
 from constants import TIME_FORMAT
 import constraints
 import repo.materials as repo_mat
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def create_material(db_conn, db_cursor, course_id: str, title: str, description: str, user_email: str):
@@ -12,6 +15,7 @@ def create_material(db_conn, db_cursor, course_id: str, title: str, description:
     material_id = repo_mat.sql_insert_material(db_cursor, course_id, title, description, user_email)
     db_conn.commit()
 
+    logger.info(f"User {user_email} created a material {material_id} in {course_id}")
     return {"course_id": course_id, "material_id": material_id}
 
 
@@ -23,6 +27,8 @@ def remove_material(db_conn, db_cursor, course_id: str, material_id: str, user_e
     # remove material
     repo_mat.sql_delete_material(db_cursor, course_id, material_id)
     db_conn.commit()
+
+    logger.info(f"User {user_email} removed a material {material_id} in {course_id}")
 
     return {"success": True}
 
