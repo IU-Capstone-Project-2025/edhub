@@ -2,6 +2,9 @@ from fastapi import HTTPException
 from constants import TIME_FORMAT
 import constraints
 import repo.assignments as repo_ass
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def create_assignment(
@@ -16,9 +19,11 @@ def create_assignment(
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
     # create assignment
+    logger.info(f"Creating assignment in {course_id} titled '{title}' by {user_email}")
     assignment_id = repo_ass.sql_insert_assignment(db_cursor, course_id, title, description, user_email)
     db_conn.commit()
-    
+    logger.info(f"Created assignment {assignment_id}")
+
     return {"course_id": course_id, "assignment_id": assignment_id}
 
 
@@ -28,6 +33,7 @@ def remove_assignment(db_conn, db_cursor, course_id: str, assignment_id: str, us
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
     # remove assignment
+    logger.info(f"Removing assignment {assignment_id}")
     repo_ass.sql_delete_assignment(db_cursor, course_id, assignment_id)
     db_conn.commit()
 

@@ -5,7 +5,9 @@ import constraints
 from auth import pwd_hasher, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 import repo.users as repo_users
 from regex import match, search
+import logging
 
+logger = logging.getLogger(__name__)
 
 def get_user_role(db_cursor, course_id: str, user_email: str):
     # getting info about the roles
@@ -54,6 +56,9 @@ def create_user(db_conn, db_cursor, user):
         "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     }
     access_token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+
+    logger.info(f"Created new user: {user.email}")
+
     return {"email": user.email, "access_token": access_token}
 
 
@@ -76,6 +81,9 @@ def login(db_cursor, user):
         "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     }
     access_token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+
+    logger.info(f"User login: {user.email}")
+
     return {"email": user.email, "access_token": access_token}
 
 
@@ -97,6 +105,8 @@ def change_password(db_conn, db_cursor, user):
     repo_users.sql_update_password(db_cursor, user.email, hashed_new_password)
     db_conn.commit()
 
+    logger.info(f"User {user.email} changed their password")
+
     return {"success": True}
 
 
@@ -114,5 +124,7 @@ def remove_user(db_conn, db_cursor, user_email: str):
     repo_users.sql_delete_user(db_cursor, user_email)
 
     db_conn.commit()
+
+    logger.info(f"Removed user {user_email} from the system")
 
     return {"success": True}

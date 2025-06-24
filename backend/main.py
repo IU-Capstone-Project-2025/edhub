@@ -1,3 +1,4 @@
+import sys
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,6 +9,11 @@ import routers.parents
 import routers.students
 import routers.teachers
 import routers.users
+
+import logging
+
+
+logging.basicConfig(level=logging.DEBUG, stream=sys.stdout, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 
 app = FastAPI()
 app.include_router(routers.assignments.router)
