@@ -20,7 +20,7 @@ _TAG_MATERIAL = "material"
 _TAG_PARENT = "parent"
 _TAG_STUDENT = "student"
 _TAG_TEACHER = "teacher"
-_TAG_USER = "teacher"
+_TAG_USER = "user"
 
 _ACT_ADD = "add"
 _ACT_DEL = "del"

@@ -27,7 +27,7 @@ def remove_course(db_conn, db_cursor, course_id: str, user_email: str):
     repo_courses.sql_delete_course(db_cursor, course_id)
     db_conn.commit()
 
-    logger.log(db_conn, logger.TAG_COURSE_ADD, f"User {user_email} deleted course {course_id}")
+    logger.log(db_conn, logger.TAG_COURSE_DEL, f"User {user_email} deleted course {course_id}")
 
     return {"success": True}
 

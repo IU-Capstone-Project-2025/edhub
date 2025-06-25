@@ -170,6 +170,6 @@ def grade_submission(
     repo_ass.sql_update_submission_grade(db_cursor, grade, user_email, course_id, assignment_id, student_email)
     db_conn.commit()
 
-    logger.log(db_conn, logger.TAG_ASSIGNMENT_SUBMIT, f"Student {student_email} submitted an assignment{assignment_id} in {course_id}")
+    logger.log(db_conn, logger.TAG_ASSIGNMENT_GRADE, f"Teacher {user_email} graded an assignment {assignment_id} in {course_id} by {student_email}")
 
     return {"success": True}
