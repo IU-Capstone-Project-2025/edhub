@@ -19,14 +19,14 @@ services:
     depends_on:
       - db
 
-  # frontend:
-  #   build: ./frontend
-  #   restart: always
-  #   ports:
-  #     - 80:5173
-  #   depends_on:
-  #     - db
-  #     - backend
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - 80:3000
+    depends_on:
+      - db
+      - backend
 
 volumes:
   edhub_postgres_storage:
