@@ -56,6 +56,28 @@ export default function AssignmentPage({
     })
   }
 
+  function fetchMyEmail(){
+    try{
+      const token = localStorage.getItem("access_token")
+      axios.get("/api/get_user_email", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { course_id }
+      })
+      .then(res => {
+        setStudentEmail(res.data.email)
+        fetchMySubmission()
+      })
+      .catch(err => {
+        console.log("Email fetch error:", err.response?.data);
+        alert("Ошибка при загрузке вашего email: " + (
+          typeof err.response?.data?.detail === "string"
+            ? err.response.data.detail
+            : JSON.stringify(err.response?.data?.detail || err.message)
+        ))
+      })
+    }
+  }
+
 
   
   useEffect(() => {
