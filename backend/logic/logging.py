@@ -1,12 +1,5 @@
 import repo.logging as repo_log
 
-db_conn_shared = None
-db_cur_shared = None
-
-
-# it is probably a bad idea to insert and COMMIT the logs through the same cursor as
-# the data itself, so create new cursor on every log.
-
 
 def log(db_conn, tag, msg):
     with db_conn.cursor() as db_cursor:
