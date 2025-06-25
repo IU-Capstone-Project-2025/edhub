@@ -1,3 +1,8 @@
+def sql_get_user_name(db_cursor, email):
+    db_cursor.execute("SELECT publicname FROM users WHERE email = %s", (email,))
+    return db_cursor.fetchone()[0]
+
+
 def sql_select_user_exists(db_cursor, email):
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (email,))
     return db_cursor.fetchone()[0]
