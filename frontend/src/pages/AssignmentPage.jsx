@@ -16,44 +16,45 @@ export default function AssignmentPage({
   const [role, setRole] = useState()
   const [submissions,setSubmissions] = useState([])
   const [mySubmission, setMySubmission] = useState()
+  const [studentEmail,setStudentEmail] = useState()
 
-  // function onSubmit(comment) {
-  //   try{
-  //     const token = localStorage.getItem("access_token")
-  //     axios.post("/submit_assignment", null, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //       params: { assignment_id: post_id, course_id, comment }
-  //     })
-  //     setInput("")
-  //     setMySubmission({ comment, grade: null, gradedBy: null })
-  //   }catch (err) {
-  //     console.log("Submission error:", err.response?.data);
-  //     alert("Ошибка при отправке задания: " + (
-  //       typeof err.response?.data?.detail === "string"
-  //         ? err.response.data.detail
-  //         : JSON.stringify(err.response?.data?.detail || err.message)
-  //     ))
-  //   }
-  // }
+  function onSubmit(comment) {
+    try{
+      const token = localStorage.getItem("access_token")
+      axios.post("/api/submit_assignment", null, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { assignment_id: post_id, course_id, comment }
+      })
+      setInput("")
+      setMySubmission({ comment, grade: null, gradedBy: null })
+    }catch (err) {
+      console.log("Submission error:", err.response?.data);
+      alert("Ошибка при отправке задания: " + (
+        typeof err.response?.data?.detail === "string"
+          ? err.response.data.detail
+          : JSON.stringify(err.response?.data?.detail || err.message)
+      ))
+    }
+  }
 
-  // function fetchMySubmission() {
-  //   const token = localStorage.getItem("access_token")
-  //   axios.get("/get_submission", {
-  //     headers: { Authorization: `Bearer ${token}` },
-  //     params: { assignment_id: post_id, course_id , student_email}
-  //   })
-  //   .then(res => {
-  //     setMySubmission(res.data)
-  //   })
-  //   .catch(err => {
-  //     console.log("My submission fetch error:", err.response?.data);
-  //     alert("Ошибка при загрузке вашего задания: " + (
-  //       typeof err.response?.data?.detail === "string"
-  //         ? err.response.data.detail
-  //         : JSON.stringify(err.response?.data?.detail || err.message)
-  //     ))
-  //   })
-  // }
+  function fetchMySubmission() {
+    const token = localStorage.getItem("access_token")
+    axios.get("/api/get_submission", {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { assignment_id: post_id, course_id , student_email: studentEmail}
+    })
+    .then(res => {
+      setMySubmission(res.data)
+    })
+    .catch(err => {
+      console.log("My submission fetch error:", err.response?.data);
+      alert("Ошибка при загрузке вашего задания: " + (
+        typeof err.response?.data?.detail === "string"
+          ? err.response.data.detail
+          : JSON.stringify(err.response?.data?.detail || err.message)
+      ))
+    })
+  }
 
 
   
@@ -61,7 +62,7 @@ export default function AssignmentPage({
     const fetchRole = async () => {
       try {
         const token = localStorage.getItem("access_token");
-        const res = await axios.get("/get_user_role", {
+        const res = await axios.get("/api/get_user_role", {
           headers: { Authorization: `Bearer ${token}` },
           params: { course_id }
         });
@@ -88,7 +89,7 @@ export default function AssignmentPage({
     const fetchAssignment = async () => {
       try{
         const token = localStorage.getItem("access_token")
-        const res = await axios.get("/get_assignment", {
+        const res = await axios.get("/api/get_assignment", {
           headers:{ Authorization: `Bearer ${token}` },
           params: { assignment_id: post_id , course_id }
         })

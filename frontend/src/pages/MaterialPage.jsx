@@ -17,7 +17,7 @@ export default function MaterialPage({
     const fetchMaterial = async () => {
       try{
         const token = localStorage.getItem("access_token")
-        const res = await axios.get("/get_material", {
+        const res = await axios.get("/api/get_material", {
           headers:{ Authorization: `Bearer ${token}` },
           params: { material_id: post_id , course_id }
         })

@@ -13,7 +13,7 @@ export default function AuthPage() {
 
   const handleSubmit = async () => {
     try {
-      const endpoint = isLogin ? "/login" : "/create_user"
+      const endpoint = isLogin ? "/api/login" : "/api/create_user"
       const payload = isLogin ? { email, password } : { email, password, name }
       const res = await axios.post(endpoint, payload)
       localStorage.setItem("access_token", res.data.access_token)

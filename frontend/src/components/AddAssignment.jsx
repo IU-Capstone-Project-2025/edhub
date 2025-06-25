@@ -21,7 +21,7 @@ form.append("title", title)
 form.append("description", description)
 
 await axios.post(
-  `http://localhost:8000/create_assignment?course_id=${courseId}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`,
+  `/api/create_assignment?course_id=${courseId}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`,
   {},
   {
     headers: {

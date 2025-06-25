@@ -13,7 +13,7 @@ export default function CreateCourseModal({ onClose }) {
   const handleCreate = async () => {
     try {
       const token = localStorage.getItem("access_token")
-      await axios.post(`/create_course?title=${encodeURIComponent(title)}`, null, {
+      await axios.post(`/api/create_course?title=${encodeURIComponent(title)}`, null, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -21,7 +21,7 @@ export default function AddMaterial({ onClose, courseId }) {
       form.append("title", title)
       form.append("description", description)
 
-await axios.post("http://localhost:8000/create_material", form, {
+await axios.post("/api/create_material", form, {
         headers: {Authorization: `Bearer ${token}` },
         params:{title, description, course_id: courseId}
       })

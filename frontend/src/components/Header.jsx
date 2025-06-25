@@ -15,13 +15,13 @@ export default function Header({ children }) {
 
   const fetchCourses = async () => {
     try {
-      const res = await axios.get("/available_courses", {
+      const res = await axios.get("/api/available_courses", {
         headers: { Authorization: `Bearer ${token}` },
       })
 
       const detailed = await Promise.all(
         res.data.map(async (c) => {
-          const info = await axios.get("/get_course_info", {
+          const info = await axios.get("/api/get_course_info", {
             headers: { Authorization: `Bearer ${token}` },
             params: { course_id: c.course_id },
           })

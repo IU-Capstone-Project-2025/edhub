@@ -14,18 +14,18 @@ export default function CoursesPage() {
     const token = localStorage.getItem("access_token")
 
     axios
-      .get("/available_courses", {
+      .get("/api/available_courses", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(async (res) => {
         const full = await Promise.all(
           res.data.map(async (c) => {
-            const infoRes = await axios.get("/get_course_info", {
+            const infoRes = await axios.get("/api/get_course_info", {
               headers: { Authorization: `Bearer ${token}` },
               params: { course_id: c.course_id },
             })
 
-            const roleRes = await axios.get("/get_user_role", {
+            const roleRes = await axios.get("/api/get_user_role", {
               headers: { Authorization: `Bearer ${token}` },
               params: { course_id: c.course_id },
             })

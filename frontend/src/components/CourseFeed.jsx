@@ -17,7 +17,7 @@ export default function CourseFeed() {
     const fetchFeed = async () => {
       try {
         const token = localStorage.getItem("access_token");
-        const res = await axios.get("/get_course_feed", {
+        const res = await axios.get("/api/get_course_feed", {
           headers: { Authorization: `Bearer ${token}` },
           params: { course_id: id },
         });
@@ -30,7 +30,7 @@ export default function CourseFeed() {
         const ass_details = {};
         for (const ass of assList) {
           try {
-            const ass_detailRes = await axios.get("/get_assignment", {
+            const ass_detailRes = await axios.get("/api/get_assignment", {
               headers: { Authorization: `Bearer ${token}` },
               params: { assignment_id: ass.post_id, course_id: id },
             });
@@ -44,7 +44,7 @@ export default function CourseFeed() {
         const mat_details = {}
         for (const mat of matList) {
           try {
-            const mat_detailRes = await axios.get("/get_material", {
+            const mat_detailRes = await axios.get("/api/get_material", {
               headers: { Authorization: `Bearer ${token}` },
               params: { material_id: mat.post_id, course_id: id },
             });

@@ -27,7 +27,7 @@ export default function CoursePage() {
     const fetchCourse = async () => {
       try {
         const token = localStorage.getItem("access_token")
-        const res = await axios.get("/get_course_info", {
+        const res = await axios.get("/api/get_course_info", {
           headers: { Authorization: `Bearer ${token}` },
           params: { course_id: id },
         })
@@ -41,7 +41,7 @@ export default function CoursePage() {
     const fetchRoleData = async () => {
       try {
         const token = localStorage.getItem("access_token")
-        const res = await axios.get("/get_user_role", {
+        const res = await axios.get("/api/get_user_role", {
           headers: { Authorization: `Bearer ${token}` },
           params: { course_id: id },
         })

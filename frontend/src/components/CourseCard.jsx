@@ -12,7 +12,7 @@ export default function CourseCard({ course_id, title, date, students, user_role
 
     const token = localStorage.getItem("access_token")
     axios
-      .get("/get_course_feed", {
+      .get("/api/get_course_feed", {
         headers: { Authorization: `Bearer ${token}` },
         params: { course_id },
       })

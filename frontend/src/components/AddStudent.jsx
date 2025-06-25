@@ -19,7 +19,7 @@ export default function AddStudent({ onClose, courseId }) {
       form.append("course_id", courseId)
       form.append("student_email", studentEmail)
 
-await axios.post("http://localhost:8000/invite_student", form, {
+await axios.post("/api/invite_student", form, {
         headers: {Authorization: `Bearer ${token}` },
         params:{student_email: studentEmail, course_id: courseId}
       })

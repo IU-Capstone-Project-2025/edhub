@@ -21,7 +21,7 @@ export default function AddParent({ onClose, courseId }) {
       form.append("student_email", studentEmail)
       form.append("parent_email", parentEmail)
 
-await axios.post("http://localhost:8000/invite_parent", form, {
+await axios.post("/api/invite_parent", form, {
         headers: {Authorization: `Bearer ${token}` },
         params:{parent_email: parentEmail, course_id: courseId, student_email: studentEmail}
       })
