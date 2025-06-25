@@ -39,7 +39,7 @@ def invite_teacher(db_conn, db_cursor, course_id: str, new_teacher_email: str, t
     repo_teachers.sql_insert_teacher(db_cursor, new_teacher_email, course_id)
     db_conn.commit()
 
-    logger.log(db_conn, logger.TAG_TEACHER_ADD, f"Teacher {teacher_email} invited a teacher {teacher_email}")
+    logger.log(db_conn, logger.TAG_TEACHER_ADD, f"Teacher {teacher_email} invited a teacher {new_teacher_email}")
 
     return {"success": True}
 
