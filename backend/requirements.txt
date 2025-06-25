@@ -4,3 +4,4 @@ fastapi-cli==0.0.7
 passlib==1.7.4
 python-jose==3.5.0
 bcrypt==4.0.1
+regex==2024.11.6

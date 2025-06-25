@@ -20,6 +20,10 @@ def sql_select_passwordhash(db_cursor, email):
     return db_cursor.fetchone()
 
 
+def sql_update_password(db_cursor, email, hashed_new_password):
+    db_cursor.execute("UPDATE users SET passwordhash = %s WHERE email = %s", (hashed_new_password, email))
+
+
 def sql_select_single_teacher_courses(db_cursor, user_email):
     db_cursor.execute(
         "SELECT t.courseid FROM teaches t WHERE t.email = %s AND (SELECT COUNT(*) FROM teaches WHERE courseid = t.courseid) = 1",
