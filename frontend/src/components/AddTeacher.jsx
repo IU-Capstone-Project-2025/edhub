@@ -1,15 +1,14 @@
 import React, { useState } from "react"
 import axios from "axios"
-import "../styles/AddMaterial.css"
+import "../styles/AddTeacher.css"
 
-export default function AddMaterial({ onClose, courseId }) {
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
+export default function AddTeacher({ onClose, courseId }) {
+  const [teacherEmail, setTeacherEmail] = useState("")
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async () => {
-    if (!title.trim() || !description.trim()) {
-      alert("Title and description are required")
+    if (!teacherEmail.trim()) {
+      alert("Teacher's Email is required")
       return
     }
 
@@ -18,22 +17,20 @@ export default function AddMaterial({ onClose, courseId }) {
       const token = localStorage.getItem("access_token")
       const form = new URLSearchParams()
       form.append("course_id", courseId)
-      form.append("title", title)
-      form.append("description", description)
+      form.append("new_teacher_email", teacherEmail)
 
-await axios.post("http://localhost:8000/create_material", form, {
+await axios.post("http://localhost:8000/invite_teacher", form, {
         headers: {Authorization: `Bearer ${token}` },
-        params:{title, description, course_id: courseId}
+        params:{new_teacher_email: teacherEmail, course_id: courseId}
       })
-      alert("Material added successfully!")
-      setTitle("")
-      setDescription("")
+      alert("Teacher added successfully!")
+      setTeacherEmail("")
       setLoading(false)
       onClose()
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail
-      alert("Ошибка при добавлении материала: " + (
+      alert("Ошибка при добавлении учителя: " + (
         typeof errorData === "string"
           ? errorData
           : JSON.stringify(errorData || err.message)
@@ -44,17 +41,12 @@ await axios.post("http://localhost:8000/create_material", form, {
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        <h2>Add Material</h2>
+        <h2>Add Teacher</h2>
         <input
           type="text"
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Teacher Email"
+          value={teacherEmail}
+          onChange={(e) => setTeacherEmail(e.target.value)}
         />
         <div className="modal-actions">
           <button className="cancel-btn" onClick={onClose} disabled={loading}>Cancel</button>

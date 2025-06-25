@@ -64,8 +64,8 @@ await axios.post(
           onChange={(e) => setDescription(e.target.value)}
         />
         <div className="modal-actions">
-          <button onClick={handleSubmit} disabled={loading}>Add</button>
           <button className="cancel-btn" onClick={onClose} disabled={loading}>Cancel</button>
+          <button onClick={handleSubmit} disabled={loading}>Add</button>
         </div>
       </div>
     </div>

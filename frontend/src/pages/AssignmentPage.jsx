@@ -1,18 +1,113 @@
-import React, { useEffect, useState } from "react"
-import "./AssignmentPage.css"
+import React, {useEffect, useState } from "react"
+import "../styles/AssignmentPage.css"
+import {useParams} from "react-router-dom"
+import axios from "axios"
 
 export default function AssignmentPage({
-  role = "teacher", // "teacher" | "student" | "parent"
-  assignment = { title: "Assignment Title", description: "Assignment description goes here." },
-  submissions = [], // [{ studentName, comment, grade, gradedBy }]
-  mySubmission = null, // { comment, grade, gradedBy }
   onSubmit,
   onGrade,
   onBack,
 }) {
+  const { post_id , id: course_id} = useParams()
   const [popup, setPopup] = useState(null)
   const [input, setInput] = useState("")
   const [grade, setGrade] = useState("")
+  const [Assignment, setAssignment] = useState()
+  const [role, setRole] = useState()
+  const [submissions,setSubmissions] = useState([])
+  const [mySubmission, setMySubmission] = useState()
+
+  // function onSubmit(comment) {
+  //   try{
+  //     const token = localStorage.getItem("access_token")
+  //     axios.post("/submit_assignment", null, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //       params: { assignment_id: post_id, course_id, comment }
+  //     })
+  //     setInput("")
+  //     setMySubmission({ comment, grade: null, gradedBy: null })
+  //   }catch (err) {
+  //     console.log("Submission error:", err.response?.data);
+  //     alert("Ошибка при отправке задания: " + (
+  //       typeof err.response?.data?.detail === "string"
+  //         ? err.response.data.detail
+  //         : JSON.stringify(err.response?.data?.detail || err.message)
+  //     ))
+  //   }
+  // }
+
+  // function fetchMySubmission() {
+  //   const token = localStorage.getItem("access_token")
+  //   axios.get("/get_submission", {
+  //     headers: { Authorization: `Bearer ${token}` },
+  //     params: { assignment_id: post_id, course_id , student_email}
+  //   })
+  //   .then(res => {
+  //     setMySubmission(res.data)
+  //   })
+  //   .catch(err => {
+  //     console.log("My submission fetch error:", err.response?.data);
+  //     alert("Ошибка при загрузке вашего задания: " + (
+  //       typeof err.response?.data?.detail === "string"
+  //         ? err.response.data.detail
+  //         : JSON.stringify(err.response?.data?.detail || err.message)
+  //     ))
+  //   })
+  // }
+
+
+  
+  useEffect(() => {
+    const fetchRole = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const res = await axios.get("/get_user_role", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { course_id }
+        });
+        const data = res.data;
+        const user_role = data.is_teacher
+          ? "teacher"
+          : data.is_student
+          ? "student"
+          : data.is_parent
+          ? "parent"
+          : null;
+        setRole(user_role);
+      } catch (err) {
+        setRole(null);
+      }
+    };
+    fetchRole();
+}, [course_id]);
+
+    
+  
+
+  useEffect (() => {
+    const fetchAssignment = async () => {
+      try{
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/get_assignment", {
+          headers:{ Authorization: `Bearer ${token}` },
+          params: { assignment_id: post_id , course_id }
+        })
+        setAssignment(res.data)
+      }catch (err) {
+        console.log("Assignment fetch error:", err.response?.data);
+        alert("Ошибка при загрузке задания: " + (
+          typeof err.response?.data?.detail === "string"
+            ? err.response.data.detail
+            : JSON.stringify(err.response?.data?.detail || err.message)
+  ))
+}
+    }
+    fetchAssignment()
+  }, [post_id,course_id])
+
+  
+  
+
 
   // Pop-up for teacher/parent: show submission, grade button
   const handleOpenPopup = (submission) => setPopup(submission)
@@ -23,13 +118,21 @@ export default function AssignmentPage({
     setPopup(null)
   }
 
+  if (!Assignment) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="assignment-page">
       <button className="back-btn" onClick={onBack}>← Back to course feed</button>
       <div className="assignment-main">
         <div className="assignment-left">
-          <h1>{assignment.title}</h1>
-          <p>{assignment.description}</p>
+          <h1>{Assignment.title}</h1>
+          <h1>my role:{role}</h1>
+          <p>{Assignment.description}</p>
+          <p>Created by: {Assignment.author}</p>
+          <p>Assignment ID : {Assignment.assignment_id}</p>
+          <p>Created : {Assignment.creation_time}</p>
         </div>
         <div className="assignment-right">
           {role === "teacher" && (

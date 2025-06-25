@@ -66,4 +66,17 @@
   margin-top: 32px;
 }
 
+.create-course-page-button {
+  background-color: #4CB050;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 10%;
+}
 
+.create-course-page-button:hover {
+  background-color: #3BBF12;
+}

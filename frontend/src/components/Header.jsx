@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import axios from "axios"
+import CreateCourseModal from "../components/CreateCourse"
 
 import "../styles/Header.css"
 
 export default function Header({ children }) {
   const [courses, setCourses] = useState([])
   const location = useLocation()
+  const [showCreateCourseModal, setShowCreateCourseModal] = useState(false)
 
   useEffect(() => {
   const token = localStorage.getItem("access_token")
@@ -79,9 +81,15 @@ export default function Header({ children }) {
             )
           })}
         </ul>
-        <Link to="/create-course" className="create-course-link">
+        <Link onClick={() => setShowCreateCourseModal(true)} className="create-course-link">
           + Create Course
         </Link>
+        {showCreateCourseModal && (
+                <CreateCourseModal 
+                  onClose={() => setShowCreateCourseModal(false)}
+                />
+              )}
+
       </aside>
 
       <main className="main-content">

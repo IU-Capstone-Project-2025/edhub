@@ -4,9 +4,11 @@ import axios from "axios"
 import CourseCard from "../components/CourseCard"
 import "./../styles/CoursesPage.css"
 import Header from "../components/Header"
+import CreateCourseModal from "../components/CreateCourse"
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState([])
+  const [showCreateCourseModal, setShowCreateCourseModal] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem("access_token")
@@ -48,14 +50,14 @@ export default function CoursesPage() {
         alert("Session expired or failed to load courses")
         window.location.href = "/"
       })
-  }, [])
+  }, [courses])
 
   return (
     <Header>
       <div className="courses-page">
         <div className="courses-header">
         <h1>My Courses</h1>
-        <a href="/create-course" className="add-course-link">+ Add Course</a>
+        <button onClick={() => setShowCreateCourseModal(true)} className="create-course-page-button">+ Add Course</button>
         </div>
 
         <div className="course-list-grid">
@@ -71,6 +73,12 @@ export default function CoursesPage() {
           ))}
         </div>
       </div>
+      {showCreateCourseModal && (
+        <CreateCourseModal 
+          onClose={() => setShowCreateCourseModal(false)}
+        />
+      )}
+      
     </Header>
   )
 }
