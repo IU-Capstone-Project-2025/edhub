@@ -24,17 +24,19 @@ docker compose up --build
 # To run in detached mode:
 # docker compose up --build -d
 ```
+Now you can go to http://localhost/ to access the application.
 
 ### Services Overview
-| Service       | Access URL                  | Port  | Notes                  |
-|---------------|-----------------------------|-------|------------------------|
-| **Frontend**  | http://localhost:5173       | 5173  | React application      |
-| **Backend**   | http://localhost:8000       | 8000  | FastAPI application    |
-| **Database**  | postgresql://db:5432/edhub  | 5432  | PostgreSQL container   |
+| Service       | Port  | Notes                  |
+|---------------|-------|------------------------|
+| **Frontend**  | 3000  | React application      |
+| **Backend**   | 8000  | FastAPI application    |
+| **Database**  | 5432  | PostgreSQL container   |
+| **Nginx**     | 80    | Nginx reverse proxy    |
 
 ### API Endpoints
 
-You can access the web version of API documentation at http://localhost:8000/docs/.
+You can access the web version of API documentation at http://localhost/api/docs/.
 
 ### Maintenance Commands
 ```bash
