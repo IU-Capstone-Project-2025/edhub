@@ -4,7 +4,6 @@ from jose import jwt
 import constraints
 from auth import pwd_hasher, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 import repo.users as repo_users
-# should be `re` instead of `regex`???
 from regex import match, search
 import logic.logging as logger
 
