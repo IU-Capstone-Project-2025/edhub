@@ -1,6 +1,4 @@
 __pycache__
 .vscode
-myenv
-.venv
+venv
 tempCodeRunnerFile.py
-database.py
