@@ -1,0 +1,54 @@
+import repo.logging as repo_log
+
+db_conn_shared = None
+db_cur_shared = None
+
+
+# it is probably a bad idea to insert and COMMIT the logs through the same cursor as
+# the data itself, so create new cursor on every log.
+
+
+def log(db_conn, tag, msg):
+    with db_conn.cursor() as db_cursor:
+        repo_log.sql_insert_log(db_cursor, tag, msg)
+        db_conn.commit()
+
+
+_TAG_ASSIGNMENT = "assignment"
+_TAG_COURSE = "course"
+_TAG_MATERIAL = "material"
+_TAG_PARENT = "parent"
+_TAG_STUDENT = "student"
+_TAG_TEACHER = "teacher"
+
+_ACT_ADD = "add"
+_ACT_DEL = "del"
+_ACT_SUBMIT = "submit"
+_ACT_GRADE = "grade"
+_ACT_CHANGE_PASSWORD = "changepw"
+
+
+TAG_ASSIGNMENT_ADD = f"{_TAG_ASSIGNMENT} {_ACT_ADD}"
+TAG_ASSIGNMENT_DEL = f"{_TAG_ASSIGNMENT} {_ACT_DEL}"
+TAG_ASSIGNMENT_SUBMIT = f"{_TAG_ASSIGNMENT} {_ACT_SUBMIT}"
+TAG_ASSIGNMENT_GRADE = f"{_TAG_ASSIGNMENT} {_ACT_GRADE}"
+
+TAG_COURSE_ADD = f"{_TAG_COURSE} {_ACT_ADD}"
+TAG_COURSE_DEL = f"{_TAG_COURSE} {_ACT_DEL}"
+
+TAG_MATERIAL_ADD = f"{_TAG_MATERIAL} {_ACT_ADD}"
+TAG_MATERIAL_DEL = f"{_TAG_MATERIAL} {_ACT_DEL}"
+
+TAG_PARENT_ADD = f"{_TAG_PARENT} {_ACT_ADD}"
+TAG_PARENT_DEL = f"{_TAG_PARENT} {_ACT_DEL}"
+
+TAG_STUDENT_ADD = f"{_TAG_STUDENT} {_ACT_ADD}"
+TAG_STUDENT_DEL = f"{_TAG_STUDENT} {_ACT_DEL}"
+
+TAG_TEACHER_ADD = f"{_TAG_TEACHER} {_ACT_ADD}"
+TAG_TEACHER_DEL = f"{_TAG_TEACHER} {_ACT_DEL}"
+
+TAG_USER_ADD = f"{_TAG_TEACHER} {_ACT_ADD}"
+TAG_USER_DEL = f"{_TAG_TEACHER} {_ACT_DEL}"
+TAG_USER_CHPW = f"{_TAG_TEACHER} {_ACT_CHANGE_PASSWORD}"
+

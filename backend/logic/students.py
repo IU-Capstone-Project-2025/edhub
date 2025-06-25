@@ -1,9 +1,7 @@
 from fastapi import HTTPException
 import constraints
 import repo.students as repo_students
-import logging
-
-logger = logging.getLogger(__name__)
+import logic.logging as logger
 
 
 def get_enrolled_students(db_cursor, course_id: str, user_email: str):
@@ -41,18 +39,17 @@ def invite_student(db_conn, db_cursor, course_id: str, student_email: str, teach
     repo_students.sql_insert_student_at(db_cursor, student_email, course_id)
     db_conn.commit()
 
-    logger.info(f"Teacher {teacher_email} invited a student {student_email}")
+    logger.log(db_conn, logger.TAG_STUDENT_ADD, f"Teacher {teacher_email} invited a student {student_email}")
     return {"success": True}
 
 
 def remove_student(db_conn, db_cursor, course_id: str, student_email: str, user_email: str):
     # checking constraints
     if not (
-        constraints.check_teacher_access(db_cursor, user_email, course_id) or
-        (constraints.check_student_access(db_cursor, user_email, course_id) and student_email == user_email)
+        constraints.check_teacher_access(db_cursor, user_email, course_id)
+        or (constraints.check_student_access(db_cursor, user_email, course_id) and student_email == user_email)
     ):
         raise HTTPException(status_code=403, detail="User does not have permissions to delete this student")
-    
 
     # check if the student is enrolled to course
     if not constraints.check_student_access(db_cursor, student_email, course_id):
@@ -62,6 +59,6 @@ def remove_student(db_conn, db_cursor, course_id: str, student_email: str, user_
     repo_students.sql_delete_student_at(db_cursor, course_id, student_email)
     db_conn.commit()
 
-    logger.info(f"Teacher {user_email} removed a student {student_email}")
+    logger.log(db_conn, logger.TAG_STUDENT_DEL, f"Teacher {user_email} removed a student {student_email}")
 
     return {"success": True}

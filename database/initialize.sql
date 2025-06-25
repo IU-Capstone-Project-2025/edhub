@@ -17,3 +17,5 @@ create table parent_of_at_course(parentemail text references users on delete cas
     studentemail text references users on delete cascade, courseid uuid references courses on delete cascade,
     foreign key (studentemail, courseid) references student_at on delete cascade,
     primary key (parentemail, studentemail, courseid));
+
+create table logs(t timestamp, tag text, msg text);
