@@ -2,7 +2,7 @@ CREATE DATABASE edhub;
 \c edhub
 
 CREATE TABLE users(
-    email text PRIMARY KEY CHECK (length(email) <= 128),
+    email text PRIMARY KEY CHECK (length(email) <= 254),
     publicname text NOT NULL,
     isadmin bool NOT NULL,
     timeregistered timestamp NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE users(
 
 CREATE TABLE courses(
     courseid uuid PRIMARY KEY,
-    name text NOT NULL,
+    name text NOT NULL CHECK (length(name) <= 128),
     timecreated timestamp NOT NULL
 );
 
@@ -41,7 +41,7 @@ CREATE TABLE course_assignments_submissions(
     email text REFERENCES users ON DELETE CASCADE,
     timeadded timestamp NOT NULL,
     timemodified timestamp NOT NULL,
-    comment text NOT NULL,
+    comment text NOT NULL CHECK (length(comment) <= 1000),
     grade int NOT NULL,
     gradedby text NULL REFERENCES users ON DELETE SET NULL,
     PRIMARY KEY (courseid, assid, email)
