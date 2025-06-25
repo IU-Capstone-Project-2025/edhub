@@ -1,75 +1,84 @@
-import Header from "@/components/Header"
-import CourseCard from "../components/CourseCard"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import axios from "axios"
-import { Button } from "@/components/ui/button"
+
+import CourseCard from "../components/CourseCard"
+import "./../styles/CoursesPage.css"
+import Header from "../components/Header"
+import CreateCourseModal from "../components/CreateCourse"
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState([])
+  const [showCreateCourseModal, setShowCreateCourseModal] = useState(false)
 
   useEffect(() => {
-  const fetchCourses = async () => {
     const token = localStorage.getItem("access_token")
-    if (!token) {
-      console.error("No access token found")
-      return
-    }
 
-    try {
-      const res = await axios.get("/available_courses", {
+    axios
+      .get("/api/available_courses", {
         headers: { Authorization: `Bearer ${token}` },
       })
+      .then(async (res) => {
+        const full = await Promise.all(
+          res.data.map(async (c) => {
+            const infoRes = await axios.get("/api/get_course_info", {
+              headers: { Authorization: `Bearer ${token}` },
+              params: { course_id: c.course_id },
+            })
 
-      const full = await Promise.all(
-        res.data.map(async (c) => {
-          const r = await axios.get("/get_course_info", {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { course_id: c.course_id },
+            const roleRes = await axios.get("/api/get_user_role", {
+              headers: { Authorization: `Bearer ${token}` },
+              params: { course_id: c.course_id },
+            })
+
+            const role = roleRes.data
+            let user_role = "unknown"
+            if (role.is_teacher) user_role = "teacher"
+            else if (role.is_student) user_role = "student"
+            else if (role.is_parent) user_role = "parent"
+
+            return {
+              ...infoRes.data,
+              user_role,
+            }
           })
-          return r.data
-        })
-      )
+        )
 
-      setCourses(full)
-    } catch (err) {
-      console.error("Ошибка получения курсов:", err)
-      if (err.response?.status === 401) {
-        alert("Сессия истекла. Пожалуйста, войдите снова.")
+        setCourses(full)
+      })
+      .catch((err) => {
+        console.error(err)
+        alert("Session expired or failed to load courses")
         window.location.href = "/"
-      }
-    }
-  }
-
-  fetchCourses()
-}, [])
-
+      })
+  }, [courses])
 
   return (
     <Header>
-  <div className="w-full px-[5%] py-[2%]">
-    <div className="flex justify-between items-center mb-[2%] flex-wrap gap-4 w-full">
-      <h1 className="text-2xl font-bold text-[#333940]">Your Courses</h1>
-      <a href="/create-course">
-        <Button className="bg-[#4CB050] hover:bg-[#3BBF12] text-white text-md rounded-xl px-[5%] py-[2%] border-2 border-transparent hover:border-[#2E7D32] transition">
-          + Add Course
-        </Button>
-      </a>
-    </div>
+      <div className="courses-page">
+        <div className="courses-header">
+        <h1>My Courses</h1>
+        <button onClick={() => setShowCreateCourseModal(true)} className="create-course-page-button">+ Add Course</button>
+        </div>
 
-    <div className="grid gap-[3%] grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
-      {courses.map((course) => (
-        <CourseCard
-          key={course.course_id}
-          id={course.course_id}      
-          title={course.title}
-          date={course.creation_date}
-          students={course.number_of_students}
+        <div className="course-list-grid">
+          {courses.map((c) => (
+            <CourseCard
+              key={c.course_id}
+              course_id={c.course_id}
+              title={c.title}
+              date={c.creation_time}
+              students={c.number_of_students}
+              user_role={c.user_role}
+            />
+          ))}
+        </div>
+      </div>
+      {showCreateCourseModal && (
+        <CreateCourseModal 
+          onClose={() => setShowCreateCourseModal(false)}
         />
-
-      ))}
-    </div>
-  </div>
-</Header>
-
+      )}
+      
+    </Header>
   )
 }

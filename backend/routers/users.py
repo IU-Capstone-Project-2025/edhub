@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from auth import get_current_user, get_db
 import json_classes
 from logic.users import (
+    get_user_info as logic_get_user_info,
     get_user_role as logic_get_user_role,
     create_user as logic_create_user,
     login as logic_login,
@@ -11,6 +12,15 @@ from logic.users import (
 )
 
 router = APIRouter()
+
+
+@router.get("/get_user_info", response_model=json_classes.User)
+async def get_user_info(user_email: str = Depends(get_current_user)):
+    """
+    Get the info about the user.
+    """
+    with get_db() as (db_conn, db_cursor):
+        return logic_get_user_info(db_cursor, user_email)
 
 
 @router.get("/get_user_role", response_model=json_classes.CourseRole)

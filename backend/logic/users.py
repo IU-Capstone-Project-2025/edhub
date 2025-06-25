@@ -8,6 +8,13 @@ from regex import match, search
 import logic.logging as logger
 
 
+def get_user_info(db_cursor, user_email: str):
+    return {
+        "email": user_email,
+        "name": repo_users.sql_get_user_name(db_cursor, user_email),
+    }
+
+
 def get_user_role(db_cursor, course_id: str, user_email: str):
     # getting info about the roles
     res = {

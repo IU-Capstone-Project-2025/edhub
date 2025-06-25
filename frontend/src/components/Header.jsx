@@ -1,85 +1,118 @@
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { cn } from "@/lib/utils"
 import axios from "axios"
+import CreateCourseModal from "../components/CreateCourse"
+
+import "../styles/Header.css"
 
 export default function Header({ children }) {
-  const location = useLocation()
   const [courses, setCourses] = useState([])
+  const location = useLocation()
+  const [showCreateCourseModal, setShowCreateCourseModal] = useState(false)
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const token = localStorage.getItem("access_token")
-        const res = await axios.get("/available_courses", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+  const token = localStorage.getItem("access_token")
 
-        const detailed = await Promise.all(
-          res.data.map(async (course) => {
-            const info = await axios.get("/get_course_info", {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { course_id: course.course_id },
-            })
-            return {
-              id: course.course_id,
-              title: info.data.title,
-            }
+  const fetchCourses = async () => {
+    try {
+      const res = await axios.get("/api/available_courses", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      const detailed = await Promise.all(
+        res.data.map(async (c) => {
+          const info = await axios.get("/api/get_course_info", {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { course_id: c.course_id },
           })
-        )
+          return {
+            course_id: c.course_id,
+            title: info.data.title,
+          }
+        })
+      )
 
-        setCourses(detailed)
-      } catch (err) {
-        console.error("Failed to load courses", err)
-      }
+      setCourses(detailed)
+    } catch (err) {
+      console.error("Failed to load full course list", err)
     }
+  }
 
-    fetchCourses()
-  }, [])
+  fetchCourses()
+}, [])
 
-  const crumbs = location.pathname
-    .split("/")
-    .filter(Boolean)
-    .map((seg, idx, arr) => (
-      <span key={idx} className={cn("text-sm", idx === arr.length - 1 ? "text-[#4CB050] font-medium" : "text-gray-500")}>
-        {seg[0].toUpperCase() + seg.slice(1)}
-        {idx < arr.length - 1 && <span className="mx-1 text-gray-400">/</span>}
-      </span>
-    ))
+  const courseMap = {}
+  courses.forEach((c) => (courseMap[c.course_id] = c.title))
+
+  const pathParts = location.pathname.split("/").filter(Boolean)
+
+  const buildPath = (index) => {
+    return "/" + pathParts.slice(0, index + 1).join("/")
+  }
+
+  const routeLabels = {
+    courses: "Courses",
+    materials: "Materials",
+    students: "Students",
+    teachers: "Teachers",
+    parents: "Parents",
+    settings: "Settings",
+    dashboard: "Dashboard",
+    create: "Create",
+  }
 
   return (
-    <div className="min-h-screen flex bg-[#f9fafb]">
-      <aside className="w-64 bg-white border-r border-gray-200 shadow-sm h-screen p-6">
-        <h2 className="text-xl font-bold text-[#333940] mb-6">EdHub LMS</h2>
-        <nav className="space-y-2 text-sm">
-          <Link to="/courses" className={cn("block hover:text-[#4CB050]", location.pathname === "/courses" && "text-[#4CB050] font-semibold")}>
-            Courses
-          </Link>
+    <div className="layout">
+      <aside className="sidebar">
+        <div className="sidebar-title">EdHub LMS</div>
+        <div className="sidebar-section">Courses</div>
+        <ul className="course-list">
+          {courses.map((c) => {
+            const active = location.pathname.includes(c.course_id)
+            return (
+              <li key={c.course_id}>
+                <Link
+                  to={`/courses/${c.course_id}`}
+                  className={`course-link ${active ? "active" : ""}`}
+                >
+                  {c.title}
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+        <Link onClick={() => setShowCreateCourseModal(true)} className="create-course-link">
+          + Create Course
+        </Link>
+        {showCreateCourseModal && (
+                <CreateCourseModal 
+                  onClose={() => setShowCreateCourseModal(false)}
+                />
+              )}
 
-          <div className="ml-4 space-y-1">
-            {courses.map((course) => (
-              <Link
-                key={course.id}
-                to={`/courses/${course.id}`}
-                className={cn(
-                  "block text-gray-600 hover:text-[#4CB050]",
-                  location.pathname === `/courses/${course.id}` && "text-[#4CB050] font-medium"
-                )}
-              >
-                {course.title}
-              </Link>
-            ))}
-          </div>
-
-          <Link to="/create-course" className="block hover:text-[#4CB050] text-gray-700 mt-4">
-            + Create Course
-          </Link>
-        </nav>
       </aside>
 
-<main className="flex-1 p-6 md:p-10 space-y-6 overflow-x-hidden">
-        <div className="text-sm flex items-center space-x-1">{crumbs}</div>
-        {children}
+      <main className="main-content">
+        <div className="breadcrumbs">
+          {pathParts.map((segment, idx) => {
+            const path = buildPath(idx)
+            const isCourseId = segment.length > 20 && courseMap[segment]
+            const label = isCourseId
+              ? courseMap[segment]
+              : segment.charAt(0).toUpperCase() + segment.slice(1)
+
+            return (
+              <span key={idx}>
+                {idx > 0 && " / "}
+                <Link to={path} className="breadcrumb-link">
+                  {label}
+                </Link>
+              </span>
+            )
+          })}
+        </div>
+
+        <div className="content-wrapper">{children}</div>
       </main>
     </div>
   )
