@@ -3,8 +3,8 @@ CREATE DATABASE edhub;
 
 CREATE TABLE users(
     email text PRIMARY KEY CHECK (length(email) <= 254),
-    publicname text NOT NULL,
-    isadmin bool NOT NULL,
+    publicname text NOT NULL CHECK (length(publicname) <= 128),
+    isadmin bool NOT NULL DEFAULT 'f',
     timeregistered timestamp NOT NULL,
     passwordhash text NOT NULL
 );
@@ -40,7 +40,7 @@ CREATE TABLE course_assignments_submissions(
     assid int REFERENCES course_assignments ON DELETE CASCADE,
     email text REFERENCES users ON DELETE CASCADE,
     timeadded timestamp NOT NULL,
-    timemodified timestamp NOT NULL,
+    timemodified timestamp NOT NULL CHECK (timemodified >= timeadded),
     comment text NOT NULL CHECK (length(comment) <= 1000),
     grade int NOT NULL,
     gradedby text NULL REFERENCES users ON DELETE SET NULL,
