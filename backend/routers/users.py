@@ -3,13 +3,24 @@ from fastapi import APIRouter, Depends
 from auth import get_current_user, get_db
 import json_classes
 from logic.users import (
+    get_user_info as logic_get_user_info,
     get_user_role as logic_get_user_role,
     create_user as logic_create_user,
     login as logic_login,
+    change_password as logic_change_password,
     remove_user as logic_remove_user,
 )
 
 router = APIRouter()
+
+
+@router.get("/get_user_info", response_model=json_classes.User)
+async def get_user_info(user_email: str = Depends(get_current_user)):
+    """
+    Get the info about the user.
+    """
+    with get_db() as (db_conn, db_cursor):
+        return logic_get_user_info(db_cursor, user_email)
 
 
 @router.get("/get_user_role", response_model=json_classes.CourseRole)
@@ -25,6 +36,10 @@ async def get_user_role(course_id: str, user_email: str = Depends(get_current_us
 async def create_user(user: json_classes.UserCreate):
     """
     Creates a user account with provided email, name, and password.
+
+    User email should be in the correct format.
+
+    User password should have at least 8 symbols and contain digits, letters, and special symbols.
 
     Returns email and JWT access token for 30 minutes.
     """
@@ -43,7 +58,15 @@ async def login(user: json_classes.UserLogin):
         return logic_login(db_cursor, user)
 
 
-# WARNING: update if new elements appear
+@router.post("/change_password", response_model=json_classes.Success)
+async def change_password(user: json_classes.UserNewPassword):
+    """
+    Change the user password to a new one.
+    """
+    with get_db() as (db_conn, db_cursor):
+        return logic_change_password(db_conn, db_cursor, user)
+
+
 @router.post("/remove_user", response_model=json_classes.Success)
 async def remove_user(user_email: str = Depends(get_current_user)):
     """

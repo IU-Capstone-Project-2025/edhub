@@ -1,3 +1,8 @@
+def sql_get_user_name(db_cursor, email):
+    db_cursor.execute("SELECT publicname FROM users WHERE email = %s", (email,))
+    return db_cursor.fetchone()[0]
+
+
 def sql_select_user_exists(db_cursor, email):
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (email,))
     return db_cursor.fetchone()[0]
@@ -13,6 +18,10 @@ def sql_insert_user(db_cursor, email, name, hashed_password):
 def sql_select_passwordhash(db_cursor, email):
     db_cursor.execute("SELECT passwordhash FROM users WHERE email = %s", (email,))
     return db_cursor.fetchone()
+
+
+def sql_update_password(db_cursor, email, hashed_new_password):
+    db_cursor.execute("UPDATE users SET passwordhash = %s WHERE email = %s", (hashed_new_password, email))
 
 
 def sql_select_single_teacher_courses(db_cursor, user_email):

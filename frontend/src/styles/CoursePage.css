@@ -1,0 +1,32 @@
+.course-page {
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.course-page h1 {
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+
+.actions {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.actions button {
+  background-color: #4cb050;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.actions button:hover {
+  background-color: #3fa046;
+}

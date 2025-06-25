@@ -9,6 +9,7 @@ import routers.students
 import routers.teachers
 import routers.users
 
+
 app = FastAPI()
 app.include_router(routers.assignments.router)
 app.include_router(routers.courses.router)

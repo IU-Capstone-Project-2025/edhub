@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from constants import TIME_FORMAT
 import constraints
 import repo.assignments as repo_ass
+import logic.logging as logger
 
 
 def create_assignment(
@@ -18,7 +19,9 @@ def create_assignment(
     # create assignment
     assignment_id = repo_ass.sql_insert_assignment(db_cursor, course_id, title, description, user_email)
     db_conn.commit()
-    
+
+    logger.log(db_conn, logger.TAG_ASSIGNMENT_ADD, f"Created assignment {assignment_id}")
+
     return {"course_id": course_id, "assignment_id": assignment_id}
 
 
@@ -27,9 +30,11 @@ def remove_assignment(db_conn, db_cursor, course_id: str, assignment_id: str, us
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
-    # reomve assignment
+    # remove assignment
     repo_ass.sql_delete_assignment(db_cursor, course_id, assignment_id)
     db_conn.commit()
+
+    logger.log(db_conn, logger.TAG_ASSIGNMENT_DEL, f"Removed assignment {assignment_id}")
 
     return {"success": True}
 
@@ -82,6 +87,8 @@ def submit_assignment(
 
     else:
         raise HTTPException(status_code=404, detail="Can't edit the submission after it was graded.")
+
+    logger.log(db_conn, logger.TAG_ASSIGNMENT_SUBMIT, f"Student {student_email} submitted an assignment{assignment_id} in {course_id}")
 
     return {"success": True}
 
@@ -162,5 +169,7 @@ def grade_submission(
 
     repo_ass.sql_update_submission_grade(db_cursor, grade, user_email, course_id, assignment_id, student_email)
     db_conn.commit()
+
+    logger.log(db_conn, logger.TAG_ASSIGNMENT_GRADE, f"Teacher {user_email} graded an assignment {assignment_id} in {course_id} by {student_email}")
 
     return {"success": True}

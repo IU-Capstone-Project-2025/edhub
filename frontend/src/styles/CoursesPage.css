@@ -1,0 +1,82 @@
+.courses-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.courses-page {
+  padding: 40px;
+  max-width: none;
+  margin: 0;
+  font-family: sans-serif;
+  background: none; 
+}
+
+.add-course-link {
+  background-color: #4CB050;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+
+.courses-page h1 {
+  font-size: 32px;
+  margin-bottom: 24px;
+  color: #333940;
+}
+
+.course-list {
+  list-style: none;
+  padding: 0;
+}
+
+.course-item {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  font-size: 16px;
+  border-left: 6px solid #4CB050;
+}
+
+.add-course-link {
+  display: inline-block;
+  margin-bottom: 24px;
+  background-color: #4CB050;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.add-course-link:hover {
+  background-color: #3BBF12;
+}
+
+.course-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* ⬅️ меньше карточки */
+  gap: 28px;
+  margin-top: 32px;
+}
+
+.create-course-page-button {
+  background-color: #4CB050;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 10%;
+}
+
+.create-course-page-button:hover {
+  background-color: #3BBF12;
+}

@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 import constraints
 import repo.parents as repo_parents
+import logic.logging as logger
 
 
 def get_students_parents(db_cursor, course_id: str, student_email: str, user_email: str):
@@ -48,6 +49,8 @@ def invite_parent(
     repo_parents.sql_insert_parent_of_at_course(db_cursor, parent_email, student_email, course_id)
     db_conn.commit()
 
+    logger.log(db_conn, logger.TAG_PARENT_ADD, f"Teacher {teacher_email} invited a parent {parent_email} for student {student_email}")
+
     return {"success": True}
 
 
@@ -57,11 +60,15 @@ def remove_parent(
     course_id: str,
     student_email: str,
     parent_email: str,
-    teacher_email: str,
+    user_email: str,
 ):
 
     # checking constraints
-    constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
+    if not (
+        constraints.check_teacher_access(db_cursor, user_email, course_id)
+        or (constraints.check_parent_access(db_cursor, user_email, course_id) and parent_email == user_email)
+    ):
+        raise HTTPException(status_code=403, detail="User does not have permissions to delete this parent")
 
     # check if the parent assigned to the course with the student
     constraints.assert_parent_student_access(db_cursor, parent_email, student_email, course_id)
@@ -69,6 +76,8 @@ def remove_parent(
     # remove parent
     repo_parents.sql_delete_parent_of_at_course(db_cursor, course_id, student_email, parent_email)
     db_conn.commit()
+
+    logger.log(db_conn, logger.TAG_PARENT_DEL, f"Teacher {user_email} removed a parent {parent_email} for student {student_email}")
 
     return {"success": True}
 

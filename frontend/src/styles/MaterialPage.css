@@ -1,0 +1,198 @@
+.assignment-page {
+  min-height: 100vh;
+  padding: 40px;
+  background: #F7FAFC;
+  font-family: 'Inter', Arial, sans-serif;
+}
+.back-btn {
+  background: none;
+  color: #4CB050;
+  font-size: 16px;
+  border: none;
+  margin-bottom: 28px;
+  cursor: pointer;
+  font-weight: 500;
+  padding-left: 0;
+}
+.assignment-main {
+  display: flex;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 6px 32px #3339400a;
+  overflow: hidden;
+  min-height: 420px;
+}
+.assignment-left, .assignment-right {
+  padding: 40px 32px;
+  flex: 1;
+  min-width: 320px;
+}
+.assignment-left {
+  border-right: 1px solid #EDF2F7;
+}
+.assignment-left h1 {
+  font-size: 2.1rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #333940;
+}
+.assignment-left p {
+  font-size: 1.16rem;
+  color: #576574;
+}
+.assignment-right {
+  display: flex;
+  flex-direction: column;
+}
+.assignment-right h2 {
+  margin: 0 0 18px 0;
+  font-size: 1.25rem;
+  color: #4CB050;
+}
+.submission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.submission-card {
+  background: #F1FAFE;
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 2px 10px #4C97B022;
+  cursor: pointer;
+  transition: box-shadow 0.12s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.submission-card:hover {
+  box-shadow: 0 4px 24px #4C97B044;
+}
+.submission-status {
+  font-size: 0.98em;
+  color: #999;
+}
+.empty {
+  color: #B1B1B1;
+  padding: 16px 0;
+}
+.student-submit-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.student-submit-block textarea {
+  width: 100%;
+  min-height: 92px;
+  border-radius: 10px;
+  border: 1px solid #C9E6F3;
+  padding: 13px 14px;
+  font-size: 1.05em;
+  background: #F7FCFF;
+  margin-bottom: 5px;
+}
+.submit-btn {
+  background: #4CB050;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 0;
+  font-size: 1.07em;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.1s;
+}
+.submit-btn:disabled {
+  background: #B1E4F5;
+  color: #fff;
+  cursor: not-allowed;
+}
+.submitted-answer {
+  background: #F1FAFE;
+  border-radius: 12px;
+  padding: 18px 16px;
+}
+.my-comment-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #4CB050;
+}
+.my-comment {
+  margin-bottom: 12px;
+}
+.my-grade {
+  font-size: 1.07em;
+  color: #00a25d;
+  font-weight: 600;
+}
+.popup-bg {
+  position: fixed;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  background: #33394044;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.popup-card {
+  background: #fff;
+  border-radius: 18px;
+  min-width: 330px;
+  max-width: 96vw;
+  padding: 32px 26px 18px 26px;
+  box-shadow: 0 8px 42px #3339402d;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  animation: popupAppear 0.18s cubic-bezier(.37,1.32,.5,1) both;
+}
+@keyframes popupAppear {
+  from { transform: translateY(22px) scale(0.93); opacity: 0;}
+  to   { transform: none; opacity: 1;}
+}
+.popup-title {
+  font-size: 1.13rem;
+  font-weight: 600;
+  color: #333940;
+}
+.popup-content {
+  font-size: 1.07rem;
+  margin-bottom: 8px;
+}
+.popup-grade-block {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+.popup-grade-block input {
+  border: 1px solid #B1E4F5;
+  border-radius: 7px;
+  padding: 5px 12px;
+  font-size: 1em;
+}
+.grade-btn {
+  background: #4C97B0;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 18px;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+}
+.popup-graded {
+  margin-top: 7px;
+  color: #00a25d;
+  font-weight: 500;
+}
+.close-btn {
+  margin-top: 14px;
+  background: none;
+  border: none;
+  color: #4C97B0;
+  font-size: 1em;
+  cursor: pointer;
+  font-weight: 500;
+  align-self: flex-end;
+}

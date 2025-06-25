@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 import constraints
 import repo.teachers as repo_teachers
+import logic.logging as logger
 
 
 def get_course_teachers(db_cursor, course_id: str, user_email: str):
@@ -38,6 +39,8 @@ def invite_teacher(db_conn, db_cursor, course_id: str, new_teacher_email: str, t
     repo_teachers.sql_insert_teacher(db_cursor, new_teacher_email, course_id)
     db_conn.commit()
 
+    logger.log(db_conn, logger.TAG_TEACHER_ADD, f"Teacher {teacher_email} invited a teacher {new_teacher_email}")
+
     return {"success": True}
 
 
@@ -58,5 +61,7 @@ def remove_teacher(db_conn, db_cursor, course_id: str, removing_teacher_email: s
     # remove teacher
     repo_teachers.sql_delete_teacher(db_cursor, course_id, removing_teacher_email)
     db_conn.commit()
+
+    logger.log(db_conn, logger.TAG_TEACHER_DEL, f"Teacher {teacher_email} removed a teacher {removing_teacher_email}")
 
     return {"success": True}
