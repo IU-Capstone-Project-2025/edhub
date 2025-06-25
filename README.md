@@ -28,7 +28,7 @@ docker compose up --build
 ### Services Overview
 | Service       | Access URL                  | Port  | Notes                  |
 |---------------|-----------------------------|-------|------------------------|
-| **Frontend**  | http://localhost:5173       | 5173  | React application      |
+| **Frontend**  | http://localhost            | 80    | React application      |
 | **Backend**   | http://localhost:8000       | 8000  | FastAPI application    |
 | **Database**  | postgresql://db:5432/edhub  | 5432  | PostgreSQL container   |
 
