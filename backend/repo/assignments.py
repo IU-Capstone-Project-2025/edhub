@@ -23,3 +23,40 @@ def sql_select_assignment(db_cursor, course_id, assignment_id):
         (course_id, assignment_id),
     )
     return db_cursor.fetchone()
+
+
+def sql_insert_assignment_attachment(db_cursor, course_id, assignment_id, filename, contents):
+    db_cursor.execute(
+        """
+        INSERT INTO assignment_files 
+        (courseid, matid, filename, file, upload_time)
+        VALUES (%s, %s, %s, %s, now())
+        RETURNING fileid, upload_time
+        """,
+        (course_id, assignment_id, filename, contents),
+    )
+    return db_cursor.fetchone()
+
+
+def sql_select_assignment_attachments(db_cursor, course_id, assignment_id):
+    db_cursor.execute(
+        """
+        SELECT fileid, filename, upload_time
+        FROM assignment_files
+        WHERE courseid = %s AND matid = %s
+        """,
+        (course_id, assignment_id),
+    )
+    return db_cursor.fetchall()
+
+
+def sql_download_assignment_attachment(db_cursor, course_id, assignment_id, file_id):
+    db_cursor.execute(
+        """
+        SELECT file, filename
+        FROM assignment_files
+        WHERE courseid = %s AND matid = %s AND fileid = %s
+        """,
+        (course_id, assignment_id, file_id)
+    )
+    return db_cursor.fetchone()

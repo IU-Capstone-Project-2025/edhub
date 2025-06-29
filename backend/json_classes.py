@@ -65,6 +65,14 @@ class Assignment(AssignmentID):
     author: str
 
 
+class AssignmentAttachmentMetadata(BaseModel):
+    course_id: str
+    assignment_id: int
+    file_id: int
+    filename: str
+    upload_time: str
+
+
 class Submission(BaseModel):
     course_id: str
     assignment_id: int

@@ -68,7 +68,7 @@ async def create_material_attachment(
     user_email: str = Depends(get_current_user),
 ):
     f"""
-    Attach the provided file to the attached course material.
+    Attach the provided file to provided course material.
 
     Teacher role required.
 
