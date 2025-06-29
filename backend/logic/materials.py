@@ -1,4 +1,4 @@
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException, UploadFile, Response
 from constants import TIME_FORMAT, ATTACHMENT_SIZE
 import constraints
 import repo.materials as repo_mat
@@ -65,7 +65,7 @@ async def create_material_attachment(db_conn, db_cursor, course_id: str, materia
     attachment_metadata = repo_mat.sql_insert_material_attachment(db_cursor, course_id, material_id, file.filename, contents)
     db_conn.commit()
 
-    # TODO: logger for the attachment
+    # TODO: logger for the attachment (Askar)
     # logger.log(db_conn, logger.TAG_MATERIAL_ADD, f"User {user_email} attached a file {file.filename} to the material material {material_id} in course {course_id}")
     return {
         "course_id": course_id,
@@ -74,3 +74,37 @@ async def create_material_attachment(db_conn, db_cursor, course_id: str, materia
         'filename' : file.filename,
         'upload_time' : attachment_metadata[1].strftime(TIME_FORMAT)
     }
+
+
+def get_material_attachments(db_cursor, course_id: str, material_id: str, user_email: str):
+    # checking constraints
+    constraints.assert_course_access(db_cursor, user_email, course_id)
+
+    # searching for material attachments
+    files = repo_mat.sql_select_material_attachments(db_cursor, course_id, material_id)
+
+    res = [{
+        "course_id": course_id,
+        "material_id": material_id,
+        "file_id": file[0],
+        "filename": file[1],
+        "upload_time": file[2].strftime(TIME_FORMAT)
+    } for file in files]
+ 
+    return res
+
+
+def download_material_attachment(db_cursor, course_id: str, material_id: str, file_id: str, user_email: str):
+    # checking constraints
+    constraints.assert_course_access(db_cursor, user_email, course_id)
+
+    # searching for material attachment
+    file = repo_mat.sql_download_material_attachment(db_cursor, course_id, material_id, file_id)
+    if not file:
+        raise HTTPException(status_code=404, detail="Attachment not found")
+
+    return Response(
+        content=file[0],
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{file[1]}"'}
+    )
