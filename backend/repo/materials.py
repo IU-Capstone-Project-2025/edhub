@@ -23,3 +23,16 @@ def sql_select_material(db_cursor, course_id, material_id):
         (course_id, material_id),
     )
     return db_cursor.fetchone()
+
+
+def sql_insert_material_attachment(db_cursor, course_id, material_id, filename, contents):
+    db_cursor.execute(
+        """
+        INSERT INTO material_files 
+        (courseid, matid, filename, file, upload_time)
+        VALUES (%s, %s, %s, %s, now())
+        RETURNING fileid, upload_time
+        """,
+        (course_id, material_id, filename, contents),
+    )
+    return db_cursor.fetchone()

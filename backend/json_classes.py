@@ -45,6 +45,14 @@ class Material(MaterialID):
     description: str
 
 
+class MaterialAttachmentMetadata(BaseModel):
+    course_id: str
+    material_id: int
+    file_id: int
+    filename: str
+    upload_time: str
+
+
 class AssignmentID(BaseModel):
     course_id: str
     assignment_id: int

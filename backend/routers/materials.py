@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File
 
 from auth import get_current_user, get_db
 import json_classes
@@ -6,6 +6,7 @@ from logic.materials import (
     create_material as logic_create_material,
     remove_material as logic_remove_material,
     get_material as logic_get_material,
+    create_material_attachment as logic_create_material_attachment,
 )
 
 router = APIRouter()
@@ -53,3 +54,21 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
     """
     with get_db() as (db_conn, db_cursor):
         return logic_get_material(db_cursor, course_id, material_id, user_email)
+
+
+@router.post("/create_material_attachment", response_model=json_classes.MaterialAttachmentMetadata)
+async def create_material_attachment(
+    course_id: str,
+    material_id: str,
+    file: UploadFile = File(...),
+    user_email: str = Depends(get_current_user),
+):
+    """
+    Attach the provided file to the attached course material.
+
+    Teacher role required.
+
+    Returns the (course_id, material_id, file_id, filename, upload_time) for the new attachment in case of success.
+    """
+    with get_db() as (db_conn, db_cursor):
+        return await logic_create_material_attachment(db_conn, db_cursor, course_id, material_id, file, user_email)
