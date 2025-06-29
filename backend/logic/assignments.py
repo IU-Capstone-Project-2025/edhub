@@ -86,6 +86,7 @@ async def create_assignment_attachment(db_conn, db_cursor, course_id: str, assig
 
 def get_assignment_attachments(db_cursor, course_id: str, assignment_id: str, user_email: str):
     # checking constraints
+    constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # searching for assignment attachments
@@ -104,6 +105,7 @@ def get_assignment_attachments(db_cursor, course_id: str, assignment_id: str, us
 
 def download_assignment_attachment(db_cursor, course_id: str, assignment_id: str, file_id: str, user_email: str):
     # checking constraints
+    constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # searching for assignment attachment

@@ -77,6 +77,7 @@ async def create_material_attachment(db_conn, db_cursor, course_id: str, materia
 
 def get_material_attachments(db_cursor, course_id: str, material_id: str, user_email: str):
     # checking constraints
+    constraints.assert_material_exists(db_cursor, course_id, material_id)
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # searching for material attachments
@@ -95,6 +96,7 @@ def get_material_attachments(db_cursor, course_id: str, material_id: str, user_e
 
 def download_material_attachment(db_cursor, course_id: str, material_id: str, file_id: str, user_email: str):
     # checking constraints
+    constraints.assert_material_exists(db_cursor, course_id, material_id)
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # searching for material attachment
