@@ -1,8 +1,9 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile, Response
 from constants import TIME_FORMAT
 import constraints
 import repo.submissions as repo_submit
 import logic.logging as logger
+from logic.uploading import careful_upload
 
 
 def submit_assignment(
@@ -118,3 +119,75 @@ def grade_submission(
     logger.log(db_conn, logger.TAG_ASSIGNMENT_GRADE, f"Teacher {user_email} graded an assignment {assignment_id} in {course_id} by {student_email}")
 
     return {"success": True}
+
+
+async def create_submission_attachment(db_conn, db_cursor, course_id: str, assignment_id: str, student_email: str, file: UploadFile, user_email: str):
+    # checking constraints
+    constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
+    if student_email != user_email:
+        raise HTTPException(status_code=403, detail="User does not have access to this submission")
+
+    # read the file
+    contents = await careful_upload(file)
+
+    # save the file into database
+    attachment_metadata = repo_submit.sql_insert_submission_attachment(db_cursor, course_id, assignment_id, student_email, file.filename, contents)
+    db_conn.commit()
+
+    # TODO: logger for the attachment (Askar)
+    # logger.log(db_conn, logger.TAG_assignment_ADD, f"User {user_email} attached a file {file.filename} to the assignment assignment {assignment_id} in course {course_id}")
+    return {
+        "course_id": course_id,
+        "assignment_id": assignment_id,
+        'student_email': student_email,
+        'file_id': attachment_metadata[0],
+        'filename' : file.filename,
+        'upload_time' : attachment_metadata[1].strftime(TIME_FORMAT)
+    }
+
+
+def get_submission_attachments(db_cursor, course_id: str, assignment_id: str, student_email: str, user_email: str):
+    # checking constraints
+    constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
+    if not (
+        constraints.check_teacher_access(db_cursor, user_email, course_id)
+        or constraints.check_parent_student_access(db_cursor, user_email, student_email, course_id)
+        or student_email == user_email
+    ):
+        raise HTTPException(status_code=403, detail="User does not have access to this submission")
+
+    # searching for submission attachments
+    files = repo_submit.sql_select_submission_attachments(db_cursor, course_id, assignment_id, student_email)
+
+    res = [{
+        "course_id": course_id,
+        "assignment_id": assignment_id,
+        'student_email': student_email,
+        "file_id": file[0],
+        "filename": file[1],
+        "upload_time": file[2].strftime(TIME_FORMAT)
+    } for file in files]
+ 
+    return res
+
+
+def download_submission_attachment(db_cursor, course_id: str, assignment_id: str, student_email: str, file_id: str, user_email: str):
+    # checking constraints
+    constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
+    if not (
+        constraints.check_teacher_access(db_cursor, user_email, course_id)
+        or constraints.check_parent_student_access(db_cursor, user_email, student_email, course_id)
+        or student_email == user_email
+    ):
+        raise HTTPException(status_code=403, detail="User does not have access to this submission")
+
+    # searching for submission attachment
+    file = repo_submit.sql_download_submission_attachment(db_cursor, course_id, assignment_id, student_email, file_id)
+    if not file:
+        raise HTTPException(status_code=404, detail="Attachment not found")
+
+    return Response(
+        content=file[0],
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{file[1]}"'}
+    )

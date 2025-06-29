@@ -1,5 +1,5 @@
+from fastapi import APIRouter, Depends, UploadFile, File
 from typing import List
-from fastapi import APIRouter, Depends
 
 from auth import get_current_user, get_db
 from constants import TIME_FORMAT
@@ -107,3 +107,46 @@ async def grade_submission(
             grade,
             user_email,
         )
+
+
+@router.post("/create_submission_attachment", response_model=json_classes.SubmissionAttachmentMetadata)
+async def create_submission_attachment(
+    course_id: str,
+    assignment_id: str,
+    student_email: str,
+    file: UploadFile = File(...),
+    user_email: str = Depends(get_current_user),
+):
+    f"""
+    Attach the provided file to provided course assignment submission.
+
+    Student role required.
+
+    Returns the (course_id, assignment_id, student_email, file_id, filename, upload_time) for the new attachment in case of success.
+
+    The format of upload_time is "{TIME_FORMAT}".
+    """
+    with get_db() as (db_conn, db_cursor):
+        return await logic_create_submission_attachment(db_conn, db_cursor, course_id, assignment_id, student_email, file, user_email)
+
+
+@router.get("/get_submission_attachments", response_model=List[json_classes.SubmissionAttachmentMetadata])
+async def get_submission_attachments(course_id: str, assignment_id: str, student_email: str, user_email: str = Depends(get_current_user)):
+    f"""
+    Get the list of attachments to the course assignment submission by provided course_id, assignment_id, student_email.
+
+    Returns list of attachments metadata (course_id, assignment_id, student_email, file_id, filename, upload_time).
+
+    The format of upload_time is "{TIME_FORMAT}".
+    """
+    with get_db() as (db_conn, db_cursor):
+        return logic_get_submission_attachments(db_cursor, course_id, assignment_id, student_email, user_email)
+
+
+@router.get("/download_submission_attachment")
+async def download_submission_attachment(course_id: str, assignment_id: str, student_email: str, file_id: str, user_email: str = Depends(get_current_user)):
+    f"""
+    Download the attachment to the course assignment submission by provided course_id, assignment_id, student_email, file_id.
+    """
+    with get_db() as (db_conn, db_cursor):
+        return logic_download_submission_attachment(db_cursor, course_id, assignment_id, student_email, file_id, user_email)

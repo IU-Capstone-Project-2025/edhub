@@ -85,6 +85,15 @@ class Submission(BaseModel):
     gradedby_email: str
 
 
+class SubmissionAttachmentMetadata(BaseModel):
+    course_id: str
+    assignment_id: int
+    student_email: str
+    file_id: int
+    filename: str
+    upload_time: str
+
+
 class Account(BaseModel):
     email: str
     access_token: str

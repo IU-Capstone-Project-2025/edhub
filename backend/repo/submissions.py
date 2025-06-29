@@ -13,6 +13,43 @@ def sql_insert_submission(db_cursor, course_id, assignment_id, student_email, co
     )
 
 
+def sql_insert_submission_attachment(db_cursor, course_id, assignment_id, student_email, filename, contents):
+    db_cursor.execute(
+        """
+        INSERT INTO submissions_files 
+        (courseid, assid, email, filename, file, upload_time)
+        VALUES (%s, %s, %s, %s, now())
+        RETURNING fileid, upload_time
+        """,
+        (course_id, assignment_id, student_email, filename, contents),
+    )
+    return db_cursor.fetchone()
+
+
+def sql_select_submission_attachments(db_cursor, course_id, assignment_id, student_email):
+    db_cursor.execute(
+        """
+        SELECT fileid, filename, upload_time
+        FROM assignment_files
+        WHERE courseid = %s AND matid = %s AND email = %s
+        """,
+        (course_id, assignment_id, student_email),
+    )
+    return db_cursor.fetchall()
+
+
+def sql_download_submission_attachment(db_cursor, course_id, assignment_id, student_email, file_id):
+    db_cursor.execute(
+        """
+        SELECT file, filename
+        FROM assignment_files
+        WHERE courseid = %s AND matid = %s AND email = %s AND fileid = %s
+        """,
+        (course_id, assignment_id, student_email, file_id)
+    )
+    return db_cursor.fetchone()
+
+
 def sql_update_submission_comment(db_cursor, comment, course_id, assignment_id, student_email):
     db_cursor.execute(
         """
