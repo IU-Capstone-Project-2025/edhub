@@ -45,6 +45,14 @@ class Material(MaterialID):
     description: str
 
 
+class MaterialAttachmentMetadata(BaseModel):
+    course_id: str
+    material_id: int
+    file_id: int
+    filename: str
+    upload_time: str
+
+
 class AssignmentID(BaseModel):
     course_id: str
     assignment_id: int
@@ -57,6 +65,14 @@ class Assignment(AssignmentID):
     author: str
 
 
+class AssignmentAttachmentMetadata(BaseModel):
+    course_id: str
+    assignment_id: int
+    file_id: int
+    filename: str
+    upload_time: str
+
+
 class Submission(BaseModel):
     course_id: str
     assignment_id: int
@@ -67,6 +83,15 @@ class Submission(BaseModel):
     comment: str
     grade: str
     gradedby_email: str
+
+
+class SubmissionAttachmentMetadata(BaseModel):
+    course_id: str
+    assignment_id: int
+    student_email: str
+    file_id: int
+    filename: str
+    upload_time: str
 
 
 class Account(BaseModel):

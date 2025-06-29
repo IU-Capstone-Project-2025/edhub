@@ -16,7 +16,7 @@ CREATE TABLE courses(
 
 CREATE TABLE course_materials(
     courseid uuid REFERENCES courses ON DELETE CASCADE,
-    matid serial NOT NULL, -- problem: only 2'000'000'000 courses per deployed database; proposed: change to uuid
+    matid serial NOT NULL,
     timeadded timestamp NOT NULL,
     author text NULL REFERENCES users(email) ON DELETE SET NULL,
     name text NOT NULL CHECK (length(name) <= 100),
@@ -26,7 +26,7 @@ CREATE TABLE course_materials(
 
 CREATE TABLE course_assignments(
     courseid uuid REFERENCES courses ON DELETE CASCADE,
-    assid serial NOT NULL, -- problem: only 2'000'000'000 courses per deployed database; proposed: change to uuid 
+    assid serial NOT NULL,
     timeadded timestamp NOT NULL,
     author text NULL REFERENCES users(email) ON DELETE SET NULL,
     name text NOT NULL CHECK (length(name) <= 100),
@@ -71,4 +71,38 @@ CREATE TABLE logs(
     t timestamp NOT NULL,
     tag text NOT NULL,
     msg text NOT NULL
+);
+
+create table material_files(
+    courseid uuid,
+    matid int,
+    fileid serial,
+    filename text NOT NULL,
+    file bytea NOT NULL,
+    upload_time timestamp NOT NULL,
+    FOREIGN KEY (courseid, matid) REFERENCES course_materials ON DELETE CASCADE,
+    PRIMARY KEY (courseid, matid, fileid)
+);
+
+create table assignment_files(
+    courseid uuid,
+    assid int,
+    fileid serial,
+    filename text NOT NULL,
+    file bytea NOT NULL,
+    upload_time timestamp NOT NULL,
+    FOREIGN KEY (courseid, assid) REFERENCES course_assignments ON DELETE CASCADE,
+    PRIMARY KEY (courseid, assid, fileid)
+);
+
+create table submissions_files(
+    courseid uuid,
+    assid int,
+    email text,
+    fileid serial,
+    filename text NOT NULL,
+    file bytea NOT NULL,
+    upload_time timestamp NOT NULL,
+    FOREIGN KEY (courseid, assid, email) REFERENCES course_assignments_submissions ON DELETE CASCADE,
+    PRIMARY KEY (courseid, assid, email, fileid)
 );
