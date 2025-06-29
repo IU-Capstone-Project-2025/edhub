@@ -1,2 +1,1 @@
 TIME_FORMAT = "%m-%d-%Y %H:%M:%S"
-ATTACHMENT_SIZE = 5 * 1024 * 1024

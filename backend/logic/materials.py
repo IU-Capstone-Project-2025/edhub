@@ -1,8 +1,9 @@
 from fastapi import HTTPException, UploadFile, Response
-from constants import TIME_FORMAT, ATTACHMENT_SIZE
+from constants import TIME_FORMAT
 import constraints
 import repo.materials as repo_mat
 import logic.logging as logger
+from logic.uploading import careful_upload
 
 
 def create_material(db_conn, db_cursor, course_id: str, title: str, description: str, user_email: str):
@@ -57,9 +58,7 @@ async def create_material_attachment(db_conn, db_cursor, course_id: str, materia
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
     # read the file
-    contents = await file.read()
-    if len(contents) > ATTACHMENT_SIZE:
-        raise HTTPException(status_code=413, detail="File too large (max 5MB)")
+    contents = await careful_upload(file)
 
     # save the file into database
     attachment_metadata = repo_mat.sql_insert_material_attachment(db_cursor, course_id, material_id, file.filename, contents)
