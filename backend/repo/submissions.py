@@ -31,7 +31,7 @@ def sql_select_submission_attachments(db_cursor, course_id, assignment_id, stude
         """
         SELECT fileid, filename, upload_time
         FROM submissions_files
-        WHERE courseid = %s AND matid = %s AND email = %s
+        WHERE courseid = %s AND assid = %s AND email = %s
         """,
         (course_id, assignment_id, student_email),
     )
@@ -43,7 +43,7 @@ def sql_download_submission_attachment(db_cursor, course_id, assignment_id, stud
         """
         SELECT file, filename
         FROM submissions_files
-        WHERE courseid = %s AND matid = %s AND email = %s AND fileid = %s
+        WHERE courseid = %s AND assid = %s AND email = %s AND fileid = %s
         """,
         (course_id, assignment_id, student_email, file_id)
     )
