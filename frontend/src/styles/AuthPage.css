@@ -30,7 +30,7 @@
 .auth-logo {
   font-size: 40px;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 0;
   color: #333940;
 }
 
@@ -118,4 +118,12 @@
   color: #4CB050;
   cursor: pointer;
   font-weight: 500;
+}
+
+.logo-image {
+  display: block;
+  margin: 0 ;
+  padding: 0;
+  border: none;
+  background: none;
 }

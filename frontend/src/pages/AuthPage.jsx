@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import "./../styles/AuthPage.css"
+import noavatar from "../components/noavatar.svg";
 import axios from "axios"
 
 import { useNavigate } from "react-router-dom"
@@ -30,15 +31,7 @@ export default function AuthPage() {
       <div className="auth-content">
         <div className="auth-left">
           <div className="auth-logo">
-            <span className="ed">ed</span>
-            <span className="hub">
-              H
-              <svg viewBox="0 0 64 40" className="hat">
-                <polygon points="32,0 64,10 32,20 0,10" />
-                <line x1="32" y1="20" x2="32" y2="35" stroke="#4CB050" strokeWidth="4" />
-              </svg>
-              ub
-            </span>
+            <img className="logo-image" src={noavatar} alt="No avatar" width={200} height={100} />
           </div>
           <h1>Fast, Efficient and Productive</h1>
           <p>
