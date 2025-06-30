@@ -9,6 +9,9 @@ from logic.submissions import (
     get_assignment_submissions as logic_get_assignment_submissions,
     get_submission as logic_get_submission,
     grade_submission as logic_grade_submission,
+    create_submission_attachment as logic_create_submission_attachment,
+    get_submission_attachments as logic_get_submission_attachments,
+    download_submission_attachment as logic_download_submission_attachment,
 )
 
 
