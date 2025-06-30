@@ -134,8 +134,7 @@ async def create_submission_attachment(db_conn, db_cursor, course_id: str, assig
     attachment_metadata = repo_submit.sql_insert_submission_attachment(db_cursor, course_id, assignment_id, student_email, file.filename, contents)
     db_conn.commit()
 
-    # TODO: logger for the attachment (Askar)
-    # logger.log(db_conn, logger.TAG_assignment_ADD, f"User {user_email} attached a file {file.filename} to the assignment assignment {assignment_id} in course {course_id}")
+    logger.log(db_conn, logger.TAG_ATTACHMENT_ADD_SUB, f"User {user_email} created an attachment {file.filename} for the submission for the assignemnt {assignment_id} in course {course_id}")
     return {
         "course_id": course_id,
         "assignment_id": assignment_id,

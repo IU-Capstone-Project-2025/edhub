@@ -64,8 +64,7 @@ async def create_material_attachment(db_conn, db_cursor, course_id: str, materia
     attachment_metadata = repo_mat.sql_insert_material_attachment(db_cursor, course_id, material_id, file.filename, contents)
     db_conn.commit()
 
-    # TODO: logger for the attachment (Askar)
-    # logger.log(db_conn, logger.TAG_MATERIAL_ADD, f"User {user_email} attached a file {file.filename} to the material material {material_id} in course {course_id}")
+    logger.log(db_conn, logger.TAG_ATTACHMENT_ADD_MAT, f"User {user_email} created an attachment {file.filename} for the material {material_id} in course {course_id}")
     return {
         "course_id": course_id,
         "material_id": material_id,

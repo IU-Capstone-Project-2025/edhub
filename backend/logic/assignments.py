@@ -73,8 +73,7 @@ async def create_assignment_attachment(db_conn, db_cursor, course_id: str, assig
     attachment_metadata = repo_ass.sql_insert_assignment_attachment(db_cursor, course_id, assignment_id, file.filename, contents)
     db_conn.commit()
 
-    # TODO: logger for the attachment (Askar)
-    # logger.log(db_conn, logger.TAG_assignment_ADD, f"User {user_email} attached a file {file.filename} to the assignment assignment {assignment_id} in course {course_id}")
+    logger.log(db_conn, logger.TAG_ATTACHMENT_ADD_ASS, f"User {user_email} created an attachment {file.filename} for the assignment {assignment_id} in course {course_id}")
     return {
         "course_id": course_id,
         "assignment_id": assignment_id,
