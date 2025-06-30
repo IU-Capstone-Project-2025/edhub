@@ -18,7 +18,7 @@ def sql_insert_submission_attachment(db_cursor, course_id, assignment_id, studen
         """
         INSERT INTO submissions_files 
         (courseid, assid, email, filename, file, upload_time)
-        VALUES (%s, %s, %s, %s, now())
+        VALUES (%s, %s, %s, %s, %s, now())
         RETURNING fileid, upload_time
         """,
         (course_id, assignment_id, student_email, filename, contents),
