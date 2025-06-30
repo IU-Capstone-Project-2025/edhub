@@ -1,13 +1,10 @@
 def sql_select_course_teachers(db_cursor, course_id):
     db_cursor.execute(
         """
-        SELECT
-            t.email,
-            u.publicname
+        SELECT t.email, u.publicname
         FROM teaches t
         JOIN users u ON t.email = u.email
         WHERE t.courseid = %s
-        GROUP BY t.email, u.publicname
         """,
         (course_id,),
     )
