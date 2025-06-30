@@ -115,12 +115,18 @@ export default function LandingPage() {
           </div>
         </section>
         <section className="landing-section cta">
-          <h2>Join EdHub Today!</h2>
-          <a href="/auth" className="landing-btn big">Get Started for Free</a>
-          <div style={{ marginTop: 12, fontSize: "1rem" }}>
-            <span>Have questions? <a href="mailto:support@edhub.com">Contact us</a></span>
-          </div>
-        </section>
+  <h2>Join EdHub Today!</h2>
+  <a href="/auth" className="landing-btn big">Get Started for Free</a>
+  <div style={{ marginTop: 12, fontSize: "1rem" }}>
+    <span>
+      Project GitHub:{" "}
+      <a href="https://github.com/IU-Capstone-Project-2025/edhub" target="_blank" rel="noopener noreferrer">
+        github.com/IU-Capstone-Project-2025/edhub
+      </a>
+    </span>
+  </div>
+</section>
+
       </main>
       <footer className="landing-footer">
         &copy; {new Date().getFullYear()} EdHub. All rights reserved.
