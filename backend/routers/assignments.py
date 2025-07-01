@@ -52,14 +52,14 @@ async def remove_assignment(course_id: str, assignment_id: str, user_email: str 
 
 @router.get("/get_assignment", response_model=json_classes.Assignment)
 async def get_assignment(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
-    f"""
+    """
     Get the assignment details by the provided (course_id, assignment_id).
 
     Returns course_id, assignment_id, creation_time, title, description, and email of the author.
 
     Author can be 'null' if the author deleted their account.
 
-    The format of creation time is "{TIME_FORMAT}".
+    The format of creation time is TIME_FORMAT.
     """
 
     # connection to database
@@ -74,14 +74,14 @@ async def create_assignment_attachment(
     file: UploadFile = File(...),
     user_email: str = Depends(get_current_user),
 ):
-    f"""
+    """
     Attach the provided file to provided course assignment.
 
     Teacher role required.
 
     Returns the (course_id, assignment_id, file_id, filename, upload_time) for the new attachment in case of success.
 
-    The format of upload_time is "{TIME_FORMAT}".
+    The format of upload_time is TIME_FORMAT.
     """
     with get_db() as (db_conn, db_cursor):
         return await logic_create_assignment_attachment(db_conn, db_cursor, course_id, assignment_id, file, user_email)
@@ -89,12 +89,12 @@ async def create_assignment_attachment(
 
 @router.get("/get_assignment_attachments", response_model=List[json_classes.AssignmentAttachmentMetadata])
 async def get_assignment_attachments(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
-    f"""
+    """
     Get the list of course assignment attachments by provided course_id, assignment_id.
 
     Returns list of attachments metadata (course_id, assignment_id, file_id, filename, upload_time).
 
-    The format of upload_time is "{TIME_FORMAT}".
+    The format of upload_time is TIME_FORMAT.
     """
     with get_db() as (db_conn, db_cursor):
         return logic_get_assignment_attachments(db_cursor, course_id, assignment_id, user_email)
@@ -102,7 +102,7 @@ async def get_assignment_attachments(course_id: str, assignment_id: str, user_em
 
 @router.get("/download_assignment_attachment")
 async def download_assignment_attachment(course_id: str, assignment_id: str, file_id: str, user_email: str = Depends(get_current_user)):
-    f"""
+    """
     Download the course assignment attachment by provided course_id, assignment_id, file_id.
     """
     with get_db() as (db_conn, db_cursor):
