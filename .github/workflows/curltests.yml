@@ -1,0 +1,34 @@
+name: backend API curl tests
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  docker-compose-curltests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker compose up
+        run: |
+          docker compose up -d --build
+
+      - name: Wait for services
+        run: |
+          sleep 10
+
+      - name: Run curltests.sh
+        run: |
+          chmod +x ./backend/curltests.sh
+          ./backend/curltests.sh
+
+      - name: Docker compose down
+        if: always()
+        run: docker compose down -v
