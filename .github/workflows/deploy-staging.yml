@@ -20,8 +20,8 @@ jobs:
 
       - name: Stop and remove running containers
         run: |
-          docker compose down || true
+          docker compose -f docker-compose.yml down || true
 
       - name: Build and start containers
         run: |
-          docker compose up --build -d
+          docker compose -f docker-compose.yml up --build -d
