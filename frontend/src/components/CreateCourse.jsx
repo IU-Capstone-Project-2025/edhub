@@ -6,7 +6,7 @@ import "./../styles/CreateCourse.css"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
-export default function CreateCourseModal({ onClose }) {
+export default function CreateCourseModal({ onClose, onCourseCreated }) {
   const [title, setTitle] = useState("")
   const navigate = useNavigate()
 
@@ -14,16 +14,16 @@ export default function CreateCourseModal({ onClose }) {
     try {
       const token = localStorage.getItem("access_token")
       await axios.post(`/api/create_course?title=${encodeURIComponent(title)}`, null, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      headers: { Authorization: `Bearer ${token}` },
       })
 
-      toast.success("Course created!", {
-        position: "bottom-right",
-      })
+      toast.success("Course created!", { position: "bottom-right" })
 
-      onClose() // Закрываем модалку
+      if (onCourseCreated) onCourseCreated()   
+      onClose()
+
+
+      onClose() 
       navigate("/courses")
     } catch (err) {
       toast.error("Failed: " + (err.response?.data?.detail || err.message), {

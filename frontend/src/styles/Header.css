@@ -83,3 +83,11 @@
 .breadcrumb-link:hover {
   text-decoration: underline;
 }
+
+.sidebar-logo {
+  height: 36px;
+  width: auto;
+  display: inline-block;
+  vertical-align: middle;
+  fill: currentColor;
+}

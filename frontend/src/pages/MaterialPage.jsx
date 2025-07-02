@@ -40,7 +40,9 @@ if (!material) {
 
   return (
     <div className="assignment-page">
-      <button className="back-btn" onClick={onBack}>← Back to course feed</button>
+      <a href="../">
+        <button className="back-btn">← Back to course feed</button>
+      </a>
       <div className="assignment-main">
         <div className="assignment-left">
           <h1>{material.title}</h1>

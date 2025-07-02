@@ -1,70 +1,74 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
-import "../styles/CourseFeed.css";
-
-
+import React, { useEffect, useState } from "react"
+import axios from "axios"
+import { useParams, useNavigate } from "react-router-dom"
+import "../styles/CourseFeed.css"
 
 export default function CourseFeed() {
-  const { id } = useParams();
-  const [materials, setMaterials] = useState([]);
-  const [assignments, setAssignments] = useState([]);
-  const [assignmentDetails, setAssignmentDetails] = useState({});
-  const [materialDetails, setMaterialDetails] = useState({});
-  const navigate = useNavigate();
+  const { id } = useParams()
+  const [materials, setMaterials] = useState([])
+  const [assignments, setAssignments] = useState([])
+  const [assignmentDetails, setAssignmentDetails] = useState({})
+  const [materialDetails, setMaterialDetails] = useState({})
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchFeed = async () => {
+      const token = localStorage.getItem("access_token")
+      if (!token) {
+        window.location.href = "/auth"
+        return
+      }
+
       try {
-        const token = localStorage.getItem("access_token");
         const res = await axios.get("/api/get_course_feed", {
           headers: { Authorization: `Bearer ${token}` },
           params: { course_id: id },
-        });
-        const feed = res.data;
-        const matList = feed.filter(item => item.type === "mat");
-        setMaterials(matList);
-        const assList = feed.filter(item => item.type === "ass");
-        setAssignments(assList);
+        })
+        const feed = res.data
+        const matList = feed.filter(item => item.type === "mat")
+        const assList = feed.filter(item => item.type === "ass")
+        setMaterials(matList)
+        setAssignments(assList)
 
-        const ass_details = {};
-        for (const ass of assList) {
-          try {
-            const ass_detailRes = await axios.get("/api/get_assignment", {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { assignment_id: ass.post_id, course_id: id },
-            });
-            ass_details[ass.post_id] = ass_detailRes.data;
-          } catch (err) {
-            ass_details[ass.post_id] = { title: "Ошибка загрузки", description: "" };
-          }
-        }
-        setAssignmentDetails(ass_details)
+        const [assignmentDetailResults, materialDetailResults] = await Promise.all([
+          Promise.all(assList.map(async (ass) => {
+            try {
+              const res = await axios.get("/api/get_assignment", {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { assignment_id: ass.post_id, course_id: id },
+              })
+              return [ass.post_id, res.data]
+            } catch {
+              return [ass.post_id, { title: "Ошибка загрузки", description: "" }]
+            }
+          })),
+          Promise.all(matList.map(async (mat) => {
+            try {
+              const res = await axios.get("/api/get_material", {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { material_id: mat.post_id, course_id: id },
+              })
+              return [mat.post_id, res.data]
+            } catch {
+              return [mat.post_id, { title: "Ошибка загрузки", description: "" }]
+            }
+          })),
+        ])
 
-        const mat_details = {}
-        for (const mat of matList) {
-          try {
-            const mat_detailRes = await axios.get("/api/get_material", {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { material_id: mat.post_id, course_id: id },
-            });
-            mat_details[mat.post_id] = mat_detailRes.data;
-          } catch (err) {
-            mat_details[mat.post_id] = { title: "Ошибка загрузки", description: "" };
-          }
-        }
-        setMaterialDetails(mat_details)
-        
+        setAssignmentDetails(Object.fromEntries(assignmentDetailResults))
+        setMaterialDetails(Object.fromEntries(materialDetailResults))
+
       } catch (err) {
-        setMaterials([]);
-        setAssignments([]);
+        console.error("Error fetching feed:", err)
+        if (err.response?.status === 401) {
+          localStorage.removeItem("access_token")
+          window.location.href = "/auth"
+        }
       }
-    };
-    fetchFeed();
-  }, [id, assignments, materials]);
+    }
 
-
-
+    fetchFeed()
+  }, [id])
 
   return (
     <div className="course-feed-columns">
@@ -78,19 +82,14 @@ export default function CourseFeed() {
               key={mat.post_id}
               onClick={() => navigate(`/courses/${id}/materials/${mat.post_id}`)}
             >
-              <p>
-                {materialDetails[mat.post_id]?.title}
-              </p>
-              <p>
-                Material ID : {materialDetails[mat.post_id]?.material_id}
-              </p>
-              <p>
-                Creation Date : {materialDetails[mat.post_id]?.creation_time}
-              </p>
+              <p>{materialDetails[mat.post_id]?.title}</p>
+              <p>Material ID: {materialDetails[mat.post_id]?.material_id}</p>
+              <p>Creation Date: {materialDetails[mat.post_id]?.creation_time}</p>
             </div>
           ))}
         </div>
       </div>
+
       <div className="feed-column">
         <h2>Assignments</h2>
         <div className="feed-list">
@@ -101,19 +100,13 @@ export default function CourseFeed() {
               key={ass.post_id}
               onClick={() => navigate(`/courses/${id}/assignments/${ass.post_id}`)}
             >
-              <p>
-                {assignmentDetails[ass.post_id]?.title}
-              </p>
-              <p>
-                Assignment ID : {assignmentDetails[ass.post_id]?.assignment_id}
-              </p>
-              <p>
-                Creation Date : {assignmentDetails[ass.post_id]?.creation_time}
-              </p>
+              <p>{assignmentDetails[ass.post_id]?.title}</p>
+              <p>Assignment ID: {assignmentDetails[ass.post_id]?.assignment_id}</p>
+              <p>Creation Date: {assignmentDetails[ass.post_id]?.creation_time}</p>
             </div>
           ))}
         </div>
       </div>
     </div>
-  );
+  )
 }
