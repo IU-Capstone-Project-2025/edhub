@@ -151,3 +151,14 @@ html, body, #root, .auth-page, .auth-content, .auth-form, .auth-form * {
   border: none;
   background: none;
 }
+
+.form-error {
+  color: #d9534f;
+  background: #fff3f3;
+  border: 1px solid #d9534f;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-size: 0.95rem;
+}
+
