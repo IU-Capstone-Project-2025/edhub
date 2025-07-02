@@ -10,6 +10,7 @@ import AddAssignment from "../components/AddAssignment"
 import AddStudent from "../components/AddStudent"
 import AddTeacher from "../components/AddTeacher"
 import AddParent from "../components/AddParent"
+import LeaveCourse from "../components/LeaveCourse"
 
 export default function CoursePage() {
   const { id } = useParams()
@@ -20,6 +21,8 @@ export default function CoursePage() {
   const [showAddTeacher, setShowAddTeacher] = useState(false)
   const [showAddParent, setShowAddParent] = useState(false)
   const [roleData, setRoleData] = useState()
+  const [ownEmail, setOwnEmail] = useState("")
+  const [showLeaveCourse, setShowLeaveCourse] = useState()
 
   
 
@@ -51,6 +54,19 @@ export default function CoursePage() {
       }
     }
     fetchRoleData()
+
+    const fetchEmail = async () => {
+      try {
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/api/get_user_info", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        setOwnEmail(res.data.email)
+      } catch (err) {
+        alert("Ошибка при загрузке email: " + (err.response?.data?.detail || err.message))
+      }
+    }
+    fetchEmail()
   }, [id])
 
   // const handleAdd = (type) => {
@@ -72,6 +88,12 @@ export default function CoursePage() {
             <button onClick={() => setShowAddStudent(true)}>+ Add Student</button>
             <button onClick={() => setShowAddTeacher(true)}>+ Add Teacher</button>
             <button onClick={() => setShowAddParent(true)}>+ Add Parent</button>
+            <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
+          </div>
+        )}
+        {roleData && (roleData.is_student|| roleData.is_parent ) && (
+          <div className="actions">
+            <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
           </div>
         )}
         <CourseFeed />
@@ -107,6 +129,15 @@ export default function CoursePage() {
           courseId={id}
         />
       )}
+      {showLeaveCourse && (
+        <LeaveCourse
+          onClose={() => setShowLeaveCourse(false)}
+          courseId={id}
+          roleData={roleData}
+          ownEmail={ownEmail}
+        />
+      )}
+      
     </Header>
     
   )

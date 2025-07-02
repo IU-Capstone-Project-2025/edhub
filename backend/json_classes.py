@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Union
 
 
 class Success(BaseModel):
@@ -81,8 +82,8 @@ class Submission(BaseModel):
     submission_time: str
     last_modification_time: str
     comment: str
-    grade: str
-    gradedby_email: str
+    grade: Union[int, None]
+    gradedby_email: Union[str, None]
 
 
 class SubmissionAttachmentMetadata(BaseModel):

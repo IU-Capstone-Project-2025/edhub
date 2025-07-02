@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import axios from "axios"
 import CreateCourseModal from "../components/CreateCourse"
+import { ReactComponent as Logo } from "./noavatar.svg";
 
 import "../styles/Header.css"
 
@@ -64,7 +65,9 @@ export default function Header({ children }) {
   return (
     <div className="layout">
       <aside className="sidebar">
-        <div className="sidebar-title">EdHub LMS</div>
+        <div className="sidebar-title">
+          <Logo className="sidebar-logo" />
+        </div>
         <div className="sidebar-section">Courses</div>
         <ul className="course-list">
           {courses.map((c) => {
