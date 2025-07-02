@@ -10,54 +10,51 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState([])
   const [showCreateCourseModal, setShowCreateCourseModal] = useState(false)
 
-  useEffect(() => {
+  const fetchCourses = async () => {
     const token = localStorage.getItem("access_token")
-
-    axios
-      .get("/api/available_courses", {
+    try {
+      const res = await axios.get("/api/available_courses", {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      .then(async (res) => {
-        const full = await Promise.all(
-          res.data.map(async (c) => {
-            const infoRes = await axios.get("/api/get_course_info", {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { course_id: c.course_id },
-            })
+      });
+      const full = await Promise.all(
+        res.data.map(async (c) => {
+          const infoRes = await axios.get("/api/get_course_info", {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { course_id: c.course_id },
+          });
+          const roleRes = await axios.get("/api/get_user_role", {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { course_id: c.course_id },
+          });
+          const role = roleRes.data
+          let user_role = "unknown"
+          if (role.is_teacher) user_role = "teacher"
+          else if (role.is_student) user_role = "student"
+          else if (role.is_parent) user_role = "parent"
+          return {
+            ...infoRes.data,
+            user_role,
+          }
+        })
+      );
+      setCourses(full);
+    } catch (err) {
+      console.error(err)
+      alert("Session expired or failed to load courses")
+      window.location.href = "/"
+    }
+  };
 
-            const roleRes = await axios.get("/api/get_user_role", {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { course_id: c.course_id },
-            })
-
-            const role = roleRes.data
-            let user_role = "unknown"
-            if (role.is_teacher) user_role = "teacher"
-            else if (role.is_student) user_role = "student"
-            else if (role.is_parent) user_role = "parent"
-
-            return {
-              ...infoRes.data,
-              user_role,
-            }
-          })
-        )
-
-        setCourses(full)
-      })
-      .catch((err) => {
-        console.error(err)
-        alert("Session expired or failed to load courses")
-        window.location.href = "/"
-      })
-  }, [courses])
+  useEffect(() => {
+    fetchCourses();
+  }, []);
 
   return (
     <Header>
       <div className="courses-page">
         <div className="courses-header">
-        <h1>My Courses</h1>
-        <button onClick={() => setShowCreateCourseModal(true)} className="create-course-page-button">+ Add Course</button>
+          <h1>My Courses</h1>
+          <button onClick={() => setShowCreateCourseModal(true)} className="create-course-page-button">+ Add Course</button>
         </div>
 
         <div className="course-list-grid">
@@ -76,9 +73,9 @@ export default function CoursesPage() {
       {showCreateCourseModal && (
         <CreateCourseModal 
           onClose={() => setShowCreateCourseModal(false)}
+          onCourseCreated={fetchCourses}
         />
       )}
-      
     </Header>
   )
 }
