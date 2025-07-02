@@ -11,6 +11,11 @@ export default function AssignmentPage() {
   const [roleData, setRoleData] = useState()
   const [ownEmail, setOwnEmail] = useState("")
   const [mySubmission, setMySubmission] = useState(null)
+  const [childrenEmail, setChildrenEmail] = useState(null)
+  const [childrenSubmission, setChildrenSubmission] = useState(null)
+  const [studentSubmissions, setStudentSubmissions] = useState([])
+  const [currentGrade, setCurrentGrade] = useState(null)
+  const [currentStudentEmail, setCurrentStudentEmail] = useState(null)
 
 
 
@@ -56,9 +61,29 @@ export default function AssignmentPage() {
       }
     }
     fetchEmail()
-
     
   }, [id])
+
+
+  useEffect(() => {
+  if (roleData?.is_parent) {
+    const fetchChildrenEmail = async () => {
+      try {
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/api/get_parents_children", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { course_id: id }
+        })
+        setChildrenEmail(res.data)
+      } catch (err) {
+        alert("Ошибка при загрузке email'а ребёнка: " + (err.response?.data?.detail || err.message))
+      }
+    }
+    fetchChildrenEmail()
+  }
+}, [roleData, id])
+
+
   const fetchMySubmission = async () => {
       try {
         const token = localStorage.getItem("access_token")
@@ -68,21 +93,68 @@ export default function AssignmentPage() {
         })
         setMySubmission(res.data)
       } catch (err) {
-        alert("Ошибка при загрузке ответа студента: " + (err.response?.data?.detail || err.message))
+        const msg = err.response?.data?.detail || err.message;
+        if (
+          msg === "Submission of this user is not found" ||
+          (err.response && err.response.status === 404)
+        ) {
+          setMySubmission(null); // No submission yet, not an error
+        } else {
+          alert("Ошибка при загрузке ответа студента: " + msg)
+        }
       }
   }
+
   useEffect(() => {
     if (roleData?.is_student && ownEmail) {
       fetchMySubmission();
     }
   }, [roleData, ownEmail, id, post_id]);
 
+  const fetchStudentSubmissions = async () => {
+      try {
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/api/get_assignment_submissions", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { course_id: id, assignment_id: post_id  }
+        })
+        setStudentSubmissions(res.data)
+      } catch (err) {
+          alert("Ошибка при загрузке ответов студентов: " + (err.response?.data?.detail || err.message))
+      }
+  }
+
+  useEffect(() => {
+    if (roleData?.is_teacher) {
+      fetchStudentSubmissions();
+    }
+  }, [roleData, id, post_id]);
+
   useEffect(() => {
     if (mySubmission) {
     setShowSubmissionForm(false);
     }
   }, [mySubmission]);
-
+  
+  const fetchChildrenSubmission = async () => {
+      if (!childrenEmail[0]?.email) return
+      try {
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/api/get_submission", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { course_id: id, assignment_id: post_id , student_email: childrenEmail[0].email}
+        })
+        setChildrenSubmission(res.data)
+      } catch (err) {
+        alert("Ошибка при загрузке ответа ребёнка: " + (err.response?.data?.detail || err.message))
+      }
+  }
+  useEffect(() => {
+    if (roleData?.is_parent && childrenEmail) {
+      fetchChildrenSubmission();
+    }
+  }, [roleData, childrenEmail, id, post_id]);
+  
   const handleSubmit = async () => {
     // if (!studentEmail.trim()) {
     //   alert("Student's Email is required")
@@ -102,6 +174,7 @@ export default function AssignmentPage() {
     }
     
   }
+
 
   if (!assignmentInfo) return <div>Loading assignment...</div>
   return (
@@ -146,7 +219,36 @@ export default function AssignmentPage() {
               )}
             </div>
           )}
-          
+          {roleData && roleData.is_parent && childrenSubmission && (
+            <div className="submitted-answer">
+              <div className="my-comment-title">Your child's {childrenSubmission.student_name} submission:</div>
+              <div className="my-comment">{childrenSubmission.comment}</div>
+              {childrenSubmission.grade && (
+                <div className="my-grade">Grade: <b>{childrenSubmission.grade}</b> (by {childrenSubmission.gradedBy})</div>
+              )}
+            </div>
+          )}
+          {roleData && roleData.is_teacher && studentSubmissions && (
+            <div className="submitted-answer">
+              <div className="my-comment-title">Students' submissions:</div>
+              {studentSubmissions.length === 0 && <div>No submissions yet.</div>}
+              {studentSubmissions.map((submission, idx) => (
+                <div key={idx} className="student-submission-block">
+                  <div className="my-comment">
+                    <b>{submission.student_name || submission.student_email || "Student"}:</b> {submission.comment}
+                  </div>
+
+                  {submission.grade && (
+                    <div className="my-grade">
+                      Grade: <b>{submission.grade}</b> {submission.gradedBy && `(by ${submission.gradedBy})`}
+                    </div>
+                  )}
+                  <hr />
+                </div>
+              ))}
+            </div>
+)}        
+            
         </div>
       </div>
 
