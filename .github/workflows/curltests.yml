@@ -8,6 +8,7 @@ on:
 jobs:
   docker-compose-curltests:
     runs-on: ubuntu-latest
+    name: Run API tests with Docker
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
