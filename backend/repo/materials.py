@@ -23,3 +23,40 @@ def sql_select_material(db_cursor, course_id, material_id):
         (course_id, material_id),
     )
     return db_cursor.fetchone()
+
+
+def sql_insert_material_attachment(db_cursor, course_id, material_id, filename, contents):
+    db_cursor.execute(
+        """
+        INSERT INTO material_files 
+        (courseid, matid, filename, file, upload_time)
+        VALUES (%s, %s, %s, %s, now())
+        RETURNING fileid, upload_time
+        """,
+        (course_id, material_id, filename, contents),
+    )
+    return db_cursor.fetchone()
+
+
+def sql_select_material_attachments(db_cursor, course_id, material_id):
+    db_cursor.execute(
+        """
+        SELECT fileid, filename, upload_time
+        FROM material_files
+        WHERE courseid = %s AND matid = %s
+        """,
+        (course_id, material_id),
+    )
+    return db_cursor.fetchall()
+
+
+def sql_download_material_attachment(db_cursor, course_id, material_id, file_id):
+    db_cursor.execute(
+        """
+        SELECT file, filename
+        FROM material_files
+        WHERE courseid = %s AND matid = %s AND fileid = %s
+        """,
+        (course_id, material_id, file_id)
+    )
+    return db_cursor.fetchone()

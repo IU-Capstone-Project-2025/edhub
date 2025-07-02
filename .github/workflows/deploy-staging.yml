@@ -1,0 +1,27 @@
+name: Deploy to staging server
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true) ||
+      github.event_name == 'workflow_dispatch'
+    name: Deploy to staging server
+    runs-on: edhub-staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Stop and remove running containers
+        run: |
+          docker compose -f docker-compose.yml down || true
+
+      - name: Build and start containers
+        run: |
+          docker compose -f docker-compose.yml up --build -d

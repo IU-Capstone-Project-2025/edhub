@@ -99,7 +99,8 @@ def value_assert_assignment_exists(db_cursor, course_id: str, assignment_id: str
     if err is not None:
         return err
     db_cursor.execute(
-        "SELECT EXISTS(SELECT 1 FROM course_assignments WHERE courseid = %s AND assid = %s)", (course_id, assignment_id)
+        "SELECT EXISTS(SELECT 1 FROM course_assignments WHERE courseid = %s AND assid = %s)",
+        (course_id, assignment_id),
     )
     assignment_exists = db_cursor.fetchone()[0]
     if not assignment_exists:

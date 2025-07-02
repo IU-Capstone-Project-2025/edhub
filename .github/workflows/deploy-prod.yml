@@ -1,0 +1,27 @@
+name: Deploy to production server
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true) ||
+      github.event_name == 'workflow_dispatch'
+    name: Deploy to production server
+    runs-on: edhub-prod
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Stop and remove running containers
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml down || true
+
+      - name: Build and start containers
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d

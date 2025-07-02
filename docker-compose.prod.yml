@@ -1,0 +1,9 @@
+services:
+  nginx:
+    build: ./nginx-prod
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /etc/letsencrypt/live/edhub.space/fullchain.pem:/etc/letsencrypt/live/edhub.space/fullchain.pem:ro
+      - /etc/letsencrypt/live/edhub.space/privkey.pem:/etc/letsencrypt/live/edhub.space/privkey.pem:ro

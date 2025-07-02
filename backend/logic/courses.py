@@ -3,6 +3,7 @@ from constants import TIME_FORMAT
 import constraints
 import repo.courses as repo_courses
 import repo.teachers as repo_teachers
+import logic.logging as logger
 
 
 def available_courses(db_cursor, user_email: str):
@@ -15,6 +16,9 @@ def create_course(db_conn, db_cursor, title: str, user_email: str):
     course_id = repo_courses.sql_insert_course(db_cursor, title)
     repo_teachers.sql_insert_teacher(db_cursor, user_email, course_id)
     db_conn.commit()
+
+    logger.log(db_conn, logger.TAG_COURSE_ADD, f"User {user_email} created course {course_id}")
+
     return {"course_id": course_id}
 
 
@@ -22,6 +26,9 @@ def remove_course(db_conn, db_cursor, course_id: str, user_email: str):
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
     repo_courses.sql_delete_course(db_cursor, course_id)
     db_conn.commit()
+
+    logger.log(db_conn, logger.TAG_COURSE_DEL, f"User {user_email} deleted course {course_id}")
+
     return {"success": True}
 
 
