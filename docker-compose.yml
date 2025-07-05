@@ -1,27 +1,37 @@
 services:
-  db:
-    build: ./database
+  system_db:
+    build: ./database/system
     restart: always
     environment:
       - POSTGRES_PASSWORD=12345678
       - POSTGRES_USER=postgres
       - PGDATA=/var/lib/postgresql/data
     volumes:
-      - edhub_postgres_storage:/var/lib/postgresql/data
+      - edhub_system_storage:/var/lib/postgresql/data
+
+  filestorage_db:
+    build: ./database/filestorage
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_USER=postgres
+      - PGDATA=/var/lib/postgresql/data
+    volumes:
+      - edhub_filestorage_storage:/var/lib/postgresql/data
 
   backend:
     build: ./backend
     restart: always
     environment:
-      - DATABASE_URL=postgresql://postgres:12345678@db:5432/edhub
+      - DATABASE_URL=postgresql://postgres:12345678@system_db:5432/edhub
     depends_on:
-      - db
+      - system_db
+      - filestorage_db
 
   frontend:
     build: ./frontend
     restart: always
     depends_on:
-      - db
       - backend
 
   nginx:
@@ -33,4 +43,5 @@ services:
       - backend
 
 volumes:
-  edhub_postgres_storage:
+  edhub_system_storage:
+  edhub_filestorage_storage:
