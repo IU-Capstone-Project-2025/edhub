@@ -2,6 +2,7 @@ from fastapi import HTTPException, UploadFile, Response
 from constants import TIME_FORMAT
 import constraints
 import repo.assignments as repo_ass
+import repo.files as repo_files
 import logic.logging as logger
 from logic.uploading import careful_upload
 
@@ -61,7 +62,7 @@ def get_assignment(db_cursor, course_id: str, assignment_id: str, user_email: st
     return res
 
 
-async def create_assignment_attachment(db_conn, db_cursor, course_id: str, assignment_id: str, file: UploadFile, user_email: str):
+async def create_assignment_attachment(db_conn, db_cursor, storage_db_conn, storage_db_cursor, course_id: str, assignment_id: str, file: UploadFile, user_email: str):
     # checking constraints
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
@@ -70,8 +71,9 @@ async def create_assignment_attachment(db_conn, db_cursor, course_id: str, assig
     contents = await careful_upload(file)
 
     # save the file into database
-    attachment_metadata = repo_ass.sql_insert_assignment_attachment(db_cursor, course_id, assignment_id, file.filename, contents)
+    attachment_metadata = repo_ass.sql_insert_assignment_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, file.filename, contents)
     db_conn.commit()
+    storage_db_conn.commit()
 
     logger.log(db_conn, logger.TAG_ATTACHMENT_ADD_ASS, f"User {user_email} created an attachment {file.filename} for the assignment {assignment_id} in course {course_id}")
     return {
@@ -102,13 +104,13 @@ def get_assignment_attachments(db_cursor, course_id: str, assignment_id: str, us
     return res
 
 
-def download_assignment_attachment(db_cursor, course_id: str, assignment_id: str, file_id: str, user_email: str):
+def download_assignment_attachment(db_cursor, storage_db_cursor, course_id: str, assignment_id: str, file_id: str, user_email: str):
     # checking constraints
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # searching for assignment attachment
-    file = repo_ass.sql_download_assignment_attachment(db_cursor, course_id, assignment_id, file_id)
+    file = repo_files.sql_download_attachment(storage_db_cursor, file_id)
     if not file:
         raise HTTPException(status_code=404, detail="Attachment not found")
 

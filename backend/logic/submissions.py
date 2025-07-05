@@ -2,6 +2,7 @@ from fastapi import HTTPException, UploadFile, Response
 from constants import TIME_FORMAT
 import constraints
 import repo.submissions as repo_submit
+import repo.files as repo_files
 import logic.logging as logger
 from logic.uploading import careful_upload
 
@@ -121,7 +122,7 @@ def grade_submission(
     return {"success": True}
 
 
-async def create_submission_attachment(db_conn, db_cursor, course_id: str, assignment_id: str, student_email: str, file: UploadFile, user_email: str):
+async def create_submission_attachment(db_conn, db_cursor, storage_db_conn, storage_db_cursor, course_id: str, assignment_id: str, student_email: str, file: UploadFile, user_email: str):
     # checking constraints
     constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
     if student_email != user_email:
@@ -131,10 +132,11 @@ async def create_submission_attachment(db_conn, db_cursor, course_id: str, assig
     contents = await careful_upload(file)
 
     # save the file into database
-    attachment_metadata = repo_submit.sql_insert_submission_attachment(db_cursor, course_id, assignment_id, student_email, file.filename, contents)
+    attachment_metadata = repo_submit.sql_insert_submission_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, student_email, file.filename, contents)
     db_conn.commit()
+    storage_db_conn.commit()
 
-    logger.log(db_conn, logger.TAG_ATTACHMENT_ADD_SUB, f"User {user_email} created an attachment {file.filename} for the submission for the assignemnt {assignment_id} in course {course_id}")
+    logger.log(db_conn, logger.TAG_ATTACHMENT_ADD_SUB, f"User {user_email} created an attachment {file.filename} for the submission for the assignment {assignment_id} in course {course_id}")
     return {
         "course_id": course_id,
         "assignment_id": assignment_id,
@@ -170,7 +172,7 @@ def get_submission_attachments(db_cursor, course_id: str, assignment_id: str, st
     return res
 
 
-def download_submission_attachment(db_cursor, course_id: str, assignment_id: str, student_email: str, file_id: str, user_email: str):
+def download_submission_attachment(db_cursor, storage_db_cursor, course_id: str, assignment_id: str, student_email: str, file_id: str, user_email: str):
     # checking constraints
     constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
     if not (
@@ -181,7 +183,7 @@ def download_submission_attachment(db_cursor, course_id: str, assignment_id: str
         raise HTTPException(status_code=403, detail="User does not have access to this submission")
 
     # searching for submission attachment
-    file = repo_submit.sql_download_submission_attachment(db_cursor, course_id, assignment_id, student_email, file_id)
+    file = repo_files.sql_download_attachment(storage_db_cursor, file_id)
     if not file:
         raise HTTPException(status_code=404, detail="Attachment not found")
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File
 from typing import List
 
-from auth import get_current_user, get_db
+from auth import get_current_user, get_db, get_storage_db
 from constants import TIME_FORMAT
 import json_classes
 from logic.assignments import (
@@ -83,8 +83,8 @@ async def create_assignment_attachment(
 
     The format of upload_time is TIME_FORMAT.
     """
-    with get_db() as (db_conn, db_cursor):
-        return await logic_create_assignment_attachment(db_conn, db_cursor, course_id, assignment_id, file, user_email)
+    with get_db() as (db_conn, db_cursor), get_storage_db() as (storage_db_conn, storage_db_cursor):
+        return await logic_create_assignment_attachment(db_conn, db_cursor, storage_db_conn, storage_db_cursor, course_id, assignment_id, file, user_email)
 
 
 @router.get("/get_assignment_attachments", response_model=List[json_classes.AssignmentAttachmentMetadata])
@@ -105,5 +105,5 @@ async def download_assignment_attachment(course_id: str, assignment_id: str, fil
     """
     Download the course assignment attachment by provided course_id, assignment_id, file_id.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_download_assignment_attachment(db_cursor, course_id, assignment_id, file_id, user_email)
+    with get_db() as (db_conn, db_cursor), get_storage_db() as (storage_db_conn, storage_db_cursor):
+        return logic_download_assignment_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, file_id, user_email)

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, UploadFile, File
 from typing import List
 from constants import TIME_FORMAT
 
-from auth import get_current_user, get_db
+from auth import get_current_user, get_db, get_storage_db
 import json_classes
 from logic.materials import (
     create_material as logic_create_material,
@@ -76,8 +76,8 @@ async def create_material_attachment(
 
     The format of upload_time is TIME_FORMAT.
     """
-    with get_db() as (db_conn, db_cursor):
-        return await logic_create_material_attachment(db_conn, db_cursor, course_id, material_id, file, user_email)
+    with get_db() as (db_conn, db_cursor), get_storage_db() as (storage_db_conn, storage_db_cursor):
+        return await logic_create_material_attachment(db_conn, db_cursor, storage_db_conn, storage_db_cursor, course_id, material_id, file, user_email)
 
 
 @router.get("/get_material_attachments", response_model=List[json_classes.MaterialAttachmentMetadata])
@@ -98,5 +98,5 @@ async def download_material_attachment(course_id: str, material_id: str, file_id
     """
     Download the course material attachment by provided course_id, material_id, file_id.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_download_material_attachment(db_cursor, course_id, material_id, file_id, user_email)
+    with get_db() as (db_conn, db_cursor), get_storage_db() as (storage_db_conn, storage_db_cursor):
+        return logic_download_material_attachment(db_cursor, storage_db_cursor, course_id, material_id, file_id, user_email)

@@ -9,13 +9,6 @@ CREATE TABLE users(
     passwordhash text NOT NULL
 );
 
-CREATE TABLE files(
-    id uuid PRIMARY KEY,  -- stored in edhub_storage
-    name text CHECK (length(name) <= 256),
-    uploadtime timestamp NOT NULL,
-    author text NULL REFERENCES users ON DELETE SET NULL
-);
-
 CREATE TABLE courses(
     courseid uuid PRIMARY KEY,
     name text NOT NULL CHECK (length(name) <= 128),
@@ -84,7 +77,9 @@ CREATE TABLE logs(
 CREATE TABLE material_files(
     courseid uuid,
     matid int,
-    fileid uuid NOT NULL REFERENCES files ON DELETE CASCADE,
+    fileid uuid,
+    filename text CHECK (length(filename) <= 256),
+    uploadtime timestamp NOT NULL,
     FOREIGN KEY (courseid, matid) REFERENCES course_materials ON DELETE CASCADE,
     PRIMARY KEY (courseid, matid, fileid)
 );
@@ -92,7 +87,9 @@ CREATE TABLE material_files(
 CREATE TABLE assignment_files(
     courseid uuid,
     assid int,
-    fileid uuid NOT NULL REFERENCES files ON DELETE CASCADE,
+    fileid uuid,
+    filename text CHECK (length(filename) <= 256),
+    uploadtime timestamp NOT NULL,
     FOREIGN KEY (courseid, assid) REFERENCES course_assignments ON DELETE CASCADE,
     PRIMARY KEY (courseid, assid, fileid)
 );
@@ -101,7 +98,9 @@ CREATE TABLE submissions_files(
     courseid uuid,
     assid int,
     email text,
-    fileid uuid NOT NULL REFERENCES files ON DELETE CASCADE,
+    fileid uuid,
+    filename text CHECK (length(filename) <= 256),
+    uploadtime timestamp NOT NULL,
     FOREIGN KEY (courseid, assid, email) REFERENCES course_assignments_submissions ON DELETE CASCADE,
     PRIMARY KEY (courseid, assid, email, fileid)
 );

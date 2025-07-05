@@ -19,6 +19,17 @@ def get_db():
         conn.close()
 
 
+@contextmanager
+def get_storage_db():
+    conn = psycopg2.connect(dbname="edhub_storage", user="postgres", password="12345678", host="storagedb", port="5432")
+    cursor = conn.cursor()
+    try:
+        yield conn, cursor
+    finally:
+        cursor.close()
+        conn.close()
+
+
 router = APIRouter()
 
 # setting for JWT and autorization
