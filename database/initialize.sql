@@ -36,12 +36,12 @@ CREATE TABLE course_assignments(
 
 CREATE TABLE course_assignments_submissions(
     courseid uuid REFERENCES courses ON DELETE CASCADE,
-    assid int,
+    assid int NOT NULL,
     email text REFERENCES users ON DELETE CASCADE,
     timeadded timestamp NOT NULL,
     timemodified timestamp NOT NULL CHECK (timemodified >= timeadded),
     comment text NOT NULL CHECK (length(comment) <= 1000),
-    grade int NOT NULL,
+    grade int NULL,
     gradedby text NULL REFERENCES users ON DELETE SET NULL,
     FOREIGN KEY (courseid, assid) REFERENCES course_assignments ON DELETE CASCADE,
     PRIMARY KEY (courseid, assid, email)

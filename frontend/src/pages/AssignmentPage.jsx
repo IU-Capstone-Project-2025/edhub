@@ -3,247 +3,255 @@ import "../styles/AssignmentPage.css"
 import {useParams} from "react-router-dom"
 import axios from "axios"
 
-export default function AssignmentPage({
-  onSubmit,
-  onGrade,
-  onBack,
-}) {
-  const { post_id , id: course_id} = useParams()
-  const [popup, setPopup] = useState(null)
-  const [input, setInput] = useState("")
-  const [grade, setGrade] = useState("")
-  const [Assignment, setAssignment] = useState()
-  const [role, setRole] = useState()
-  const [submissions,setSubmissions] = useState([])
-  const [mySubmission, setMySubmission] = useState()
-  const [studentEmail,setStudentEmail] = useState()
-
-  function onSubmit(comment) {
-    try{
-      const token = localStorage.getItem("access_token")
-      axios.post("/api/submit_assignment", null, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { assignment_id: post_id, course_id, comment }
-      })
-      setInput("")
-      setMySubmission({ comment, grade: null, gradedBy: null })
-    }catch (err) {
-      console.log("Submission error:", err.response?.data);
-      alert("Ошибка при отправке задания: " + (
-        typeof err.response?.data?.detail === "string"
-          ? err.response.data.detail
-          : JSON.stringify(err.response?.data?.detail || err.message)
-      ))
-    }
-  }
-
-  function fetchMySubmission() {
-    const token = localStorage.getItem("access_token")
-    axios.get("/api/get_submission", {
-      headers: { Authorization: `Bearer ${token}` },
-      params: { assignment_id: post_id, course_id , student_email: studentEmail}
-    })
-    .then(res => {
-      setMySubmission(res.data)
-    })
-    .catch(err => {
-      console.log("My submission fetch error:", err.response?.data);
-      alert("Ошибка при загрузке вашего задания: " + (
-        typeof err.response?.data?.detail === "string"
-          ? err.response.data.detail
-          : JSON.stringify(err.response?.data?.detail || err.message)
-      ))
-    })
-  }
-
-  // function fetchMyEmail(){
-  //   try{
-  //     const token = localStorage.getItem("access_token")
-  //     axios.get("/api/get_user_email", {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //       params: { course_id }
-  //     })
-  //     .then(res => {
-  //       setStudentEmail(res.data.email)
-  //       fetchMySubmission()
-  //     })
-  //     .catch(err => {
-  //       console.log("Email fetch error:", err.response?.data);
-  //       alert("Ошибка при загрузке вашего email: " + (
-  //         typeof err.response?.data?.detail === "string"
-  //           ? err.response.data.detail
-  //           : JSON.stringify(err.response?.data?.detail || err.message)
-  //       ))
-  //     })
-  //   }
-  // }
+export default function AssignmentPage() {
+  const { id, post_id } = useParams()
+  const [assignmentInfo, setAssignmentInfo] = useState(null)
+  const [text,setText] = useState("")
+  const [showSubmissionForm, setShowSubmissionForm] = useState(true)
+  const [roleData, setRoleData] = useState()
+  const [ownEmail, setOwnEmail] = useState("")
+  const [mySubmission, setMySubmission] = useState(null)
+  const [childrenEmail, setChildrenEmail] = useState(null)
+  const [childrenSubmission, setChildrenSubmission] = useState(null)
+  const [studentSubmissions, setStudentSubmissions] = useState([])
+  const [currentGrade, setCurrentGrade] = useState(null)
+  const [currentStudentEmail, setCurrentStudentEmail] = useState(null)
 
 
-  
+
   useEffect(() => {
-    const fetchRole = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        const res = await axios.get("/api/get_user_role", {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { course_id }
-        });
-        const data = res.data;
-        const user_role = data.is_teacher
-          ? "teacher"
-          : data.is_student
-          ? "student"
-          : data.is_parent
-          ? "parent"
-          : null;
-        setRole(user_role);
-      } catch (err) {
-        setRole(null);
-      }
-    };
-    fetchRole();
-}, [course_id]);
-
-    
-  
-
-  useEffect (() => {
-    const fetchAssignment = async () => {
+    const fetchAssignmentInfo = async () => {
       try{
         const token = localStorage.getItem("access_token")
         const res = await axios.get("/api/get_assignment", {
-          headers:{ Authorization: `Bearer ${token}` },
-          params: { assignment_id: post_id , course_id }
+          headers: { Authorization: `Bearer ${token}` },
+          params: { assignment_id:post_id, course_id: id }
         })
-        setAssignment(res.data)
-      }catch (err) {
-        console.log("Assignment fetch error:", err.response?.data);
-        alert("Ошибка при загрузке задания: " + (
-          typeof err.response?.data?.detail === "string"
-            ? err.response.data.detail
-            : JSON.stringify(err.response?.data?.detail || err.message)
-  ))
-}
+        setAssignmentInfo(res.data)
+        
+      }catch(err){
+        alert("Ошибка при загрузке курса: " + (err.response?.data?.detail || err.message))
+      }
     }
-    fetchAssignment()
-  }, [post_id,course_id])
+    fetchAssignmentInfo()
 
-  
-  
+    const fetchRoleData = async () => {
+      try{
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/api/get_user_role", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { course_id: id },
+        })
+        setRoleData(res.data)
+      }catch(err){
+        alert("Ошибка при загрузке роли пользователя: " + (err.response?.data?.detail || err.message))
+      }
+    }
+    fetchRoleData()
+
+    const fetchEmail = async () => {
+      try {
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/api/get_user_info", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        setOwnEmail(res.data.email)
+      } catch (err) {
+        alert("Ошибка при загрузке email'а пользователя: " + (err.response?.data?.detail || err.message))
+      }
+    }
+    fetchEmail()
+    
+  }, [id])
 
 
-  // Pop-up for teacher/parent: show submission, grade button
-  const handleOpenPopup = (submission) => setPopup(submission)
-  const handleClosePopup = () => setPopup(null)
-  const handleGrade = () => {
-    onGrade && onGrade(popup, grade)
-    setGrade("")
-    setPopup(null)
+  useEffect(() => {
+  if (roleData?.is_parent) {
+    const fetchChildrenEmail = async () => {
+      try {
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/api/get_parents_children", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { course_id: id }
+        })
+        setChildrenEmail(res.data)
+      } catch (err) {
+        alert("Ошибка при загрузке email'а ребёнка: " + (err.response?.data?.detail || err.message))
+      }
+    }
+    fetchChildrenEmail()
+  }
+}, [roleData, id])
+
+
+  const fetchMySubmission = async () => {
+      try {
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/api/get_submission", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { course_id: id, assignment_id: post_id , student_email: ownEmail }
+        })
+        setMySubmission(res.data)
+      } catch (err) {
+        const msg = err.response?.data?.detail || err.message;
+        if (
+          msg === "Submission of this user is not found" ||
+          (err.response && err.response.status === 404)
+        ) {
+          setMySubmission(null); // No submission yet, not an error
+        } else {
+          alert("Ошибка при загрузке ответа студента: " + msg)
+        }
+      }
   }
 
-  if (!Assignment) {
-    return <div>Loading...</div>;
+  useEffect(() => {
+    if (roleData?.is_student && ownEmail) {
+      fetchMySubmission();
+    }
+  }, [roleData, ownEmail, id, post_id]);
+
+  const fetchStudentSubmissions = async () => {
+      try {
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/api/get_assignment_submissions", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { course_id: id, assignment_id: post_id  }
+        })
+        setStudentSubmissions(res.data)
+      } catch (err) {
+          alert("Ошибка при загрузке ответов студентов: " + (err.response?.data?.detail || err.message))
+      }
   }
 
+  useEffect(() => {
+    if (roleData?.is_teacher) {
+      fetchStudentSubmissions();
+    }
+  }, [roleData, id, post_id]);
+
+  useEffect(() => {
+    if (mySubmission) {
+    setShowSubmissionForm(false);
+    }
+  }, [mySubmission]);
+  
+  const fetchChildrenSubmission = async () => {
+      if (!childrenEmail[0]?.email) return
+      try {
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/api/get_submission", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { course_id: id, assignment_id: post_id , student_email: childrenEmail[0].email}
+        })
+        setChildrenSubmission(res.data)
+      } catch (err) {
+        alert("Ошибка при загрузке ответа ребёнка: " + (err.response?.data?.detail || err.message))
+      }
+  }
+  useEffect(() => {
+    if (roleData?.is_parent && childrenEmail) {
+      fetchChildrenSubmission();
+    }
+  }, [roleData, childrenEmail, id, post_id]);
+  
+  const handleSubmit = async () => {
+    // if (!studentEmail.trim()) {
+    //   alert("Student's Email is required")
+    //   return
+    // }
+
+    try {
+      const token = localStorage.getItem("access_token")
+      await axios.post("/api/submit_assignment", null, {
+        headers: {Authorization: `Bearer ${token}` },
+        params:{course_id: id, assignment_id: post_id, comment: text}
+      })
+      setShowSubmissionForm(false)
+      fetchMySubmission()
+    } catch (err) {
+      alert("Ошибка при отправке ответа: " + (err.response?.data?.detail || err.message))
+    }
+    
+  }
+
+
+  if (!assignmentInfo) return <div>Loading assignment...</div>
   return (
     <div className="assignment-page">
-      <button className="back-btn" onClick={onBack}>← Back to course feed</button>
+      <a href="../">
+        <button className="back-btn">← Back to course feed</button>
+      </a>
       <div className="assignment-main">
         <div className="assignment-left">
-          <h1>{Assignment.title}</h1>
-          <h1>my role:{role}</h1>
-          <p>{Assignment.description}</p>
-          <p>Created by: {Assignment.author}</p>
-          <p>Assignment ID : {Assignment.assignment_id}</p>
-          <p>Created : {Assignment.creation_time}</p>
+          <h1>{assignmentInfo.title}</h1>
+          <p>{assignmentInfo.description}</p>
+          <p>Assignment ID : {assignmentInfo.assignment_id}</p>
+          <p>Created : {assignmentInfo.creation_time}</p>
+          <p>Current Email: {ownEmail}</p>
+          <p>author : {assignmentInfo.author}</p>
         </div>
         <div className="assignment-right">
-          {role === "teacher" && (
-            <>
-              <h2>Student Submissions</h2>
-              <div className="submission-list">
-                {submissions.length === 0 && <div className="empty">No submissions yet.</div>}
-                {submissions.map((s, i) => (
-                  <div key={i} className="submission-card" onClick={() => handleOpenPopup(s)}>
-                    <div>{s.studentName}</div>
-                    <div className="submission-status">
-                      {s.grade ? <>Graded: <b>{s.grade}</b></> : <span>Not graded</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {role === "parent" && (
-            <>
-              <h2>Your Children's Submissions</h2>
-              <div className="submission-list">
-                {submissions.length === 0 && <div className="empty">No submissions yet.</div>}
-                {submissions.map((s, i) => (
-                  <div key={i} className="submission-card" onClick={() => handleOpenPopup(s)}>
-                    <div>{s.studentName}</div>
-                    <div className="submission-status">
-                      {s.grade ? <>Graded: <b>{s.grade}</b></> : <span>Not graded</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {role === "student" && (
+          {roleData && roleData.is_student && showSubmissionForm && !mySubmission &&(
             <div className="student-submit-block">
-              {!mySubmission ? (
-                <>
-                  <textarea
-                    placeholder="Type your answer here..."
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                  />
-                  <button
-                    className="submit-btn"
-                    disabled={!input.trim()}
-                    onClick={() => { onSubmit && onSubmit(input); setInput(""); }}
-                  >Submit</button>
-                </>
-              ) : (
-                <div className="submitted-answer">
-                  <div className="my-comment-title">Your submission:</div>
-                  <div className="my-comment">{mySubmission.comment}</div>
-                  {mySubmission.grade && (
-                    <div className="my-grade">Grade: <b>{mySubmission.grade}</b> (by {mySubmission.gradedBy})</div>
-                  )}
-                </div>
+              <h2>Submit your work</h2>
+              <div>
+              <textarea 
+                placeholder="Write your submission here..."
+                value={text} onChange={(e) => setText(e.target.value)}
+                rows="10" 
+                cols="30"/>
+              <button 
+                className="submit-btn"
+                onClick={handleSubmit} 
+                disabled={!text.trim()}
+              > Submit
+              </button>
+              </div>
+            </div>
+          )}
+          {roleData && roleData.is_student && !showSubmissionForm && mySubmission && (
+            <div className="submitted-answer">
+              <div className="my-comment-title">Your submission:</div>
+              <div className="my-comment">{mySubmission.comment}</div>
+              {mySubmission.grade && (
+                <div className="my-grade">Grade: <b>{mySubmission.grade}</b> (by {mySubmission.gradedBy})</div>
               )}
             </div>
           )}
+          {roleData && roleData.is_parent && childrenSubmission && (
+            <div className="submitted-answer">
+              <div className="my-comment-title">Your child's {childrenSubmission.student_name} submission:</div>
+              <div className="my-comment">{childrenSubmission.comment}</div>
+              {childrenSubmission.grade && (
+                <div className="my-grade">Grade: <b>{childrenSubmission.grade}</b> (by {childrenSubmission.gradedBy})</div>
+              )}
+            </div>
+          )}
+          {roleData && roleData.is_teacher && studentSubmissions && (
+            <div className="submitted-answer">
+              <div className="my-comment-title">Students' submissions:</div>
+              {studentSubmissions.length === 0 && <div>No submissions yet.</div>}
+              {studentSubmissions.map((submission, idx) => (
+                <div key={idx} className="student-submission-block">
+                  <div className="my-comment">
+                    <b>{submission.student_name || submission.student_email || "Student"}:</b> {submission.comment}
+                  </div>
+
+                  {submission.grade && (
+                    <div className="my-grade">
+                      Grade: <b>{submission.grade}</b> {submission.gradedBy && `(by ${submission.gradedBy})`}
+                    </div>
+                  )}
+                  <hr />
+                </div>
+              ))}
+            </div>
+)}        
+            
         </div>
       </div>
 
-      {popup && (
-        <div className="popup-bg" onClick={handleClosePopup}>
-          <div className="popup-card" onClick={e => e.stopPropagation()}>
-            <div className="popup-title">{popup.studentName}'s Submission</div>
-            <div className="popup-content">{popup.comment}</div>
-            {role === "teacher" && (
-              <div className="popup-grade-block">
-                <input
-                  type="text"
-                  placeholder="Grade"
-                  value={grade}
-                  onChange={e => setGrade(e.target.value)}
-                />
-                <button className="grade-btn" onClick={handleGrade}>Set grade</button>
-              </div>
-            )}
-            {popup.grade && (
-              <div className="popup-graded">Grade: <b>{popup.grade}</b> {popup.gradedBy && `(by ${popup.gradedBy})`}</div>
-            )}
-            <button className="close-btn" onClick={handleClosePopup}>Close</button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

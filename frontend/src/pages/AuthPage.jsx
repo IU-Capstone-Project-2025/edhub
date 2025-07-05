@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import "./../styles/AuthPage.css"
+import noavatar from "../components/noavatar.svg";
 import axios from "axios"
 
 import { useNavigate } from "react-router-dom"
@@ -9,7 +10,14 @@ export default function AuthPage() {
   const [name, setName] = useState("")
   const [password, setPassword] = useState("")
   const [isLogin, setIsLogin] = useState(true)
+  const [error, setError] = useState("")
   const navigate = useNavigate()
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  function validatePassword(pw) {
+    return pw.length >= 8 && /[a-zA-Z]/.test(pw) && /\d/.test(pw)
+  }
 
   const handleSubmit = async () => {
     try {
@@ -19,7 +27,7 @@ export default function AuthPage() {
       localStorage.setItem("access_token", res.data.access_token)
       navigate("/courses")
     } catch (err) {
-      alert("Error: " + (err.response?.data?.detail || err.message))
+      setError(err.response?.data?.detail || "Unknown error")
     }
   }
 
@@ -30,15 +38,7 @@ export default function AuthPage() {
       <div className="auth-content">
         <div className="auth-left">
           <div className="auth-logo">
-            <span className="ed">ed</span>
-            <span className="hub">
-              H
-              <svg viewBox="0 0 64 40" className="hat">
-                <polygon points="32,0 64,10 32,20 0,10" />
-                <line x1="32" y1="20" x2="32" y2="35" stroke="#4CB050" strokeWidth="4" />
-              </svg>
-              ub
-            </span>
+            <img className="logo-image" src={noavatar} alt="No avatar" width={200} height={100} />
           </div>
           <h1>Fast, Efficient and Productive</h1>
           <p>
@@ -52,12 +52,13 @@ export default function AuthPage() {
             {isLogin ? "Access your learning dashboard" : "Create a new EdHub account"}
           </p>
 
-          <form onSubmit={(e) => e.preventDefault()}>
+          <form onSubmit={(e) => e.preventDefault()} noValidate>
             <input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
             {!isLogin && (
               <input
@@ -65,6 +66,9 @@ export default function AuthPage() {
                 placeholder="Full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                pattern="^[A-Za-zА-Яа-яёЁ\s]{2,}$"
+                title="Please enter your full name (at least 2 letters)."
+                required
               />
             )}
             <input
@@ -72,11 +76,16 @@ export default function AuthPage() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
+              title="Password must be at least 8 characters long and include at least one letter and one number."
+              required
             />
             <button type="submit" onClick={handleSubmit}>
               {isLogin ? "Log In" : "Sign Up"}
             </button>
           </form>
+
+          {error && <div className="form-error">{error}</div>}
 
           <div className="form-toggle">
             <span onClick={() => setIsLogin(!isLogin)}>
