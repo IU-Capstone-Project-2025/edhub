@@ -10,7 +10,7 @@ from datetime import datetime
 
 @contextmanager
 def get_db():
-    conn = psycopg2.connect(dbname="edhub", user="postgres", password="12345678", host="db", port="5432")
+    conn = psycopg2.connect(dbname="edhub", user="postgres", password="12345678", host="system_db", port="5432")
     cursor = conn.cursor()
     try:
         yield conn, cursor
@@ -21,7 +21,7 @@ def get_db():
 
 @contextmanager
 def get_storage_db():
-    conn = psycopg2.connect(dbname="edhub_storage", user="postgres", password="12345678", host="storagedb", port="5432")
+    conn = psycopg2.connect(dbname="edhub_storage", user="postgres", password="12345678", host="storage_db", port="5432")
     cursor = conn.cursor()
     try:
         yield conn, cursor
