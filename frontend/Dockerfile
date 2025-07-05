@@ -6,4 +6,4 @@ RUN mkdir public && mkdir src
 COPY public public
 COPY src src
 RUN npm install
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
