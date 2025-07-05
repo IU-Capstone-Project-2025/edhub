@@ -42,7 +42,7 @@ def sql_insert_material_attachment(db_cursor, storage_db_cursor, course_id, mate
         INSERT INTO material_files 
         (courseid, matid, fileid, filename, uploadtime)
         VALUES (%s, %s, %s, %s, now())
-        RETURNING fileid, upload_time
+        RETURNING fileid, uploadtime
         """,
         (course_id, material_id, fileid, filename),
     )

@@ -42,7 +42,7 @@ def sql_insert_assignment_attachment(db_cursor, storage_db_cursor, course_id, as
         INSERT INTO assignment_files 
         (courseid, assid, fileid, filename, uploadtime)
         VALUES (%s, %s, %s, %s, now())
-        RETURNING fileid, upload_time
+        RETURNING fileid, uploadtime
         """,
         (course_id, assignment_id, fileid, filename),
     )
