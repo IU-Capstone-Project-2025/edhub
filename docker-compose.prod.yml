@@ -1,4 +1,41 @@
 services:
+  system_db:
+    build: ./database/system
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_USER=postgres
+      - PGDATA=/var/lib/postgresql/data
+    volumes:
+      - edhub_system_storage:/var/lib/postgresql/data
+
+  filestorage_db:
+    build: ./database/filestorage
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_USER=postgres
+      - PGDATA=/var/lib/postgresql/data
+    volumes:
+      - edhub_filestorage_storage:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:12345678@system_db:5432/edhub
+    depends_on:
+      - system_db
+      - filestorage_db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    restart: always
+    depends_on:
+      - backend
+
   nginx:
     build: ./nginx-prod
     ports:
@@ -7,3 +44,7 @@ services:
     volumes:
       - /etc/letsencrypt/live/edhub.space/fullchain.pem:/etc/letsencrypt/live/edhub.space/fullchain.pem:ro
       - /etc/letsencrypt/live/edhub.space/privkey.pem:/etc/letsencrypt/live/edhub.space/privkey.pem:ro
+
+volumes:
+  edhub_system_storage:
+  edhub_filestorage_storage:
