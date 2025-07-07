@@ -335,5 +335,5 @@ def assert_admin_access(db_cursor, user_email: str):
 
 
 # checking whether the user has admin access
-def check_admin_access(db_cursor, teacher_email: str) -> bool:
-    return value_assert_admin_access(db_cursor, teacher_email) is None
+def check_admin_access(db_cursor, user_email: str) -> bool:
+    return value_assert_admin_access(db_cursor, user_email) is None
