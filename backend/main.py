@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from logic.users import create_admin_account as logic_create_admin_account
+from auth import get_db
 
 import routers.assignments
 import routers.submissions
@@ -29,3 +31,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# create an initial admin account
+async def create_admin_account():
+    with get_db() as (db_conn, db_cursor):
+        return logic_create_admin_account(db_conn, db_cursor)
+
+# app startup
+@app.on_event("startup")
+async def startup_event():
+    await create_admin_account()

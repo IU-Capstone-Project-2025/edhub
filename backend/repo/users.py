@@ -38,3 +38,6 @@ def sql_delete_course(db_cursor, course_id):
 
 def sql_delete_user(db_cursor, user_email):
     db_cursor.execute("DELETE FROM users WHERE email = %s", (user_email,))
+
+def sql_make_user_admin(db_cursor, user_email):
+    db_cursor.execute("UPDATE users SET isadmin = %s WHERE email = %s", (True, user_email))
