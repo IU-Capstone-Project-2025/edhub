@@ -138,9 +138,21 @@ def remove_user(db_conn, db_cursor, user_email: str):
 def create_admin_account(db_conn, db_cursor):
     hashed_password = pwd_hasher.hash('admin')
     repo_users.sql_insert_user(db_cursor, 'admin', 'admin', hashed_password)
-    repo_users.sql_make_user_admin(db_cursor, 'admin')
+    repo_users.sql_give_admin_permissions(db_cursor, 'admin')
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_USER_ADD, f"Created new user: admin")
     # TODO: add logging for giving admin permissions
-    return True
+
+
+def give_admin_permissions(db_conn, db_cursor, object_email: str, subject_email: str):
+
+    # checking constraints
+    constraints.assert_admin_access(db_cursor, subject_email)
+    constraints.assert_user_exists(db_cursor, object_email)
+
+    repo_users.sql_give_admin_permissions(db_cursor, object_email)
+    db_conn.commit()
+
+    # TODO: add logging for giving admin permissions
+    return {"success": True}

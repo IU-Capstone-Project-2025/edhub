@@ -9,6 +9,7 @@ from logic.users import (
     login as logic_login,
     change_password as logic_change_password,
     remove_user as logic_remove_user,
+    give_admin_permissions as logic_give_admin_permissions
 )
 
 router = APIRouter()
@@ -82,3 +83,14 @@ async def remove_user(user_email: str = Depends(get_current_user)):
     """
     with get_db() as (db_conn, db_cursor):
         return logic_remove_user(db_conn, db_cursor, user_email)
+
+
+@router.post("/give_admin_permissions", response_model=json_classes.Success)
+async def give_admin_permissions(object_email: str, subject_email: str = Depends(get_current_user)):
+    """
+    Give admin rights to some existing uesr.
+
+    Admin role required.
+    """
+    with get_db() as (db_conn, db_cursor):
+        return logic_give_admin_permissions(db_conn, db_cursor, object_email, subject_email)
