@@ -5,6 +5,7 @@ from auth import get_current_user, get_db
 import json_classes
 from logic.courses import (
     available_courses as logic_available_courses,
+    get_all_courses as logic_get_all_courses,
     create_course as logic_create_course,
     remove_course as logic_remove_course,
     get_course_info as logic_get_course_info,
@@ -21,6 +22,17 @@ async def available_courses(user_email: str = Depends(get_current_user)):
     """
     with get_db() as (db_conn, db_cursor):
         return logic_available_courses(db_cursor, user_email)
+    
+
+@router.get("/get_all_courses", response_model=List[json_classes.CourseId])
+async def get_all_courses(user_email: str = Depends(get_current_user)):
+    """
+    Get the list of IDs of all courses in the system.
+
+    Admin role required.
+    """
+    with get_db() as (db_conn, db_cursor):
+        return logic_get_all_courses(db_cursor, user_email)
 
 
 @router.post("/create_course", response_model=json_classes.CourseId)
