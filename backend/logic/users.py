@@ -21,6 +21,7 @@ def get_user_role(db_cursor, course_id: str, user_email: str):
         "is_teacher": constraints.check_teacher_access(db_cursor, user_email, course_id),
         "is_student": constraints.check_student_access(db_cursor, user_email, course_id),
         "is_parent": constraints.check_parent_access(db_cursor, user_email, course_id),
+        "is_admin": constraints.check_admin_access(db_cursor, user_email)
     }
 
     return res
