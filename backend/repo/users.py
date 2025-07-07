@@ -42,3 +42,11 @@ def sql_delete_user(db_cursor, user_email):
 
 def sql_give_admin_permissions(db_cursor, user_email):
     db_cursor.execute("UPDATE users SET isadmin = %s WHERE email = %s", (True, user_email))
+
+
+def sql_select_admins(db_cursor):
+    db_cursor.execute(
+        "SELECT email, publicname FROM users WHERE isadmin = %s",
+        (True,),
+    )
+    return db_cursor.fetchall()
