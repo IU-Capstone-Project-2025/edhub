@@ -4,6 +4,9 @@ import constraints
 import repo.courses as repo_courses
 import repo.teachers as repo_teachers
 import logic.logging as logger
+import logic.users
+import repo.parents
+from typing import Union
 
 
 def available_courses(db_cursor, user_email: str):
@@ -60,3 +63,48 @@ def get_course_feed(db_cursor, course_id: str, user_email: str):
         for mat in course_feed
     ]
     return res
+
+
+def get_grade_table_unchecked(db_cursor, course_id: str, students: list[str],
+                              gradeables: list[int]) -> list[list[Union[int, None]]]:
+    """
+    Returns:
+    1) the list of row names - student logins;
+    2) the list of column names - assignment IDs;
+    3) a `len(students) x len(gradeables)` table of grades. Rows and columns are not included.
+    Currently, gradeables are just IDs of assignments in this course.
+    """
+    values = repo_courses.sql_select_grades_in_course(db_cursor, course_id, students, gradeables)
+    allrows = sorted(set(v[0] for v in values)) if students is None else students
+    allcols = sorted(set(v[1] for v in values)) if gradeables is None else gradeables
+    nrows = len(allrows)
+    ncols = len(allcols)
+    rowindex = {allrows[i]: i for i in range(nrows)}
+    colindex = {allcols[i]: i for i in range(ncols)}
+    table = [[None] * ncols for _ in range(nrows)]
+    for email, assignment, grade in values:
+        table[rowindex[email]][colindex[assignment]] = grade
+    return table
+
+
+def get_grade_table(db_cursor, course_id: str, students: list[str],
+                    gradeables: list[int], user_email: str) -> list[list[Union[int, None]]]:
+    role = logic.users.get_user_role(db_cursor, course_id, user_email)
+    if role["is_parent"]:
+        children = {i[0] for i in repo.parents.sql_select_parents_children(db_cursor, course_id, user_email)}
+        for student in students:
+            if student not in children:
+                raise HTTPException(
+
+
+def get_grade_table_csv(db_cursor, course_id: str, students: list[str],
+                        gradeables: list[int], user_email: str) -> str:
+    """
+    Compile a CSV file (comma-separated, CRLF newlines) with all grades of all students.
+
+    ROWS: students' logins
+
+    COLUMNS: student display name, then assignment names
+    """
+    logic_get_grade_table_csv(db_cursor, course_id, None, None, user_email)
+

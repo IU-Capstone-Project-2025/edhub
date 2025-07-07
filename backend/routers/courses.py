@@ -9,6 +9,7 @@ from logic.courses import (
     remove_course as logic_remove_course,
     get_course_info as logic_get_course_info,
     get_course_feed as logic_get_course_feed,
+    get_grade_table_csv as logic_get_grade_table_csv,
 )
 
 router = APIRouter()
@@ -66,3 +67,16 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
     """
     with get_db() as (db_conn, db_cursor):
         return logic_get_course_feed(db_cursor, course_id, user_email)
+
+
+@router.get("/get_course_grade_table")
+async def download_course_grade_table(course_id: str, user_email: str = Depends(get_current_user)):
+    """
+    Download a CSV file (comma-separated, CRLF newlines) with all grades of all students.
+
+    ROWS: students' logins
+
+    COLUMNS: student display name, then assignment names
+    """
+    with get_db() as (db_conn, db_cursor):
+        return logic_get_grade_table_csv(db_cursor, course_id, None, None, user_email)
