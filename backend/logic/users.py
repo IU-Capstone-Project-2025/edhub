@@ -148,7 +148,8 @@ def create_admin_account(db_conn, db_cursor):
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_USER_ADD, f"Created new user: admin")
-    # TODO: add logging for giving admin permissions
+    logger.log(db_conn, logger.TAG_ADMIN_ADD, f"Added admin privileges to user: admin")
+
     return password
 
 
@@ -161,7 +162,8 @@ def give_admin_permissions(db_conn, db_cursor, object_email: str, subject_email:
     repo_users.sql_give_admin_permissions(db_cursor, object_email)
     db_conn.commit()
 
-    # TODO: add logging for giving admin permissions
+    logger.log(db_conn, logger.TAG_ADMIN_ADD, f"Added admin privileges to user: admin")
+
     return {"success": True}
 
 
