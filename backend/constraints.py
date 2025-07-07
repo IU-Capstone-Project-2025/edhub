@@ -136,9 +136,11 @@ def value_assert_course_access(db_cursor, user_email: str, course_id: str) -> Un
             SELECT 1 FROM student_at WHERE email = %s AND courseid = %s
             UNION
             SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND courseid = %s
+            UNION
+            SELECT 1 FROM users WHERE email = %s AND isadmin
         )
     """,
-        (user_email, course_id, user_email, course_id, user_email, course_id),
+        (user_email, course_id, user_email, course_id, user_email, course_id, user_email),
     )
     has_access = db_cursor.fetchone()[0]
     if not has_access:
@@ -167,7 +169,14 @@ def value_assert_teacher_access(db_cursor, teacher_email: str, course_id: str) -
     if err is not None:
         return err
     db_cursor.execute(
-        "SELECT EXISTS(SELECT 1 FROM teaches WHERE email = %s AND courseid = %s)", (teacher_email, course_id)
+        """
+        SELECT EXISTS(
+            SELECT 1 FROM teaches WHERE email = %s AND courseid = %s
+            UNION
+            SELECT 1 FROM users WHERE email = %s AND isadmin
+        )
+    """,
+        (teacher_email, course_id, teacher_email),
     )
     has_access = db_cursor.fetchone()[0]
     if not has_access:
@@ -196,7 +205,14 @@ def value_assert_student_access(db_cursor, student_email: str, course_id: str) -
     if err is not None:
         return err
     db_cursor.execute(
-        "SELECT EXISTS(SELECT 1 FROM student_at WHERE email = %s AND courseid = %s)", (student_email, course_id)
+        """
+        SELECT EXISTS(
+            SELECT 1 FROM student_at WHERE email = %s AND courseid = %s
+            UNION
+            SELECT 1 FROM users WHERE email = %s AND isadmin
+        )
+    """,
+        (student_email, course_id, student_email),
     )
     has_access = db_cursor.fetchone()[0]
     if not has_access:
@@ -225,8 +241,14 @@ def value_assert_parent_access(db_cursor, parent_email: str, course_id: str) -> 
     if err is not None:
         return err
     db_cursor.execute(
-        "SELECT EXISTS(SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND courseid = %s)",
-        (parent_email, course_id),
+        """
+        SELECT EXISTS(
+            SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND courseid = %s
+            UNION
+            SELECT 1 FROM users WHERE email = %s AND isadmin
+        )
+    """,
+        (parent_email, course_id, parent_email),
     )
     has_access = db_cursor.fetchone()[0]
     if not has_access:
@@ -260,8 +282,14 @@ def value_assert_parent_student_access(
     if err is not None:
         return err
     db_cursor.execute(
-        "SELECT EXISTS(SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND studentemail = %s AND courseid = %s)",
-        (parent_email, student_email, course_id),
+        """
+        SELECT EXISTS(
+            SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND studentemail = %s AND courseid = %s
+            UNION
+            SELECT 1 FROM users WHERE email = %s AND isadmin
+        )
+    """,
+        (parent_email, student_email, course_id, parent_email),
     )
     has_access = db_cursor.fetchone()[0]
     if not has_access:
