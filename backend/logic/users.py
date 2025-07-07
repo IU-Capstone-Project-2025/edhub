@@ -6,6 +6,7 @@ from auth import pwd_hasher, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 import repo.users as repo_users
 from regex import match, search
 import logic.logging as logger
+from secrets import token_hex
 
 
 def get_user_info(db_cursor, user_email: str):
@@ -140,13 +141,15 @@ def remove_user(db_conn, db_cursor, user_email: str):
 
 
 def create_admin_account(db_conn, db_cursor):
-    hashed_password = pwd_hasher.hash('admin')
+    password = token_hex(32)
+    hashed_password = pwd_hasher.hash(password)
     repo_users.sql_insert_user(db_cursor, 'admin', 'admin', hashed_password)
     repo_users.sql_give_admin_permissions(db_cursor, 'admin')
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_USER_ADD, f"Created new user: admin")
     # TODO: add logging for giving admin permissions
+    return password
 
 
 def give_admin_permissions(db_conn, db_cursor, object_email: str, subject_email: str):

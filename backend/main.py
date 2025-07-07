@@ -35,7 +35,8 @@ app.add_middleware(
 # create an initial admin account
 async def create_admin_account():
     with get_db() as (db_conn, db_cursor):
-        return logic_create_admin_account(db_conn, db_cursor)
+        password = logic_create_admin_account(db_conn, db_cursor)
+        print(f"\nAdmin account created\nlogin: admin\npassword: {password}\n")
 
 # app startup
 @app.on_event("startup")
