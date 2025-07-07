@@ -50,3 +50,8 @@ def sql_select_admins(db_cursor):
         (True,),
     )
     return db_cursor.fetchall()
+
+
+def sql_select_all_users(db_cursor):
+    db_cursor.execute("SELECT email, publicname FROM users")
+    return db_cursor.fetchall()

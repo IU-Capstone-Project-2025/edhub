@@ -159,3 +159,14 @@ def give_admin_permissions(db_conn, db_cursor, object_email: str, subject_email:
 
     # TODO: add logging for giving admin permissions
     return {"success": True}
+
+
+def get_all_users(db_cursor, user_email: str):
+    # checking constraints
+    constraints.assert_admin_access(db_cursor, user_email)
+
+    # finding all users
+    users = repo_users.sql_select_all_users(db_cursor)
+
+    res = [{"email": u[0], "name": u[1]} for u in users]
+    return res

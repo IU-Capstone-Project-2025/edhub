@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends
 
 from auth import get_current_user, get_db
@@ -9,7 +10,8 @@ from logic.users import (
     login as logic_login,
     change_password as logic_change_password,
     remove_user as logic_remove_user,
-    give_admin_permissions as logic_give_admin_permissions
+    give_admin_permissions as logic_give_admin_permissions,
+    get_all_users as logic_get_all_users
 )
 
 router = APIRouter()
@@ -88,9 +90,22 @@ async def remove_user(user_email: str = Depends(get_current_user)):
 @router.post("/give_admin_permissions", response_model=json_classes.Success)
 async def give_admin_permissions(object_email: str, subject_email: str = Depends(get_current_user)):
     """
-    Give admin rights to some existing uesr.
+    Give admin rights to some existing uesr by its email.
 
     Admin role required.
     """
     with get_db() as (db_conn, db_cursor):
         return logic_give_admin_permissions(db_conn, db_cursor, object_email, subject_email)
+
+
+@router.get("/get_all_users", response_model=List[json_classes.User])
+async def get_all_users(user_email: str = Depends(get_current_user)):
+    """
+    Get the list of all users in the system.
+
+    Return the email and name of each user.
+
+    Admin role required.
+    """
+    with get_db() as (db_conn, db_cursor):
+        return logic_get_all_users(db_cursor, user_email)
