@@ -12,6 +12,11 @@ def sql_select_available_courses(db_cursor, user_email):
     return db_cursor.fetchall()
 
 
+def sql_select_all_courses(db_cursor):
+    db_cursor.execute("SELECT courseid FROM courses")
+    return db_cursor.fetchall()
+
+
 def sql_insert_course(db_cursor, title):
     db_cursor.execute(
         "INSERT INTO courses (courseid, name, timecreated) VALUES (gen_random_uuid(), %s, now()) RETURNING courseid",
