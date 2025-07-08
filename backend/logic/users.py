@@ -139,7 +139,7 @@ def remove_user(db_conn, db_cursor, user_email: str):
     return {"success": True}
 
 
-def check_admin_exists(db_cursor) -> bool:
+def check_default_admin_exists(db_cursor) -> bool:
     return constraints.check_user_exists(db_cursor, "admin")
 
 
@@ -150,8 +150,8 @@ def create_admin_account(db_conn, db_cursor):
     repo_users.sql_give_admin_permissions(db_cursor, 'admin')
     db_conn.commit()
 
-    logger.log(db_conn, logger.TAG_USER_ADD, f"Created new user: admin")
-    logger.log(db_conn, logger.TAG_ADMIN_ADD, f"Added admin privileges to user: admin")
+    logger.log(db_conn, logger.TAG_USER_ADD, "Created new user: admin")
+    logger.log(db_conn, logger.TAG_ADMIN_ADD, "Added admin privileges to user: admin")
 
     return password
 
@@ -179,3 +179,14 @@ def get_all_users(db_cursor, user_email: str):
 
     res = [{"email": u[0], "name": u[1]} for u in users]
     return res
+
+
+# create an initial admin account
+async def create_admin_account_if_not_exists(db_conn, db_cursor):
+    if repo_users.sql_admins_exist(db_cursor):
+        return
+    password = create_admin_account(db_conn, db_cursor)
+    credentials = f"login: admin\npassword: {password}"
+    print(f"\nAdmin account created\n{credentials}\n")
+    with open("random-secrets/admin_credentials.txt", "w") as f:
+        print(credentials, file=f)

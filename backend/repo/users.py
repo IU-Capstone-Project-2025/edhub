@@ -54,6 +54,11 @@ def sql_count_admins(db_cursor):
     return db_cursor.fetchone()[0]
 
 
+def sql_admins_exist(db_cursor) -> bool:
+    db_cursor.execute("SELECT EXISTS (SELECT 1 FROM users WHERE isadmin)")
+    return db_cursor.fetchone()[0]
+
+
 def sql_select_all_users(db_cursor):
     db_cursor.execute("SELECT email, publicname FROM users")
     return db_cursor.fetchall()

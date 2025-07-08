@@ -33,19 +33,8 @@ app.add_middleware(
 )
 
 
-# create an initial admin account
-async def create_admin_account_if_not_exists():
-    with get_db() as (db_conn, db_cursor):
-        if logic.users.check_admin_exists(db_cursor):
-            return
-        password = logic.users.create_admin_account(db_conn, db_cursor)
-        credentials = f"login: admin\npassword: {password}"
-        print(f"\nAdmin account created\n{credentials}\n")
-        with open("random-secrets/admin_credentials.txt", "w") as f:
-            print(credentials, file=f)
-
-
 # app startup
 @app.on_event("startup")
 async def startup_event():
-    await create_admin_account_if_not_exists()
+    with get_db() as (conn, cur):
+        await logic.users.create_admin_account_if_not_exists(conn, cur)
