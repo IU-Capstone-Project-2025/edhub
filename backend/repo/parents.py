@@ -46,7 +46,7 @@ def sql_has_child_at_course(db_cursor, course_id: str, parent_email: str, studen
     db_cursor.execute(
         """
         SELECT EXISTS(SELECT 1 FROM parent_of_at_course
-        WHERE courseid = %s AND parent_email = %s AND student_email = %s)
+        WHERE courseid = %s AND parentemail = %s AND studentemail = %s)
         """,
         (course_id, parent_email, student_email),
     )
