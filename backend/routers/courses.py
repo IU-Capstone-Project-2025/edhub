@@ -77,4 +77,4 @@ async def download_full_course_grade_table(course_id: str, user_email: str = Dep
         gradables = logic.assignments.get_all_assignments(db_cursor, course_id, user_email)
         csv_text = logic.courses.get_grade_table_csv(db_cursor, course_id, students, gradables, user_email)
         return responses.PlainTextResponse(csv_text, media_type="text/csv",
-                                           headers={'Content-Disposition': 'filename=generated.csv'})
+                                           headers={'Content-Disposition': 'filename=report.csv'})

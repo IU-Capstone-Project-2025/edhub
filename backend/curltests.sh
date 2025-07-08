@@ -1,5 +1,5 @@
 #!/bin/bash
-set -xe
+set -e
 
 API_URL="http://localhost/api"
 
@@ -105,6 +105,10 @@ curl -s --fail -X POST "$API_URL/submit_assignment?course_id=$COURSE_ID&assignme
 
 echo "== Grading assignment =="
 curl -s --fail -X POST "$API_URL/grade_submission?course_id=$COURSE_ID&assignment_id=$ASSIGNMENT_ID&student_email=$STUDENT_EMAIL&grade=95" \
+    -H "Authorization: Bearer $TOKEN" 
+
+echo "== Grade report =="
+curl -s --fail -X GET "$API_URL/download_full_course_grade_table?course_id=$COURSE_ID" \
     -H "Authorization: Bearer $TOKEN" 
 
 echo "== All tests completed =="
