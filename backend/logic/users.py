@@ -165,7 +165,7 @@ def give_admin_permissions(db_conn, db_cursor, object_email: str, subject_email:
     repo_users.sql_give_admin_permissions(db_cursor, object_email)
     db_conn.commit()
 
-    logger.log(db_conn, logger.TAG_ADMIN_ADD, f"Added admin privileges to user: admin")
+    logger.log(db_conn, logger.TAG_ADMIN_ADD, f"Added admin privileges to user: {object_email}")
 
     return {"success": True}
 
