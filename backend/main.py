@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from logic.users import create_admin_account as logic_create_admin_account
+import logic.users
 from auth import get_db
 
 import routers.assignments
@@ -32,13 +32,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # create an initial admin account
-async def create_admin_account():
+async def create_admin_account_if_not_exists():
     with get_db() as (db_conn, db_cursor):
-        password = logic_create_admin_account(db_conn, db_cursor)
-        print(f"\nAdmin account created\nlogin: admin\npassword: {password}\n")
+        if logic.users.check_admin_exists(db_cursor):
+            return
+        password = logic.users.create_admin_account(db_conn, db_cursor)
+        credentials = f"login: admin\npassword: {password}"
+        print(f"\nAdmin account created\n{credentials}\n")
+        with open("random-secrets/admin_credentials.txt", "w") as f:
+            print(credentials, file=f)
+
 
 # app startup
 @app.on_event("startup")
 async def startup_event():
-    await create_admin_account()
+    await create_admin_account_if_not_exists()

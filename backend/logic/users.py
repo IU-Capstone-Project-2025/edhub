@@ -140,6 +140,10 @@ def remove_user(db_conn, db_cursor, user_email: str):
     return {"success": True}
 
 
+def check_admin_exists(db_cursor) -> bool:
+    return constraints.check_user_exists(db_cursor, "admin")
+
+
 def create_admin_account(db_conn, db_cursor):
     password = token_hex(32)
     hashed_password = pwd_hasher.hash(password)
