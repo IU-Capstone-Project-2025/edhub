@@ -90,7 +90,7 @@ async def remove_user(user_email: str = Depends(get_current_user)):
 @router.post("/give_admin_permissions", response_model=json_classes.Success)
 async def give_admin_permissions(object_email: str, subject_email: str = Depends(get_current_user)):
     """
-    Give admin rights to some existing uesr by its email.
+    Give admin rights to some existing user by their email.
 
     Admin role required.
     """

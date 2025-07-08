@@ -347,7 +347,7 @@ def value_assert_admin_access(db_cursor, user_email: str) -> Union[None, HTTPExc
     if err is not None:
         return err
     db_cursor.execute(
-        "SELECT EXISTS(SELECT 1 FROM users WHERE email = %s AND isadmin = %s)", (user_email, True)
+        "SELECT EXISTS(SELECT 1 FROM users WHERE email = %s AND isadmin)", (user_email,)
     )
     has_access = db_cursor.fetchone()[0]
     if not has_access:
