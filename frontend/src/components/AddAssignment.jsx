@@ -36,7 +36,6 @@ export default function AddAssignment({ onClose, courseId }) {
 
       onSuccess?.()
       onClose()
-      window.location.reload()
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail

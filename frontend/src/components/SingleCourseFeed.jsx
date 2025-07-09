@@ -40,9 +40,9 @@ export default function SingleCourseFeed() {
                 headers: { Authorization: `Bearer ${token}` },
                 params: { assignment_id: ass.post_id, course_id: id },
               })
-              return [ass.post_id, res.data]
+              return [`ass-${ass.post_id}`, res.data]
             } catch {
-              return [ass.post_id, { title: "Ошибка загрузки", description: "" }]
+              return [`ass-${ass.post_id}`, { title: "Ошибка загрузки", description: "" }]
             }
           })),
           Promise.all(matList.map(async (mat) => {
@@ -51,16 +51,17 @@ export default function SingleCourseFeed() {
                 headers: { Authorization: `Bearer ${token}` },
                 params: { material_id: mat.post_id, course_id: id },
               })
-              return [mat.post_id, res.data]
+              return [`mat-${mat.post_id}`, res.data]
             } catch {
-              return [mat.post_id, { title: "Ошибка загрузки", description: "" }]
+              return [`mat-${mat.post_id}`, { title: "Ошибка загрузки", description: "" }]
             }
           })),
         ])
 
         setAssignmentDetails(Object.fromEntries(assignmentDetailResults))
         setMaterialDetails(Object.fromEntries(materialDetailResults))
-        const allDetails = { ...Object.fromEntries(assignmentDetailResults), ...Object.fromEntries(materialDetailResults) }
+        const allDetails = { ...Object.fromEntries(assignmentDetailResults),
+           ...Object.fromEntries(materialDetailResults) }
         setCommonQueueDetails(allDetails)
       } catch (err) {
         console.error("Error fetching feed:", err)
@@ -89,7 +90,7 @@ export default function SingleCourseFeed() {
                 navigate(`/courses/${id}/assignments/${post.post_id}`)
             }}}
             >
-              <p>Title: {commonQueueDetails[post.post_id]?.title}</p>
+              <p>Title: {commonQueueDetails[`${post.type}-${post.post_id}`]?.title}</p>
               <p>Post ID: {post.post_id}</p>
               <p>Post type: {post.type}</p>
               <p>Creation Date: {post.timeadded}</p>

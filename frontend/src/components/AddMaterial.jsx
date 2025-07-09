@@ -31,7 +31,6 @@ await axios.post("/api/create_material", form, {
       
       onSuccess?.()
       onClose()
-      window.location.reload()
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail
