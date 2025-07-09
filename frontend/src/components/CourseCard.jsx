@@ -19,7 +19,6 @@ export default function CourseCard({ course_id, title, date, students, user_role
       .then((res) => setMaterialCount(res.data.length))
       .catch((err) => {
         console.warn(`Could not load materials for course ${course_id}`, err.message)
-        // optionally: setMaterialCount('?') or just leave 0
       })
   }, [course_id])
 

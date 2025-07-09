@@ -52,7 +52,7 @@ export default function CoursePage() {
         })
         setRoleData(res.data)
       } catch (err) {
-        alert("Ошибка при загрузке роли пользователя: " + (err.response?.data?.detail || err.message))
+        alert("Error while user downloading: " + (err.response?.data?.detail || err.message))
       }
     }
     fetchRoleData()
@@ -65,15 +65,11 @@ export default function CoursePage() {
         })
         setOwnEmail(res.data.email)
       } catch (err) {
-        alert("Ошибка при загрузке email: " + (err.response?.data?.detail || err.message))
+        alert("Error while email downloading: " + (err.response?.data?.detail || err.message))
       }
     }
     fetchEmail()
   }, [id])
-
-  // const handleAdd = (type) => {
-  //   alert(`TODO: Добавить ${type} в курс`)
-  // }
 
   if (!courseInfo) return <div>Loading course...</div>
 
@@ -81,7 +77,7 @@ export default function CoursePage() {
     <Header>
       <div className="course-page">
         <h1>{courseInfo.title}</h1>
-        <p>Created: {courseInfo.creation_date}</p>
+        <p><strong>Created:</strong> {new Date(courseInfo.creation_date).toLocaleDateString()}</p>
         <p>Students enrolled: {courseInfo.number_of_students}</p>
         {roleData && roleData.is_teacher && (
           <div className="actions">

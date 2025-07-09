@@ -28,6 +28,8 @@ await axios.post("/api/create_material", form, {
       setTitle("")
       setDescription("")
       setLoading(false)
+      
+      onSuccess?.()
       onClose()
       window.location.reload()
     } catch (err) {
