@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import axios from "axios"
 import "../styles/AddMaterial.css"
 
-export default function AddMaterial({ onClose, courseId }) {
+export default function AddMaterial({ onClose, courseId, onSuccess  }) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [loading, setLoading] = useState(false)
@@ -31,7 +31,6 @@ await axios.post("/api/create_material", form, {
       
       onSuccess?.()
       onClose()
-      window.location.reload()
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail

@@ -104,12 +104,14 @@ export default function CoursePage() {
         <AddMaterial
           onClose={() => setShowMaterialModal(false)}
           courseId={id}
+          onSuccess={() => window.location.reload()}
         />
       )}
       {showAddAssignment && (
         <AddAssignment
           onClose={() => setShowAddAssignment(false)}
           courseId={id}
+          onSuccess={() => window.location.reload()}
         />
       )}
       {showAddStudent && (
