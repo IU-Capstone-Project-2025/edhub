@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react"
 import "../styles/MaterialPage.css"
-/*TODO: UPDATE STYLES NEXT WEEK */
 import {useParams} from "react-router-dom"
 import axios from "axios"
 

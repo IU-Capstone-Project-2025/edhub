@@ -87,16 +87,17 @@ export default function CoursePage() {
             <button onClick={() => setShowAddTeacher(true)}>+ Add Teacher</button>
             <button onClick={() => setShowAddParent(true)}>+ Add Parent</button>
             <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
+            <button className="switch-btn" onClick={()=>{setSingleColumnSwitch(!singleColumnSwitch)}}>Switch</button>
           </div>
         )}
         {roleData && (roleData.is_student|| roleData.is_parent ) && (
           <div className="actions">
             <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
+            <button className="switch-btn" onClick={()=>{setSingleColumnSwitch(!singleColumnSwitch)}}>Switch</button>
           </div>
         )}
         {!singleColumnSwitch&&(<CourseFeed />)}
         {singleColumnSwitch&&(<SingleCourseFeed />)}
-        <button onClick={()=>{setSingleColumnSwitch(!singleColumnSwitch)}}>Switch</button>
 
       </div>
 
