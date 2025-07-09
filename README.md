@@ -3,6 +3,7 @@
 [![Forks][forks-shield]][forks-url]
 [![Unlicense License][license-shield]][license-url]
 [![Issues][prod-shield]][prod-url]
+[![Issues][issues-shield]][issues-url]
 
 
 ## What is EdHub?
