@@ -1,8 +1,10 @@
-[![Contributors][contributors-shield]][contributors-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Forks][forks-shield]][forks-url]
-[![Issues][issues-shield]][issues-url]
-[![Unlicense License][license-shield]][license-url]
+<div align="center">
+    [![Contributors][contributors-shield]][contributors-url]
+    [![Stargazers][stars-shield]][stars-url]
+    [![Forks][forks-shield]][forks-url]
+    [![Issues][issues-shield]][issues-url]
+    [![Unlicense License][license-shield]][license-url]
+</div>
 
 ## What is EdHub?
 
