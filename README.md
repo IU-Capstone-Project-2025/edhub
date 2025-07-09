@@ -18,7 +18,7 @@ Most existing LMSs either have limited functionality or have awkward website des
 
 ### Production Server
 
-The global version of EdHub is available at [www.edhub.space](www.edhub.space).
+You can use the public version of EdHub available at [www.edhub.space](https://edhub.space).
 
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/) (v20.10+)
@@ -72,6 +72,6 @@ docker compose down -v && docker compose up --build
 [PostgreSQL]: https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white
 [PostgreSQL-url]: https://www.postgresql.org/
 [NginX]: https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white&style=for-the-badge
-[NginxX-url]: https://nginx.org/
+[NginX-url]: https://nginx.org/
 [Docker]: https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white
 [Docker-url]: https://www.docker.com/
