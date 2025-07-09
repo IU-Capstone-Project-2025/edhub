@@ -46,7 +46,7 @@ docker compose up --build
 Now you can go to http://localhost/ to access the application.
 
 ### Services Overview
-| Service       | Port  | Notes                  |
+| Service       | Port  | Description            |
 |---------------|-------|------------------------|
 | **Frontend**  | 3000  | React application      |
 | **Backend**   | 8000  | FastAPI application    |
