@@ -342,7 +342,6 @@ def check_submission_exists(db_cursor, course_id: str, assignment_id: str, stude
     return value_assert_submission_exists(db_cursor, course_id, assignment_id, student_email) is None
 
 
-<<<<<<< HEAD
 def value_assert_parent_of_all(db_cursor, parent_email: str,
                                student_emails: list[str], course_id: str) -> Union[None, HTTPException]:
     err = value_assert_user_exists(db_cursor, parent_email)
@@ -360,7 +359,14 @@ def value_assert_parent_of_all(db_cursor, parent_email: str,
 
 def assert_parent_of_all(db_cursor, parent_email: str, student_emails: list[str], course_id: str):
     err = value_assert_parent_of_all(db_cursor, parent_email, student_emails, course_id)
-=======
+    if err is not None:
+        raise err
+
+
+def check_parent_of_all(db_cursor, parent_email: str, student_emails: list[str], course_id: str) -> bool:
+    return value_assert_parent_of_all(db_cursor, parent_email, student_emails, course_id) is None
+
+
 # checking whether the user has admin access
 def value_assert_admin_access(db_cursor, user_email: str) -> Union[None, HTTPException]:
     err = value_assert_user_exists(db_cursor, user_email)
@@ -378,16 +384,10 @@ def value_assert_admin_access(db_cursor, user_email: str) -> Union[None, HTTPExc
 # checking whether the user has admin access
 def assert_admin_access(db_cursor, user_email: str):
     err = value_assert_admin_access(db_cursor, user_email)
->>>>>>> dev
     if err is not None:
         raise err
 
 
-<<<<<<< HEAD
-def check_parent_of_all(db_cursor, parent_email: str, student_emails: list[str], course_id: str) -> bool:
-    return value_assert_parent_of_all(db_cursor, parent_email, student_emails, course_id) is None
-=======
 # checking whether the user has admin access
 def check_admin_access(db_cursor, user_email: str) -> bool:
     return value_assert_admin_access(db_cursor, user_email) is None
->>>>>>> dev
