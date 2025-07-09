@@ -53,7 +53,7 @@ The three major modules of the program are `routers`, `logic`, and `sql`.
 
 ### 3. Clarity
 
-*This is a continuation of rule 1 (**single responsibility**).*
+*This is an extension of rule 1 (**single responsibility**).*
 
 All functions always annotate argument and return types. If the return type is
 too complicated to annotate, create a *data transfer class* right beside the
@@ -73,7 +73,7 @@ introduced, a new class must be declared.
 
 ### 5. Permissions are a web concern
 
-*This is a continuation of rule 2 (**modularity**).*
+*This is an extension of rule 2 (**modularity**).*
 
 **ALL** access permission checking is done in the `routers` code, never in
 `logic`. Access permission checking in the `routers` code is always done
@@ -105,7 +105,7 @@ Benefits: no bugs related to not fetching every returned row from the SQL query.
 
 ### 8. Comments are redundant
 
-*This is a continuation of rule 1 (**single responsibility**).*
+*This is an extension of rule 1 (**single responsibility**).*
 
 If an internal function's behaviour is unclear, here are the possible solutions
 the author should consider, in order:
