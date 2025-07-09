@@ -14,7 +14,7 @@ jobs:
 
       - name: Check for TODO comments
         run: |
-          todo_files=$(grep -r "TODO" --include=\*.{py,js,jsx} .)
+          todo_files=$(grep -r "TODO" --include=\*.{py,js,jsx} . || true)
           if [ -z "$todo_files" ]; then
             echo "No TODOs found"
           else
