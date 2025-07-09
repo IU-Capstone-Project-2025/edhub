@@ -23,7 +23,6 @@ app.include_router(routers.students.router)
 app.include_router(routers.teachers.router)
 app.include_router(routers.users.router)
 
-# TODO: прописать конкретные доверенные источники (на прод уже)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
