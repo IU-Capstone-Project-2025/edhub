@@ -13,6 +13,20 @@ If a piece of code proposed for merging is considered to not follow the rules
 described here, the problem is to be pointed out to the assignee and **resolved
 before merging**.
 
+## Database
+
+*To be discussed*
+
+### Signatures
+
+I have read and understood the rules and will follow them. If applying the rules
+results in a clearly suboptimal solution, I will immediately consult the other
+team members to have the standards changed.
+
+- [ ] Askar Dinikeev
+- [ ] Gleb Popov
+- [ ] Timur Usmanov
+
 ## Backend
 
 ### 1. Single Responsibility
@@ -89,6 +103,21 @@ from there to `sql` functions. In those, create cursors for querying.
 
 Benefits: no bugs related to not fetching every returned row from the SQL query.
 
+### 8. Comments are redundant
+
+*This is a continuation of rule 1 (**single responsibility**).*
+
+If an internal function's behaviour is unclear, here are the possible solutions
+the author should consider, in order:
+
+1. Renaming the function
+2. Implementing a different function
+3. Writing a docstring
+
+Comments are reserved for marking incomplete code with a `TODO` line or warning
+someone of the caveats of a function's implementation if a careless refactoring
+may cause a bug.
+
 ### Signatures
 
 I have read and understood the rules and will follow them. If applying the rules
@@ -103,9 +132,13 @@ team members to have the standards changed.
 
 ## Frontend
 
-To be discussed
+*To be discussed*
 
 ### Signatures
+
+I have read and understood the rules and will follow them. If applying the rules
+results in a clearly suboptimal solution, I will immediately consult the other
+team members to have the standards changed.
 
 - [ ] Alina Suhoverkova
 
