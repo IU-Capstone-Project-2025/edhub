@@ -2,7 +2,7 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Forks][forks-shield]][forks-url]
 [![Unlicense License][license-shield]][license-url]
-[![Issues][prod-shield]][prod--url]
+[![Issues][prod-shield]][prod-url]
 
 
 ## What is EdHub?
