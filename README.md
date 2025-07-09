@@ -6,7 +6,19 @@ Any user can create a course becoming a **Teacher**, invite students and their p
 
 Most existing LMSs either have limited functionality or have awkward website design and cause difficulties in everyday use. EdHub combines a self-contained and clear design, supporting all the necessary features but not bogging the user down with complex customizations.
 
-## 🚀 How to Launch
+### Built With
+
+* [![FastAPI][FastAPI]][FastAPI-url]
+* [![React][React]][React-url]
+* [![PostgreSQL][PostgreSQL]][PostgreSQL-url]
+* [![NginX][NginX]][NginX-url]
+* [![Docker][Docker]][Docker-url]
+
+## Getting Started
+
+### Production Server
+
+The global version of EdHub is available at [www.edhub.space](www.edhub.space).
 
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/) (v20.10+)
@@ -52,3 +64,14 @@ docker compose logs -f
 # Rebuild from scratch
 docker compose down -v && docker compose up --build
 ```
+
+[FastAPI]: https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi
+[FastAPI-url]: https://fastapi.tiangolo.com/
+[React]: https://img.shields.io/badge/-ReactJs-61DAFB?logo=react&logoColor=white&style=for-the-badge
+[React-url]: https://react.dev/
+[PostgreSQL]: https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white
+[PostgreSQL-url]: https://www.postgresql.org/
+[NginX]: https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white&style=for-the-badge
+[NginxX-url]: https://nginx.org/
+[Docker]: https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white
+[Docker-url]: https://www.docker.com/
