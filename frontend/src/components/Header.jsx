@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import axios from "axios"
 import CreateCourseModal from "../components/CreateCourse"
-import { ReactComponent as Logo } from "./noavatar.svg";
+import { ReactComponent as Logo } from "./edHub_icon.svg";
 
 import "../styles/Header.css"
 
