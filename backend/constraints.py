@@ -350,6 +350,8 @@ def value_assert_parent_of_all(db_cursor, parent_email: str,
     err = value_assert_course_exists(db_cursor, course_id)
     if err is not None:
         return err
+    if check_admin_access(db_cursor, parent_email):
+        return None
     for student in student_emails:
         ok = repo.parents.sql_has_child_at_course(db_cursor, course_id, parent_email, student)
         if not ok:
