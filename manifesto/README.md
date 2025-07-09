@@ -118,6 +118,14 @@ Comments are reserved for marking incomplete code with a `TODO` line or warning
 someone of the caveats of a function's implementation if a careless refactoring
 may cause a bug.
 
+### 9. No redundant functions
+
+If a function **in the commit history** may be useful in the future but is not
+currently needed, it should be removed from the codebase. If it is ever needed
+again, it may be restored from the history.
+
+Benefits: the fewer functions there are, the easier the code becomes.
+
 ### Signatures
 
 I have read and understood the rules and will follow them. If applying the rules
