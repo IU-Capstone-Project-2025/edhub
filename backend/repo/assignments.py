@@ -25,15 +25,26 @@ def sql_select_assignment(db_cursor, course_id, assignment_id):
     return db_cursor.fetchone()
 
 
-def sql_insert_assignment_attachment(db_cursor, course_id, assignment_id, filename, contents):
+def sql_insert_assignment_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, filename, contents):
+    storage_db_cursor.execute(
+        """
+        INSERT INTO files 
+        (id, content)
+        VALUES (gen_random_uuid(), %s)
+        RETURNING id
+        """,
+        (contents, )
+    )
+    fileid = storage_db_cursor.fetchone()[0]
+
     db_cursor.execute(
         """
         INSERT INTO assignment_files 
-        (courseid, assid, filename, file, upload_time)
+        (courseid, assid, fileid, filename, uploadtime)
         VALUES (%s, %s, %s, %s, now())
-        RETURNING fileid, upload_time
+        RETURNING fileid, uploadtime
         """,
-        (course_id, assignment_id, filename, contents),
+        (course_id, assignment_id, fileid, filename),
     )
     return db_cursor.fetchone()
 
@@ -41,7 +52,7 @@ def sql_insert_assignment_attachment(db_cursor, course_id, assignment_id, filena
 def sql_select_assignment_attachments(db_cursor, course_id, assignment_id):
     db_cursor.execute(
         """
-        SELECT fileid, filename, upload_time
+        SELECT fileid, filename, uploadtime
         FROM assignment_files
         WHERE courseid = %s AND assid = %s
         """,
@@ -50,13 +61,7 @@ def sql_select_assignment_attachments(db_cursor, course_id, assignment_id):
     return db_cursor.fetchall()
 
 
-def sql_download_assignment_attachment(db_cursor, course_id, assignment_id, file_id):
-    db_cursor.execute(
-        """
-        SELECT file, filename
-        FROM assignment_files
-        WHERE courseid = %s AND assid = %s AND fileid = %s
-        """,
-        (course_id, assignment_id, file_id)
-    )
-    return db_cursor.fetchone()
+def sql_get_all_assignments(db_cursor, course_id: str) -> list[int]:
+    db_cursor.execute("SELECT assid FROM course_assignments WHERE courseid = %s",
+                      (course_id,))
+    return [i[0] for i in db_cursor.fetchall()]

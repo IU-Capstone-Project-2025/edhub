@@ -1,6 +1,6 @@
 import React from "react";
 import "../styles/LandingPage.css";
-import { ReactComponent as NoAvatarLogo } from "../components/noavatar.svg"; // <-- импорт SVG как компонента
+import { ReactComponent as NoAvatarLogo } from "../components/edHub_icon.svg"; 
 
 export default function LandingPage() {
   return (

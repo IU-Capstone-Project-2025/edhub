@@ -56,7 +56,7 @@ def remove_teacher(db_conn, db_cursor, course_id: str, removing_teacher_email: s
     # ensuring that at least one teacher remains in the course
     teachers_left = repo_teachers.sql_count_teachers(db_cursor, course_id)
     if teachers_left == 1:
-        raise HTTPException(status_code=404, detail="Cannot remove the last teacher at the course")
+        raise HTTPException(status_code=403, detail="Cannot remove the last teacher at the course")
 
     # remove teacher
     repo_teachers.sql_delete_teacher(db_cursor, course_id, removing_teacher_email)

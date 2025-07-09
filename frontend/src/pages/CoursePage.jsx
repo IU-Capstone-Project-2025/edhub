@@ -11,6 +11,7 @@ import AddStudent from "../components/AddStudent"
 import AddTeacher from "../components/AddTeacher"
 import AddParent from "../components/AddParent"
 import LeaveCourse from "../components/LeaveCourse"
+import SingleCourseFeed from "../components/SingleCourseFeed"
 
 export default function CoursePage() {
   const { id } = useParams()
@@ -23,6 +24,7 @@ export default function CoursePage() {
   const [roleData, setRoleData] = useState()
   const [ownEmail, setOwnEmail] = useState("")
   const [showLeaveCourse, setShowLeaveCourse] = useState()
+  const [singleColumnSwitch, setSingleColumnSwitch] = useState(false)
 
   
 
@@ -50,7 +52,7 @@ export default function CoursePage() {
         })
         setRoleData(res.data)
       } catch (err) {
-        alert("Ошибка при загрузке роли пользователя: " + (err.response?.data?.detail || err.message))
+        alert("Error while user downloading: " + (err.response?.data?.detail || err.message))
       }
     }
     fetchRoleData()
@@ -63,15 +65,11 @@ export default function CoursePage() {
         })
         setOwnEmail(res.data.email)
       } catch (err) {
-        alert("Ошибка при загрузке email: " + (err.response?.data?.detail || err.message))
+        alert("Error while email downloading: " + (err.response?.data?.detail || err.message))
       }
     }
     fetchEmail()
   }, [id])
-
-  // const handleAdd = (type) => {
-  //   alert(`TODO: Добавить ${type} в курс`)
-  // }
 
   if (!courseInfo) return <div>Loading course...</div>
 
@@ -79,7 +77,7 @@ export default function CoursePage() {
     <Header>
       <div className="course-page">
         <h1>{courseInfo.title}</h1>
-        <p>Created: {courseInfo.creation_date}</p>
+        <p><strong>Created:</strong> {new Date(courseInfo.creation_date).toLocaleDateString()}</p>
         <p>Students enrolled: {courseInfo.number_of_students}</p>
         {roleData && roleData.is_teacher && (
           <div className="actions">
@@ -89,26 +87,32 @@ export default function CoursePage() {
             <button onClick={() => setShowAddTeacher(true)}>+ Add Teacher</button>
             <button onClick={() => setShowAddParent(true)}>+ Add Parent</button>
             <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
+            <button className="switch-btn" onClick={()=>{setSingleColumnSwitch(!singleColumnSwitch)}}>Switch</button>
           </div>
         )}
         {roleData && (roleData.is_student|| roleData.is_parent ) && (
           <div className="actions">
             <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
+            <button className="switch-btn" onClick={()=>{setSingleColumnSwitch(!singleColumnSwitch)}}>Switch</button>
           </div>
         )}
-        <CourseFeed />
+        {!singleColumnSwitch&&(<CourseFeed />)}
+        {singleColumnSwitch&&(<SingleCourseFeed />)}
+
       </div>
 
       {showMaterialModal && (
         <AddMaterial
           onClose={() => setShowMaterialModal(false)}
           courseId={id}
+          onSuccess={() => window.location.reload()}
         />
       )}
       {showAddAssignment && (
         <AddAssignment
           onClose={() => setShowAddAssignment(false)}
           courseId={id}
+          onSuccess={() => window.location.reload()}
         />
       )}
       {showAddStudent && (

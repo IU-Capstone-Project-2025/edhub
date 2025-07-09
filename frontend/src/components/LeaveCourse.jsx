@@ -54,8 +54,6 @@ export default function LeaveCourse({ onClose, courseId , roleData, ownEmail}) {
                 headers: {Authorization: `Bearer ${token}` },
                 params:{course_id: courseId}
             })
-            // TODO: In the future, update this method for multiple children
-            // For now, only one child is supported
             setChildrenArray(res.data)
             const student_email = res.data[0]?.email
             await axios.post("/api/remove_parent", null, {

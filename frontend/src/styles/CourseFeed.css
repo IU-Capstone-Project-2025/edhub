@@ -37,18 +37,162 @@
 }
 
 .feed-card {
-  background: #f3efff;
-  border-radius: 14px;
-  padding: 18px 28px;
-  margin-bottom: 14px;
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 18px 24px;
+  margin-bottom: 16px;
   cursor: pointer;
-  color: #4C97B0;
-  font-size: 1.1rem;
-  transition: box-shadow 0.15s, background 0.15s;
-  box-shadow: 0 1px 4px #0001;
+  color: var(--dark);
+  font-size: 1.05rem;
+  transition: box-shadow 0.2s, border 0.2s;
+  border: 2px solid var(--green-light);
+  box-shadow: 0 2px 12px #b1e4f522;
 }
 
 .feed-card:hover {
-  box-shadow: 0 4px 16px #b1e4f577;
-  background: #ece6fd;
+  border-color: var(--green-main);
+  box-shadow: 0 6px 22px #4cb05033;
+  background: #fbfffc;
+}
+
+.feed-card h3 {
+  font-size: 1.18rem;
+  margin-bottom: 8px;
+  color: var(--green-main);
+}
+
+.feed-card small {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.feed-dual-columns {
+  display: flex;
+  justify-content: space-between;
+  gap: 36px;
+  margin-top: 36px;
+  padding: 0 16px;
+}
+
+.feed-block {
+  flex: 1;
+  background: rgba(30, 40, 50, 0.03); /* тёмный прозрачный оттенок */
+  padding: 24px 28px;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 12px #a2e4ac22;
+  display: flex;
+  flex-direction: column;
+}
+
+.feed-block h2 {
+  color: var(--green-main);
+  font-size: 1.7rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+
+.submitted-answer, .student-submission-block, .material-block {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  border-left: 6px solid var(--green-main);
+  box-shadow: 0 3px 14px #b1e4f525;
+}
+
+.my-comment-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--green-main);
+  margin-bottom: 8px;
+}
+
+.my-comment {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.my-grade {
+  margin-top: 6px;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.grade-btn, .submit-btn {
+  background: var(--green-main);
+  color: white;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+
+.grade-btn:hover, .submit-btn:hover {
+  background: var(--green-accent);
+}
+
+.course-feed-root {
+  padding-top: 20px;
+}
+
+.landing-section.materials,
+.landing-section.assignments {
+  margin-top: 32px;
+  background: #f8fff9;
+  border-radius: var(--radius);
+  box-shadow: 0 1px 8px #bbebbe22;
+  padding: 20px 30px 28px 30px;
+}
+
+.landing-section.materials h2,
+.landing-section.assignments h2 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  text-align: center;
+  color: var(--green-main);
+}
+
+.vertical-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.vertical-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: 0 2px 10px #e4ffe933;
+  border-left: 5px solid var(--green-accent);
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: pointer;
+  text-align: left;
+}
+
+.vertical-card:hover {
+  box-shadow: 0 4px 16px #b1e4f566;
+  transform: translateY(-2px);
+}
+
+.vertical-card h3 {
+  color: var(--green-main);
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+}
+
+.vertical-card p {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.feed-placeholder {
+  color: #aaa;
+  font-size: 1.1rem;
+  padding: 16px;
 }
