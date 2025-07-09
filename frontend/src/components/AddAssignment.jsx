@@ -32,11 +32,11 @@ await axios.post(
 
 
 
-      alert("Assignment added successfully!")
       setTitle("")
       setDescription("")
       setLoading(false)
       onClose()
+      window.location.reload()
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail

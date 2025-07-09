@@ -11,6 +11,7 @@ import AddStudent from "../components/AddStudent"
 import AddTeacher from "../components/AddTeacher"
 import AddParent from "../components/AddParent"
 import LeaveCourse from "../components/LeaveCourse"
+import SingleCourseFeed from "../components/SingleCourseFeed"
 
 export default function CoursePage() {
   const { id } = useParams()
@@ -23,6 +24,7 @@ export default function CoursePage() {
   const [roleData, setRoleData] = useState()
   const [ownEmail, setOwnEmail] = useState("")
   const [showLeaveCourse, setShowLeaveCourse] = useState()
+  const [singleColumnSwitch, setSingleColumnSwitch] = useState(false)
 
   
 
@@ -96,7 +98,10 @@ export default function CoursePage() {
             <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
           </div>
         )}
-        <CourseFeed />
+        {!singleColumnSwitch&&(<CourseFeed />)}
+        {singleColumnSwitch&&(<SingleCourseFeed />)}
+        <button onClick={()=>{setSingleColumnSwitch(!singleColumnSwitch)}}>Switch</button>
+
       </div>
 
       {showMaterialModal && (

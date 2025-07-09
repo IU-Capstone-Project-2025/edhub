@@ -25,11 +25,11 @@ await axios.post("/api/create_material", form, {
         headers: {Authorization: `Bearer ${token}` },
         params:{title, description, course_id: courseId}
       })
-      alert("Material added successfully!")
       setTitle("")
       setDescription("")
       setLoading(false)
       onClose()
+      window.location.reload()
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail
