@@ -69,6 +69,10 @@ def sql_select_course_feed(db_cursor, course_id):
 def sql_select_grades_in_course(db_cursor, course_id: str,
                                 students: Union[list[str], None] = None,
                                 assignments: Union[list[int], None] = None) -> list[tuple[str, int, Union[int, None]]]:
+    if students is not None and len(students) == 0:
+        return []
+    if assignments is not None and len(assignments) == 0:
+        return []
     query = "SELECT email, assid, grade FROM course_assignments_submissions WHERE courseid = %s"
     qargs = [course_id]
     if students is not None:
