@@ -20,6 +20,17 @@ async def available_courses(user_email: str = Depends(get_current_user)):
         return logic.courses.available_courses(db_cursor, user_email)
 
 
+@router.get("/get_all_courses", response_model=List[json_classes.CourseId])
+async def get_all_courses(user_email: str = Depends(get_current_user)):
+    """
+    Get the list of IDs of all courses in the system.
+
+    Admin role required.
+    """
+    with get_db() as (db_conn, db_cursor):
+        return logic.courses.get_all_courses(db_cursor, user_email)
+
+
 @router.post("/create_course", response_model=json_classes.CourseId)
 async def create_course(title: str, user_email: str = Depends(get_current_user)):
     """

@@ -27,6 +27,8 @@ services:
     depends_on:
       - system_db
       - filestorage_db
+    volumes:
+      - ./random-secrets:/app/random-secrets
 
   frontend:
     build: ./frontend

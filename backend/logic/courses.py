@@ -17,6 +17,13 @@ def available_courses(db_cursor, user_email: str):
     return result
 
 
+def get_all_courses(db_cursor, user_email: str):
+    constraints.assert_admin_access(db_cursor, user_email)
+    courses = repo_courses.sql_select_all_courses(db_cursor)
+    result = [{"course_id": crs[0]} for crs in courses]
+    return result
+
+
 def create_course(db_conn, db_cursor, title: str, user_email: str):
     course_id = repo.courses.sql_insert_course(db_cursor, title)
     repo.teachers.sql_insert_teacher(db_cursor, user_email, course_id)
