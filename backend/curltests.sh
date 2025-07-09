@@ -126,4 +126,19 @@ curl -s --fail -X GET "$API_URL/download_full_course_grade_table?course_id=$COUR
     -H "Authorization: Bearer $TOKEN" 
 echo
 
+echo "== Admin login =="
+ADMIN_PASSWORD=$(cat ./random-secrets/admin_credentials.txt | tail -n 1 | sed 's/password: //')
+TOKEN=$(curl -s --fail -X POST $API_URL/login -H "Content-Type: application/json" \
+    -d "{\"email\":\"admin\",\"password\":\"$ADMIN_PASSWORD\"}" | extract_token)
+echo
+
+echo "== Admin creating material =="
+MATERIAL_ID=$(curl -s --fail -X POST "$API_URL/create_material?course_id=$COURSE_ID&title=AdminTitle&description=AdminDescription" \
+    -H "Authorization: Bearer $TOKEN" | extract_material_id)
+echo "Material ID: $MATERIAL_ID"
+echo
+
+echo "== Admin remove course =="
+curl -s -X POST "$API_URL/remove_course?course_id=$COURSE_ID" -H "Authorization: Bearer $TOKEN"
+
 echo "== All tests completed =="
