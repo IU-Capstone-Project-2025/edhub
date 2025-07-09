@@ -14,11 +14,13 @@ Most existing LMSs either have limited functionality or have awkward website des
 * [![NginX][NginX]][NginX-url]
 * [![Docker][Docker]][Docker-url]
 
-## Getting Started
-
 ### Production Server
 
 You can use the public version of EdHub available at [www.edhub.space](https://edhub.space).
+
+## Local Startup
+
+These instructions will help you to download a copy of the project and run it on your local machine. All of your organization's data will be stored on your computer and will be inaccessible to external users.
 
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/) (v20.10+)
