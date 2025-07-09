@@ -353,6 +353,9 @@ def value_assert_parent_of_all(db_cursor, parent_email: str,
     if check_admin_access(db_cursor, parent_email):
         return None
     for student in student_emails:
+        err = value_assert_user_exists(db_cursor, student)
+        if err is not None:
+            return err
         ok = repo.parents.sql_has_child_at_course(db_cursor, course_id, parent_email, student)
         if not ok:
             return HTTPException(403, "User has no parental access to this student")
