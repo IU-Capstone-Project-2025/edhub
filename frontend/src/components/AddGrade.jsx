@@ -15,7 +15,12 @@ export default function AddGrade({ onClose, courseId ,assignmentId, studentEmail
     try {
         setLoading(true)
         const token = localStorage.getItem("access_token")
-
+        if(!assGrade.trim() || assGrade < 1 || assGrade >10){
+            alert("Assignment grade should be between 1-10 and shouldn't be null")
+            setLoading(false)
+            onClose()
+            return
+        }
         await axios.post("/api/grade_submission", null, {
             headers: {Authorization: `Bearer ${token}` },
             params:{student_email: studentEmail, course_id: courseId, assignment_id: assignmentId, grade: assGrade}
