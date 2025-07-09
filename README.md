@@ -5,6 +5,7 @@
 [![Issues][prod-shield]][prod-url]
 [![Issues][issues-shield]][issues-url]
 
+You can use the public version of EdHub available at [www.edhub.space](https://edhub.space).
 
 ## What is EdHub?
 
@@ -21,10 +22,6 @@ Most existing LMSs either have limited functionality or have awkward website des
 * [![PostgreSQL][PostgreSQL]][PostgreSQL-url]
 * [![NginX][NginX]][NginX-url]
 * [![Docker][Docker]][Docker-url]
-
-### Production Server
-
-You can use the public version of EdHub available at [www.edhub.space](https://edhub.space).
 
 ## Local Startup
 
