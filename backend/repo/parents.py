@@ -40,3 +40,14 @@ def sql_select_parents_children(db_cursor, course_id, parent_email):
         (course_id, parent_email),
     )
     return db_cursor.fetchall()
+
+
+def sql_has_child_at_course(db_cursor, course_id: str, parent_email: str, student_email: str) -> bool:
+    db_cursor.execute(
+        """
+        SELECT EXISTS(SELECT 1 FROM parent_of_at_course
+        WHERE courseid = %s AND parentemail = %s AND studentemail = %s)
+        """,
+        (course_id, parent_email, student_email),
+    )
+    return db_cursor.fetchone()[0]

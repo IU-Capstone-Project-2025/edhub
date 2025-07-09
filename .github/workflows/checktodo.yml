@@ -1,0 +1,24 @@
+name: Check TODO
+
+on:
+  push:
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  check_todo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for TODO comments
+        run: |
+          todo_files=$(grep -r "TODO" --include=\*.{py,js,jsx} .)
+          if [ -z "$todo_files" ]; then
+            echo "No TODOs found"
+          else
+            echo "TODOs found"
+            echo "$todo_files"
+            exit 1
+          fi

@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from typing import Union
+import repo.parents
 
 #
 # value_assert_ functions all return None if no problems were found and the
@@ -339,6 +340,36 @@ def assert_submission_exists(db_cursor, course_id: str, assignment_id: str, stud
 # checking if the submission exists
 def check_submission_exists(db_cursor, course_id: str, assignment_id: str, student_email: str) -> bool:
     return value_assert_submission_exists(db_cursor, course_id, assignment_id, student_email) is None
+
+
+def value_assert_parent_of_all(db_cursor, parent_email: str,
+                               student_emails: list[str], course_id: str) -> Union[None, HTTPException]:
+    err = value_assert_user_exists(db_cursor, parent_email)
+    if err is not None:
+        return err
+    err = value_assert_course_exists(db_cursor, course_id)
+    if err is not None:
+        return err
+    if check_admin_access(db_cursor, parent_email):
+        return None
+    for student in student_emails:
+        err = value_assert_user_exists(db_cursor, student)
+        if err is not None:
+            return err
+        ok = repo.parents.sql_has_child_at_course(db_cursor, course_id, parent_email, student)
+        if not ok:
+            return HTTPException(403, "User has no parental access to this student")
+    return None
+
+
+def assert_parent_of_all(db_cursor, parent_email: str, student_emails: list[str], course_id: str):
+    err = value_assert_parent_of_all(db_cursor, parent_email, student_emails, course_id)
+    if err is not None:
+        raise err
+
+
+def check_parent_of_all(db_cursor, parent_email: str, student_emails: list[str], course_id: str) -> bool:
+    return value_assert_parent_of_all(db_cursor, parent_email, student_emails, course_id) is None
 
 
 # checking whether the user has admin access
