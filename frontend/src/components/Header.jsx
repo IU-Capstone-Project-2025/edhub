@@ -62,6 +62,11 @@ export default function Header({ children }) {
     create: "Create",
   }
 
+  function logout(){
+    localStorage.setItem("access_token","")
+    window.location = window.origin 
+  }
+
   return (
     <div className="layout">
       <aside className="sidebar">
@@ -92,7 +97,9 @@ export default function Header({ children }) {
                   onClose={() => setShowCreateCourseModal(false)}
                 />
               )}
-
+        <div className="logout-btn-div">
+          <button className="logout-btn" onClick={logout}>Log out</button>
+        </div>
       </aside>
 
       <main className="main-content">
@@ -114,9 +121,11 @@ export default function Header({ children }) {
             )
           })}
         </div>
-
+        
         <div className="content-wrapper">{children}</div>
+        
       </main>
+      
     </div>
   )
 }

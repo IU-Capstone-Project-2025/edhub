@@ -91,3 +91,27 @@
   vertical-align: middle;
   fill: currentColor;
 }
+
+.logout-btn {
+  position: fixed;
+  bottom: 10%;
+  padding: 10px 40px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #4cb050;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover{
+  opacity: 0.9;
+}
+
+.logout-btn-div {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  
+}
