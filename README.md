@@ -1,3 +1,9 @@
+[![Contributors][contributors-shield]][contributors-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Forks][forks-shield]][forks-url]
+[![Issues][issues-shield]][issues-url]
+[![Unlicense License][license-shield]][license-url]
+
 ## What is EdHub?
 
 EdHub is a Learning Management System for interaction between teachers, students, and parents. It aims to improve the quality of an educational process, simplify the interaction between stakeholders, and improve student engagement in learning.
@@ -66,7 +72,16 @@ docker compose logs -f
 # Rebuild from scratch
 docker compose down -v && docker compose up --build
 ```
-
+[contributors-shield]: https://img.shields.io/github/contributors/IU-Capstone-Project-2025/edhub.svg?style=for-the-badge
+[contributors-url]: https://github.com/IU-Capstone-Project-2025/edhub/graphs/contributors
+[stars-shield]: https://img.shields.io/github/stars/IU-Capstone-Project-2025/edhub.svg?style=for-the-badge
+[stars-url]: https://github.com/IU-Capstone-Project-2025/edhub/stargazers
+[forks-shield]: https://img.shields.io/github/forks/IU-Capstone-Project-2025/edhub.svg?style=for-the-badge
+[forks-url]: https://github.com/IU-Capstone-Project-2025/edhub/network/members
+[issues-shield]: https://img.shields.io/github/issues/IU-Capstone-Project-2025/edhub.svg?style=for-the-badge
+[issues-url]: https://github.com/IU-Capstone-Project-2025/edhub/issues
+[license-shield]: https://img.shields.io/github/license/IU-Capstone-Project-2025/edhub.svg?style=for-the-badge
+[license-url]: https://github.com/IU-Capstone-Project-2025/edhub/blob/main/LICENSE
 [FastAPI]: https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi
 [FastAPI-url]: https://fastapi.tiangolo.com/
 [React]: https://img.shields.io/badge/-ReactJs-61DAFB?logo=react&logoColor=white&style=for-the-badge
