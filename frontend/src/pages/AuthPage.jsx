@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import "./../styles/AuthPage.css"
-import noavatar from "../components/noavatar.svg";
+import noavatar from "../components/edHub_icon.svg";
 import axios from "axios"
 
 import { useNavigate } from "react-router-dom"
@@ -20,16 +20,46 @@ export default function AuthPage() {
   }
 
   const handleSubmit = async () => {
-    try {
-      const endpoint = isLogin ? "/api/login" : "/api/create_user"
-      const payload = isLogin ? { email, password } : { email, password, name }
-      const res = await axios.post(endpoint, payload)
-      localStorage.setItem("access_token", res.data.access_token)
-      navigate("/courses")
-    } catch (err) {
-      setError(err.response?.data?.detail || "Unknown error")
+  setError("");
+
+  if (!email || !password || (!isLogin && !name)) {
+    setError("Please fill in all required fields.");
+    return;
+  }
+
+  if (!emailRegex.test(email)) {
+    setError("Please enter a valid email address.");
+    return;
+  }
+
+  if (!validatePassword(password)) {
+    setError("Password must be at least 8 characters long and include at least one letter and one number.");
+    return;
+  }
+
+  try {
+    const endpoint = isLogin ? "/api/login" : "/api/create_user";
+    const payload = isLogin ? { email, password } : { email, password, name };
+    const res = await axios.post(endpoint, payload);
+
+    localStorage.setItem("access_token", res.data.access_token);
+    navigate("/courses");
+  } catch (err) {
+    const msg = err.response?.data?.detail || "Unknown error";
+
+    if (msg.includes("Invalid user email")) {
+      setError("No user found with this email. Please check or sign up first.");
+    } else if (msg.includes("Invalid password")) {
+      setError("Incorrect password. Please try again.");
+    } else if (msg.includes("already exists")) {
+      setError("A user with this email already exists.");
+    } else {
+      setError(msg);
     }
   }
+};
+
+
 
   return (
     <div className="auth-page">

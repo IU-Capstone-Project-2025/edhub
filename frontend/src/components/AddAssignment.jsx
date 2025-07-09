@@ -1,8 +1,8 @@
 import React, { useState } from "react"
 import axios from "axios"
-import "../styles/AddMaterial.css" // используем те же стили
+import "../styles/AddMaterial.css" 
 
-export default function AddAssignment({ onClose, courseId }) {
+export default function AddAssignment({ onClose, courseId, onSuccess  }) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [loading, setLoading] = useState(false)
@@ -15,32 +15,31 @@ export default function AddAssignment({ onClose, courseId }) {
 
     try {
       const token = localStorage.getItem("access_token")
-const form = new URLSearchParams()
-form.append("course_id", courseId)
-form.append("title", title)
-form.append("description", description)
+      const form = new URLSearchParams()
+      form.append("course_id", courseId)
+      form.append("title", title)
+      form.append("description", description)
 
-await axios.post(
-  `/api/create_assignment?course_id=${courseId}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`,
-  {},
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
-)
+      await axios.post(
+        `/api/create_assignment?course_id=${courseId}&title=${encodeURIComponent(title)}&description=${encodeURIComponent(description)}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
 
-
-
-      alert("Assignment added successfully!")
       setTitle("")
       setDescription("")
       setLoading(false)
+
+      onSuccess?.()
       onClose()
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail
-      alert("Ошибка при добавлении ассаймента: " + (
+      alert("Error while assignment adding: " + (
         typeof errorData === "string"
           ? errorData
           : JSON.stringify(errorData || err.message)
