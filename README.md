@@ -1,8 +1,9 @@
 [![Contributors][contributors-shield]][contributors-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Forks][forks-shield]][forks-url]
-[![Issues][issues-shield]][issues-url]
 [![Unlicense License][license-shield]][license-url]
+[![Issues][prod-shield]][prod--url]
+
 
 ## What is EdHub?
 
@@ -82,6 +83,9 @@ docker compose down -v && docker compose up --build
 [issues-url]: https://github.com/IU-Capstone-Project-2025/edhub/issues
 [license-shield]: https://img.shields.io/github/license/IU-Capstone-Project-2025/edhub.svg?style=for-the-badge
 [license-url]: https://github.com/IU-Capstone-Project-2025/edhub/blob/main/LICENSE
+[prod-shield]: https://img.shields.io/github/actions/workflow/status/IU-Capstone-Project-2025/edhub/deploy-prod.yml?style=for-the-badge
+[prod-url]: https://github.com/IU-Capstone-Project-2025/edhub/actions
+
 [FastAPI]: https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi
 [FastAPI-url]: https://fastapi.tiangolo.com/
 [React]: https://img.shields.io/badge/-ReactJs-61DAFB?logo=react&logoColor=white&style=for-the-badge
