@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import axios from "axios"
 import CreateCourseModal from "../components/CreateCourse"
-import { ReactComponent as Logo } from "./edHub_icon.svg";
+import { ReactComponent as Logo } from "./edHub_icon.svg"
 
 import "../styles/Header.css"
 
@@ -11,10 +11,8 @@ export default function Header({ children }) {
   const location = useLocation()
   const [showCreateCourseModal, setShowCreateCourseModal] = useState(false)
 
-  useEffect(() => {
-  const token = localStorage.getItem("access_token")
-
   const fetchCourses = async () => {
+    const token = localStorage.getItem("access_token")
     try {
       const res = await axios.get("/api/available_courses", {
         headers: { Authorization: `Bearer ${token}` },
@@ -39,8 +37,9 @@ export default function Header({ children }) {
     }
   }
 
-  fetchCourses()
-}, [])
+  useEffect(() => {
+    fetchCourses()
+  }, [])
 
   const courseMap = {}
   courses.forEach((c) => (courseMap[c.course_id] = c.title))
@@ -51,20 +50,9 @@ export default function Header({ children }) {
     return "/" + pathParts.slice(0, index + 1).join("/")
   }
 
-  const routeLabels = {
-    courses: "Courses",
-    materials: "Materials",
-    students: "Students",
-    teachers: "Teachers",
-    parents: "Parents",
-    settings: "Settings",
-    dashboard: "Dashboard",
-    create: "Create",
-  }
-
-  function logout(){
-    localStorage.setItem("access_token","")
-    window.location = window.origin 
+  function logout() {
+    localStorage.setItem("access_token", "")
+    window.location = window.origin
   }
 
   return (
@@ -93,10 +81,11 @@ export default function Header({ children }) {
           + Create Course
         </Link>
         {showCreateCourseModal && (
-                <CreateCourseModal 
-                  onClose={() => setShowCreateCourseModal(false)}
-                />
-              )}
+          <CreateCourseModal
+            onClose={() => setShowCreateCourseModal(false)}
+            onCourseCreated={fetchCourses}
+          />
+        )}
         <div className="logout-btn-div">
           <button className="logout-btn" onClick={logout}>Log out</button>
         </div>
@@ -121,11 +110,9 @@ export default function Header({ children }) {
             )
           })}
         </div>
-        
+
         <div className="content-wrapper">{children}</div>
-        
       </main>
-      
     </div>
   )
 }
