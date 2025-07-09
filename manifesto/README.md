@@ -95,11 +95,11 @@ I have read and understood the rules and will follow them. If applying the rules
 results in a clearly suboptimal solution, I will immediately consult the other
 team members to have the standards changed.
 
-[ ] Askar Dinikeev
+- [ ] Askar Dinikeev
 
-[ ] Gleb Popov
+- [ ] Gleb Popov
 
-[x] Timur Usmanov
+- [x] Timur Usmanov
 
 ## Frontend
 
@@ -107,6 +107,6 @@ To be discussed
 
 ### Signatures
 
-[ ] Alina Suhoverkova
+- [ ] Alina Suhoverkova
 
-[ ] Timur Struchkov
+- [ ] Timur Struchkov
