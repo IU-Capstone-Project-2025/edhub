@@ -50,4 +50,4 @@ def sql_has_child_at_course(db_cursor, course_id: str, parent_email: str, studen
         """,
         (course_id, parent_email, student_email),
     )
-    return bool(db_cursor.fetchone()[0])
+    return db_cursor.fetchone()[0]
