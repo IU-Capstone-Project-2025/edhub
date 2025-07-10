@@ -9,11 +9,6 @@ from datetime import datetime
 import database
 
 
-get_db = database.get_system_conn
-
-get_storage_db = database.get_storage_conn
-
-
 router = APIRouter()
 
 # setting for JWT and autorization
@@ -43,7 +38,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail=detail)
 
     # checking whether such user exists
-    with get_db() as (db_conn, db_cursor):
+    with database.get_system_conn() as db_conn, db_conn.cursor() as db_cursor:
         db_cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (user_email,))
         user_exists = db_cursor.fetchone()[0]
         if not user_exists:

@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logic.users
-from auth import get_db
 
 import routers.assignments
 import routers.submissions

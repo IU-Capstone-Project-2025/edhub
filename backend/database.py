@@ -7,11 +7,9 @@ def mk_database(dbname, user, password, host, port):
     @contextmanager
     def get_conn():
         conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host, port=port)
-        cursor = conn.cursor()
         try:
-            yield conn, cursor
+            yield conn
         finally:
-            cursor.close()
             conn.close()
 
     return get_conn

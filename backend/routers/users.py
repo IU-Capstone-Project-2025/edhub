@@ -1,7 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends
 
-from auth import get_current_user, get_db
 import json_classes
 from logic.users import (
     get_user_info as logic_get_user_info,
@@ -11,7 +10,7 @@ from logic.users import (
     change_password as logic_change_password,
     remove_user as logic_remove_user,
     give_admin_permissions as logic_give_admin_permissions,
-    get_all_users as logic_get_all_users
+    get_all_users as logic_get_all_users,
 )
 
 router = APIRouter()
