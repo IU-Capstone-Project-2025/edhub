@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File
 from typing import List
 
+from auth import get_current_user
 import json_classes
 from logic.materials import (
     create_material as logic_create_material,
@@ -8,8 +9,10 @@ from logic.materials import (
     get_material as logic_get_material,
     create_material_attachment as logic_create_material_attachment,
     get_material_attachments as logic_get_material_attachments,
-    download_material_attachment as logic_download_material_attachment
+    download_material_attachment as logic_download_material_attachment,
 )
+
+import database
 
 router = APIRouter()
 
@@ -28,8 +31,8 @@ async def create_material(
 
     Returns the (course_id, material_id) for the new material in case of success.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_create_material(db_conn, db_cursor, course_id, title, description, user_email)
+    with database.get_system_conn() as db_conn:
+        return logic_create_material(db_conn, course_id, title, description, user_email)
 
 
 @router.post("/remove_material", response_model=json_classes.Success)
@@ -39,8 +42,8 @@ async def remove_material(course_id: str, material_id: str, user_email: str = De
 
     Teacher role required.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_remove_material(db_conn, db_cursor, course_id, material_id, user_email)
+    with database.get_system_conn() as db_conn:
+        return logic_remove_material(db_conn, course_id, material_id, user_email)
 
 
 @router.get("/get_material", response_model=json_classes.Material)
@@ -54,8 +57,8 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
 
     The format of creation time is TIME_FORMAT.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_get_material(db_cursor, course_id, material_id, user_email)
+    with database.get_system_conn() as db_conn:
+        return logic_get_material(db_conn, course_id, material_id, user_email)
 
 
 @router.post("/create_material_attachment", response_model=json_classes.MaterialAttachmentMetadata)
@@ -74,8 +77,10 @@ async def create_material_attachment(
 
     The format of upload_time is TIME_FORMAT.
     """
-    with get_db() as (db_conn, db_cursor), get_storage_db() as (storage_db_conn, storage_db_cursor):
-        return await logic_create_material_attachment(db_conn, db_cursor, storage_db_conn, storage_db_cursor, course_id, material_id, file, user_email)
+    with database.get_system_conn() as db_conn, database.get_storage_conn() as storage_db_conn:
+        return await logic_create_material_attachment(
+            db_conn, storage_db_conn, course_id, material_id, file, user_email
+        )
 
 
 @router.get("/get_material_attachments", response_model=List[json_classes.MaterialAttachmentMetadata])
@@ -87,14 +92,18 @@ async def get_material_attachments(course_id: str, material_id: str, user_email:
 
     The format of upload_time is TIME_FORMAT.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_get_material_attachments(db_cursor, course_id, material_id, user_email)
+    with database.get_system_conn() as db_conn:
+        return logic_get_material_attachments(db_conn, course_id, material_id, user_email)
 
 
 @router.get("/download_material_attachment")
-async def download_material_attachment(course_id: str, material_id: str, file_id: str, user_email: str = Depends(get_current_user)):
+async def download_material_attachment(
+    course_id: str, material_id: str, file_id: str, user_email: str = Depends(get_current_user)
+):
     """
     Download the course material attachment by provided course_id, material_id, file_id.
     """
-    with get_db() as (db_conn, db_cursor), get_storage_db() as (storage_db_conn, storage_db_cursor):
-        return logic_download_material_attachment(db_cursor, storage_db_cursor, course_id, material_id, file_id, user_email)
+    with database.get_system_conn() as db_conn, database.get_storage_conn() as storage_db_conn:
+        return logic_download_material_attachment(
+            db_conn, storage_db_conn, course_id, material_id, file_id, user_email
+        )
