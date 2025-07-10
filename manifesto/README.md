@@ -74,14 +74,17 @@ permission checking.
 
 ### 6. Databases are abstractions
 
-Define and use databases like so:
+Define databases like so:
 ```python
-# somewhere in `db/conn.py`
-sysdb = Database("system_db", "5432", "edhub", "postgres", "12345678")
-filedb = Database("storage_db", "5432", "edhub_storage", "postgres", "12345678")
+# in databases.py
+get_system_conn = mk_database(dbname="edhub", user="postgres", password="12345678", host="system_db", port="5432")
+```
 
+Use databases like so:
+```python
 # in `routers/*.py`
-with routers.conn.sysdb.connect() as conn:
+with database.get_system_conn() as conn:
+    ...
 ```
 Benefits: easy to make connection pools and otherwise improve on the system
 
