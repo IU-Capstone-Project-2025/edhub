@@ -1,8 +1,8 @@
 from fastapi import HTTPException, UploadFile, Response
 from constants import TIME_FORMAT
 import constraints
-import repo.submissions as repo_submit
-import repo.files as repo_files
+import sql.submissions as sql_submit
+import sql.files as sql_files
 import logic.logging as logger
 from logic.uploading import careful_upload
 
@@ -20,16 +20,16 @@ def submit_assignment(
     constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
     constraints.assert_student_access(db_cursor, student_email, course_id)
 
-    submission = repo_submit.sql_select_submission_grade(db_cursor, course_id, assignment_id, student_email)
+    submission = sql_submit.sql_select_submission_grade(db_cursor, course_id, assignment_id, student_email)
 
     # inserting submission
     if submission is None:
-        repo_submit.sql_insert_submission(db_cursor, course_id, assignment_id, student_email, comment)
+        sql_submit.sql_insert_submission(db_cursor, course_id, assignment_id, student_email, comment)
         db_conn.commit()
 
     # updating submission if not graded
     elif submission and submission[0] in (None, "null"):
-        repo_submit.sql_update_submission_comment(db_cursor, comment, course_id, assignment_id, student_email)
+        sql_submit.sql_update_submission_comment(db_cursor, comment, course_id, assignment_id, student_email)
         db_conn.commit()
 
     else:
@@ -46,7 +46,7 @@ def get_assignment_submissions(db_cursor, course_id: str, assignment_id: str, us
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
     # finding students' submissions
-    submissions = repo_submit.sql_select_submissions(db_cursor, course_id, assignment_id)
+    submissions = sql_submit.sql_select_submissions(db_cursor, course_id, assignment_id)
 
     res = [
         {
@@ -83,7 +83,7 @@ def get_submission(
         raise HTTPException(status_code=403, detail="User does not have access to this submission")
 
     # finding student's submission
-    submission = repo_submit.sql_select_single_submission(db_cursor, course_id, assignment_id, student_email)
+    submission = sql_submit.sql_select_single_submission(db_cursor, course_id, assignment_id, student_email)
     if not submission:
         raise HTTPException(status_code=404, detail="Submission of this user is not found")
 
@@ -114,7 +114,7 @@ def grade_submission(
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
     constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
 
-    repo_submit.sql_update_submission_grade(db_cursor, grade, user_email, course_id, assignment_id, student_email)
+    sql_submit.sql_update_submission_grade(db_cursor, grade, user_email, course_id, assignment_id, student_email)
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_ASSIGNMENT_GRADE, f"Teacher {user_email} graded an assignment {assignment_id} in {course_id} by {student_email}")
@@ -132,7 +132,7 @@ async def create_submission_attachment(db_conn, db_cursor, storage_db_conn, stor
     contents = await careful_upload(file)
 
     # save the file into database
-    attachment_metadata = repo_submit.sql_insert_submission_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, student_email, file.filename, contents)
+    attachment_metadata = sql_submit.sql_insert_submission_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, student_email, file.filename, contents)
     db_conn.commit()
     storage_db_conn.commit()
 
@@ -158,7 +158,7 @@ def get_submission_attachments(db_cursor, course_id: str, assignment_id: str, st
         raise HTTPException(status_code=403, detail="User does not have access to this submission")
 
     # searching for submission attachments
-    files = repo_submit.sql_select_submission_attachments(db_cursor, course_id, assignment_id, student_email)
+    files = sql_submit.sql_select_submission_attachments(db_cursor, course_id, assignment_id, student_email)
 
     res = [{
         "course_id": course_id,
@@ -183,7 +183,7 @@ def download_submission_attachment(db_cursor, storage_db_cursor, course_id: str,
         raise HTTPException(status_code=403, detail="User does not have access to this submission")
 
     # searching for submission attachment
-    file = repo_files.sql_download_attachment(storage_db_cursor, file_id)
+    file = sql_files.sql_download_attachment(storage_db_cursor, file_id)
     if not file:
         raise HTTPException(status_code=404, detail="Attachment not found")
 

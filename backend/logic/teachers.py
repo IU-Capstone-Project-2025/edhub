@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 import constraints
-import repo.teachers as repo_teachers
+import sql.teachers as sql_teachers
 import logic.logging as logger
 
 
@@ -9,7 +9,7 @@ def get_course_teachers(db_cursor, course_id: str, user_email: str):
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # finding assigned teachers
-    teachers = repo_teachers.sql_select_course_teachers(db_cursor, course_id)
+    teachers = sql_teachers.sql_select_course_teachers(db_cursor, course_id)
 
     res = [{"email": tch[0], "name": tch[1]} for tch in teachers]
     return res
@@ -36,7 +36,7 @@ def invite_teacher(db_conn, db_cursor, course_id: str, new_teacher_email: str, t
         raise HTTPException(status_code=403, detail="Can't invite parent as a teacher")
 
     # invite teacher
-    repo_teachers.sql_insert_teacher(db_cursor, new_teacher_email, course_id)
+    sql_teachers.sql_insert_teacher(db_cursor, new_teacher_email, course_id)
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_TEACHER_ADD, f"Teacher {teacher_email} invited a teacher {new_teacher_email}")
@@ -54,12 +54,12 @@ def remove_teacher(db_conn, db_cursor, course_id: str, removing_teacher_email: s
         raise HTTPException(status_code=403, detail="User to remove is not a teacher at this course")
 
     # ensuring that at least one teacher remains in the course
-    teachers_left = repo_teachers.sql_count_teachers(db_cursor, course_id)
+    teachers_left = sql_teachers.sql_count_teachers(db_cursor, course_id)
     if teachers_left == 1:
         raise HTTPException(status_code=403, detail="Cannot remove the last teacher at the course")
 
     # remove teacher
-    repo_teachers.sql_delete_teacher(db_cursor, course_id, removing_teacher_email)
+    sql_teachers.sql_delete_teacher(db_cursor, course_id, removing_teacher_email)
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_TEACHER_DEL, f"Teacher {teacher_email} removed a teacher {removing_teacher_email}")
