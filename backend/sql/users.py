@@ -8,6 +8,11 @@ def select_user_exists(db_cursor, email):
     return db_cursor.fetchone()[0]
 
 
+def select_is_admin(db_cursor, email):
+    db_cursor.execute("SELECT isadmin FROM users WHERE email = %s", (email,))
+    return db_cursor.fetchone()[0]
+
+
 def insert_user(db_cursor, email, name, hashed_password):
     db_cursor.execute(
         "INSERT INTO users (email, publicname, isadmin, timeregistered, passwordhash) VALUES (%s, %s, 'f', now(), %s)",

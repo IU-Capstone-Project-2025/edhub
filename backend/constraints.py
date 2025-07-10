@@ -19,9 +19,7 @@ from edhub_errors import EdHubException
 
 # checking whether the user exists in our LMS
 def value_assert_user_exists(db_cursor, user_email: str) -> Union[None, EdHubException]:
-    db_cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (user_email,))
-    user_exists = db_cursor.fetchone()[0]
-    if not user_exists:
+    if not sql.users.select_user_exists(db_cursor, user_email):
         return edhub_errors.UserNotFoundException(user_email)
     return None
 
@@ -36,6 +34,18 @@ def assert_user_exists(db_cursor, user_email: str):
 # checking whether the user exists in our LMS
 def check_user_exists(db_cursor, user_email: str) -> bool:
     return value_assert_user_exists(db_cursor, user_email) is None
+
+
+def value_assert_user_not_exists(db_cursor, user_email: str) -> Union[None, EdHubException]:
+    if sql.users.select_user_exists(db_cursor, user_email):
+        return edhub_errors.UserExistsException(user_email)
+    return None
+
+
+def assert_user_not_exists(db_cursor, user_email: str):
+    err = value_assert_user_not_exists(db_cursor, user_email)
+    if err is not None:
+        raise err
 
 
 # checking whether the course exists in our LMS

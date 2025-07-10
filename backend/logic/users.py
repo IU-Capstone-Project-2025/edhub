@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+import edhub_errors
 from datetime import datetime, timedelta
 from jose import jwt
 import constraints
@@ -40,7 +40,7 @@ def create_user(db_conn, user):
             and not ".." in user.email
             and len(user.email.split("@")[0]) <= 64
         ):
-            raise HTTPException(status_code=400, detail="Incorrect email format")
+            raise edhub_errors.BadEmailFormatException(user.email)
 
         # validation of password complexity (length, digit(s), letter(s), special symbol(s))
         if not (
@@ -49,12 +49,9 @@ def create_user(db_conn, user):
             and search(r"\p{L}", user.password)
             and search(r"[^\p{L}\p{N}\s]", user.password)
         ):
-            raise HTTPException(status_code=400, detail="Password is too weak")
+            raise edhub_errors.PasswordTooWeakException()
 
-        # checking whether such user exists
-        user_exists = sql_users.select_user_exists(db_cursor, user.email)
-        if user_exists:
-            raise HTTPException(status_code=400, detail="User already exists")
+        constraints.assert_user_not_exists(db_cursor, user.email)
 
         # hashing password
         hashed_password = pwd_hasher.hash(user.password)
@@ -75,16 +72,13 @@ def create_user(db_conn, user):
 
 def login(db_conn, user):
     with db_conn.cursor() as db_cursor:
+        constraints.assert_user_not_exists(db_cursor, user.email)
         result = sql_users.select_passwordhash(db_cursor, user.email)
-
-        # checking whether such user exists
-        if not result:
-            raise HTTPException(status_code=401, detail="Invalid user email")
 
         # checking password
         hashed_password = result[0]
         if not pwd_hasher.verify(user.password, hashed_password):
-            raise HTTPException(status_code=401, detail="Invalid password")
+            raise edhub_errors.WrongPasswordException()
 
         # giving access token
         data = {
@@ -98,16 +92,13 @@ def login(db_conn, user):
 
 def change_password(db_conn, user):
     with db_conn.cursor() as db_cursor:
+        constraints.assert_user_exists(db_cursor, user.email)
         result = sql_users.select_passwordhash(db_cursor, user.email)
-
-        # checking whether such user exists
-        if not result:
-            raise HTTPException(status_code=401, detail="Invalid user email")
 
         # checking password
         hashed_password = result[0]
         if not pwd_hasher.verify(user.password, hashed_password):
-            raise HTTPException(status_code=401, detail="Invalid password")
+            raise edhub_errors.WrongPasswordException()
 
         # changing the password to a new one
         hashed_new_password = pwd_hasher.hash(user.new_password)
@@ -123,8 +114,8 @@ def remove_user(db_conn, user_email: str):
     with db_conn.cursor() as db_cursor:
         # checking constraints
         constraints.assert_user_exists(db_cursor, user_email)
-        if sql_users.count_admins(db_cursor) == 1:
-            raise HTTPException(status_code=403, detail="Cannot remove the last administrator")
+        if sql_users.select_is_admin(db_cursor, user_email) and sql_users.count_admins(db_cursor) == 1:
+            raise edhub_errors.CannotRemoveLastAdminException()
 
         # remove teacher role preparation: find courses with 1 teacher left
         single_teacher_courses = sql_users.select_single_teacher_courses(db_cursor, user_email)

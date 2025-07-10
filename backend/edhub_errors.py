@@ -20,8 +20,11 @@ NOT_AN_ADMIN = "NOT_AN_ADMIN"
 CANNOT_REMOVE_PARENT = "CANNOT_REMOVE_PARENT"
 CANNOT_REMOVE_STUDENT = "CANNOT_REMOVE_STUDENT"
 CANNOT_REMOVE_LAST_TEACHER = "CANNOT_REMOVE_LAST_TEACHER"
+CANNOT_REMOVE_LAST_ADMIN = "CANNOT_REMOVE_LAST_ADMIN"
 FILE_TOO_LARGE = "FILE_TOO_LARGE"
-
+BAD_EMAIL_FORMAT = "BAD_EMAIL_FORMAT"
+PASSWORD_TOO_WEAK = "PASSWORD_TOO_WEAK"
+WRONG_PASSWORD = "WRONG_PASSWORD"
 
 ROLE_STUDENT = "student"
 ROLE_TEACHER = "teacher"
@@ -191,3 +194,23 @@ class FileTooLargeException(EdHubException):
     def __init__(self, max_size: int):
         super().__init__(413, f"The file you tried to upload was too large (max {max_size} bytes)",
                          FILE_TOO_LARGE, max_size=max_size)
+
+
+class BadEmailFormatException(EdHubException):
+    def __init__(self, email: str):
+        super().__init__(400, f"\"{email}\" is not a valid email", BAD_EMAIL_FORMAT, email=email)
+
+
+class PasswordTooWeakException(EdHubException):
+    def __init__(self):
+        super().__init__(400, "The provided password is too weak", PASSWORD_TOO_WEAK)
+
+
+class WrongPasswordException(EdHubException):
+    def __init__(self):
+        super().__init__(403, "The provided password is wrong", WRONG_PASSWORD)
+
+
+class CannotRemoveLastAdminException(EdHubException):
+    def __init__(self):
+        super().__init__(403, "Cannot remove the only administrator in the system", CANNOT_REMOVE_LAST_ADMIN)
