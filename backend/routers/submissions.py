@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, UploadFile, File
 from typing import List
 
-from auth import get_current_user, get_db, get_storage_db
 import json_classes
 from logic.submissions import (
     submit_assignment as logic_submit_assignment,

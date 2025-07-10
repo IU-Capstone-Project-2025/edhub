@@ -2,8 +2,8 @@ import fastapi
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logic.users
-from auth import get_db
 import edhub_errors
+import database
 
 import routers.assignments
 import routers.submissions
@@ -42,5 +42,5 @@ async def edhub_exception_handler(request: fastapi.Request, exc: edhub_errors.Ed
 # app startup
 @app.on_event("startup")
 async def startup_event():
-    with get_db() as (conn, cur):
-        await logic.users.create_admin_account_if_not_exists(conn, cur)
+    with database.get_system_conn() as conn:
+        await logic.users.create_admin_account_if_not_exists(conn)
