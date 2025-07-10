@@ -1,9 +1,12 @@
 from fastapi.responses import JSONResponse
 
+INVALID_TOKEN_STRUCTURE = "INVALID_TOKEN_STRUCTURE"
+TOKEN_EXPIRED = "TOKEN_EXPIRED"
+JWT_ERROR = "JWT_ERROR"
 USER_NOT_FOUND = "USER_NOT_FOUND"
 USER_EXISTS = "USER_EXISTS"
 COURSE_NOT_FOUND = "COURSE_NOT_FOUND"
-PARAMETER_NOT_INTEGER = "NOT_INTEGER"
+NOT_INTEGER = "NOT_INTEGER"
 COURSE_ITEM_NOT_FOUND = "COURSE_ITEM_NOT_FOUND"
 NO_ACCESS_TO_COURSE = "NO_ACCESS_TO_COURSE"
 USER_LACKS_ROLE_IN_COURSE = "USER_LACKS_ROLE_IN_COURSE"
@@ -29,15 +32,30 @@ class EdHubException(Exception):
                             content={"detail": self._detail, "exc_name": self._exc_name, "args": self._kwargs})
 
 
-class AccountNotFoundException(EdHubException):
+class InvalidTokenStructureException(EdHubException):
+    def __init__(self):
+        super().__init__(401, "Invalid token structure", INVALID_TOKEN_STRUCTURE)
+
+
+class TokenExpiredException(EdHubException):
+    def __init__(self):
+        super().__init__(401, "Token expired", TOKEN_EXPIRED)
+
+
+class CustomJWTException(EdHubException):
+    def __init__(self, message: str):
+        super().__init__(401, message, JWT_ERROR, internal_message=message)
+
+
+class UserNotFoundException(EdHubException):
     def __init__(self, user_login: str):
-        super().__init__(404, f"The following user login is not registered in the system: {user_login}",
+        super().__init__(404, f"This user login is not registered in the system: {user_login}",
                          USER_NOT_FOUND, user_login)
 
 
 class UserExistsException(EdHubException):
     def __init__(self, user_login: str):
-        super().__init__(403, f"The following user login has already been registered in the system: {user_login}",
+        super().__init__(403, f"This user login has already been registered in the system: {user_login}",
                          USER_EXISTS, user_login)
 
 
@@ -49,7 +67,7 @@ class CourseNotFoundException(EdHubException):
 class ParameterNotIntegerException(EdHubException):
     def __init__(self, param_name: str, value: str):
         super().__init__(400, f"The value of parameter \"{param_name}\" must be integer, but received \"{value}\"",
-                         PARAMETER_NOT_INTEGER, param_name, value)
+                         NOT_INTEGER, param_name, value)
 
 
 class CourseItemNotFoundException(EdHubException):
