@@ -38,9 +38,9 @@ def invite_parent(
 
     roles = logic.users.get_user_role(db_conn, course_id, parent_email)
     if roles["is_teacher"]:
-        raise edhub_errors.UserAlreadyHasDifferentRoleException(course_id, parent_email, "teacher", "parent")
+        raise edhub_errors.UserAlreadyHasDifferentRoleException(course_id, parent_email, edhub_errors.ROLE_TEACHER, edhub_errors.ROLE_PARENT)
     if roles["is_student"]:
-        raise edhub_errors.UserAlreadyHasDifferentRoleException(course_id, parent_email, "student", "parent")
+        raise edhub_errors.UserAlreadyHasDifferentRoleException(course_id, parent_email, edhub_errors.ROLE_STUDENT, edhub_errors.ROLE_PARENT)
 
     with db_conn.cursor() as db_cursor:
         # invite parent
