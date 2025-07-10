@@ -17,16 +17,6 @@ before merging**.
 
 *To be discussed*
 
-### Signatures
-
-I have read and understood the rules and will follow them. If applying the rules
-results in a clearly suboptimal solution, I will immediately consult the other
-team members to have the standards changed.
-
-- [ ] Askar Dinikeev
-- [ ] Gleb Popov
-- [ ] Timur Usmanov
-
 ## Backend
 
 ### 1. Single Responsibility
@@ -126,28 +116,6 @@ again, it may be restored from the history.
 
 Benefits: the fewer functions there are, the easier the code becomes.
 
-### Signatures
-
-I have read and understood the rules and will follow them. If applying the rules
-results in a clearly suboptimal solution, I will immediately consult the other
-team members to have the standards changed.
-
-- [ ] Askar Dinikeev
-
-- [ ] Gleb Popov
-
-- [x] Timur Usmanov
-
 ## Frontend
 
 *To be discussed*
-
-### Signatures
-
-I have read and understood the rules and will follow them. If applying the rules
-results in a clearly suboptimal solution, I will immediately consult the other
-team members to have the standards changed.
-
-- [ ] Alina Suhoverkova
-
-- [ ] Timur Struchkov
