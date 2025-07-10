@@ -1,4 +1,5 @@
-from fastapi import HTTPException, UploadFile, Response
+from fastapi import UploadFile, Response
+import edhub_errors
 from constants import TIME_FORMAT
 import constraints
 import sql.submissions as sql_submit
@@ -32,7 +33,7 @@ def submit_assignment(
             db_conn.commit()
 
         else:
-            raise HTTPException(status_code=404, detail="Can't edit the submission after it was graded.")
+            raise edhub_errors.CannotEditGradedSubmissionException()
 
         logger.log(
             db_conn,
@@ -85,12 +86,10 @@ def get_submission(
             or constraints.check_parent_student_access(db_cursor, user_email, student_email, course_id)
             or student_email == user_email
         ):
-            raise HTTPException(status_code=403, detail="User does not have access to this submission")
+            raise edhub_errors.NoAccessToSubmissionException(course_id, student_email, user_email)
 
-        # finding student's submission
+        constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
         submission = sql_submit.select_single_submission(db_cursor, course_id, assignment_id, student_email)
-        if not submission:
-            raise HTTPException(status_code=404, detail="Submission of this user is not found")
 
         res = {
             "course_id": course_id,
@@ -141,10 +140,11 @@ async def create_submission_attachment(
     user_email: str,
 ):
     with db_conn.cursor() as db_cursor, storage_db_conn.cursor() as storage_db_cursor:
-        # checking constraints
         constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
         if student_email != user_email:
-            raise HTTPException(status_code=403, detail="User does not have access to this submission")
+            raise edhub_errors.CannotEditOthersSubmissionException(user_email, student_email)
+        if sql_submit.select_submission_grade(db_cursor, course_id, assignment_id, student_email)[0] is not None:
+            raise edhub_errors.CannotEditGradedSubmissionException()
 
         # read the file
         contents = await careful_upload(file)
@@ -180,7 +180,7 @@ def get_submission_attachments(db_conn, course_id: str, assignment_id: str, stud
             or constraints.check_parent_student_access(db_cursor, user_email, student_email, course_id)
             or student_email == user_email
         ):
-            raise HTTPException(status_code=403, detail="User does not have access to this submission")
+            raise edhub_errors.NoAccessToSubmissionException(course_id, user_email, student_email)
 
         # searching for submission attachments
         files = sql_submit.select_submission_attachments(db_cursor, course_id, assignment_id, student_email)
@@ -211,12 +211,12 @@ def download_submission_attachment(
             or constraints.check_parent_student_access(db_cursor, user_email, student_email, course_id)
             or student_email == user_email
         ):
-            raise HTTPException(status_code=403, detail="User does not have access to this submission")
+            raise edhub_errors.NoAccessToSubmissionException(course_id, user_email, student_email)
 
         # searching for submission attachment
         file = sql_files.download_attachment(storage_db_cursor, file_id)
         if not file:
-            raise HTTPException(status_code=404, detail="Attachment not found")
+            raise edhub_errors.AttachmentNotFoundException(file_id)
 
         return Response(
             content=file[0],

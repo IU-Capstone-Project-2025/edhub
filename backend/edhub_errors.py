@@ -26,6 +26,10 @@ BAD_EMAIL_FORMAT = "BAD_EMAIL_FORMAT"
 PASSWORD_TOO_WEAK = "PASSWORD_TOO_WEAK"
 WRONG_PASSWORD = "WRONG_PASSWORD"
 STUDENT_CANNOT_VIEW_OTHER_STUDENT_GRADES = "STUDENT_CANNOT_VIEW_OTHER_STUDENT_GRADES"
+CANNOT_EDIT_GRADED_SUBMISSION = "CANNOT_EDIT_GRADED_SUBMISSION"
+CANNOT_ACCESS_SUBMISSION = "CANNOT_ACCESS_SUBMISSION"
+CANNOT_EDIT_OTHERS_SUBMISSION = "CANNOT_EDIT_OTHERS_SUBMISSION"
+ATTACHMENT_NOT_FOUND = "ATTACHMENT_NOT_FOUND"
 
 ROLE_STUDENT = "student"
 ROLE_TEACHER = "teacher"
@@ -222,3 +226,25 @@ class StudentCannotViewOthersGradesException(EdHubException):
         super().__init__(403, f"As a student, \"{this_email}\" cannot view grades of another student, \"{other_email}\" (in course {course_id})",
                          STUDENT_CANNOT_VIEW_OTHER_STUDENT_GRADES, course_id=course_id,
                          this_email=this_email, other_email=other_email)
+
+
+class CannotEditGradedSubmissionException(EdHubException):
+    def __init__(self):
+        super().__init__(403, "Cannot edit the submission after it was graded", CANNOT_EDIT_GRADED_SUBMISSION)
+
+
+class CannotEditOthersSubmissionException(EdHubException):
+    def __init__(self, this_email: str, other_email: str):
+        super().__init__(403, "User \"{this_email}\" cannot edit another's (\"{other_email}\") submission",
+                         CANNOT_EDIT_OTHERS_SUBMISSION, this_email=this_email, other_email=other_email)
+
+
+class NoAccessToSubmissionException(EdHubException):
+    def __init__(self, course_id, user_email, author_email):
+        super().__init__(403, f"In the course {course_id}, \"{user_email}\" cannot access \"{author_email}\"'s submission",
+                         CANNOT_ACCESS_SUBMISSION, course_id=course_id, user_email=user_email, author_email=author_email)
+
+
+class AttachmentNotFoundException(EdHubException):
+    def __init__(self, file_id: str):
+        super().__init__(404, f"Attachment {file_id} not found", ATTACHMENT_NOT_FOUND, file_id=file_id)
