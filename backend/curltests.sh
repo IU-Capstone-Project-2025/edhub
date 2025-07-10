@@ -52,6 +52,7 @@ RES=$?
 echo "$TEMP"
 if [ $RES -gt 0 ]; then exit 1; fi
 TOKEN=$(echo "$TEMP" | extract_token)
+if [ $? -gt 0 ]; then exit 1; fi
 echo "Token: $TOKEN"
 
 echo "== Creating a course =="
@@ -61,6 +62,7 @@ RES=$?
 echo "$TEMP"
 if [ $RES -gt 0 ]; then exit 1; fi
 COURSE_ID=$(echo "$TEMP" | extract_course_id)
+if [ $? -gt 0 ]; then exit 1; fi
 echo "Course ID: $COURSE_ID"
 
 echo "== Getting available courses =="
@@ -108,11 +110,13 @@ echo
 
 echo "== Creating material =="
 TEMP=$(curl -s --fail-with-body -X POST "$API_URL/create_material?course_id=$COURSE_ID&title=Intro&description=Welcome" \
-    -H "Authorization: Bearer $TOKEN" | extract_material_id)
+    -H "Authorization: Bearer $TOKEN")
 RES=$?
 echo "$TEMP"
 if [ $RES -gt 0 ]; then exit 1; fi
 MATERIAL_ID=$(echo "$TEMP" | extract_material_id)
+if [ $? -gt 0 ]; then exit 1; fi
+if [ $? -gt 0 ]; then exit 1; fi
 echo "Material ID: $MATERIAL_ID"
 
 echo "== Getting course feed =="
@@ -132,6 +136,7 @@ RES=$?
 echo "$TEMP"
 if [ $RES -gt 0 ]; then exit 1; fi
 ASSIGNMENT_ID=$(echo "$TEMP" | extract_assignment_id)
+if [ $? -gt 0 ]; then exit 1; fi
 echo "Assignment ID: $ASSIGNMENT_ID"
 
 echo "== Getting assignment info =="
@@ -147,6 +152,7 @@ RES=$?
 echo "$TEMP"
 if [ $RES -gt 0 ]; then exit 1; fi
 STUDENT_TOKEN=$(echo "$TEMP" | extract_token)
+if [ $? -gt 0 ]; then exit 1; fi
 echo "Student token: $STUDENT_TOKEN"
 curl -s --fail-with-body -X POST "$API_URL/submit_assignment?course_id=$COURSE_ID&assignment_id=$ASSIGNMENT_ID&comment=MySolution" \
     -H "Authorization: Bearer $STUDENT_TOKEN" 
@@ -173,6 +179,7 @@ RES=$?
 echo "$TEMP"
 if [ $RES -gt 0 ]; then exit 1; fi
 TOKEN=$(echo "$TEMP" | extract_token)
+if [ $? -gt 0 ]; then exit 1; fi
 echo
 
 echo "== Admin creating material =="
@@ -182,6 +189,7 @@ RES=$?
 echo "$TEMP"
 if [ $RES -gt 0 ]; then exit 1; fi
 MATERIAL_ID=$(echo "$TEMP" | extract_material_id)
+if [ $? -gt 0 ]; then exit 1; fi
 echo "Material ID: $MATERIAL_ID"
 echo
 
