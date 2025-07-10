@@ -59,7 +59,6 @@ async def get_assignment(course_id: str, assignment_id: str, user_email: str = D
     The format of creation time is TIME_FORMAT.
     """
 
-    # connection to database
     with database.get_system_conn() as db_cursor:
         return logic_get_assignment(db_cursor, course_id, assignment_id, user_email)
 

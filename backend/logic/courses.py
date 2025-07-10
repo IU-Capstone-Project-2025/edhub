@@ -86,7 +86,7 @@ def get_all_grades(
     with db_conn.cursor() as db_cursor:
         constraints.assert_user_exists(db_cursor, user_email)
         constraints.assert_course_exists(db_cursor, course_id)
-        role = logic.users.get_user_role(db_cursor, course_id, user_email)
+        role = logic.users.get_user_role(db_conn, course_id, user_email)
         if role["is_parent"]:
             constraints.assert_parent_of_all(db_cursor, user_email, students, course_id)
         elif role["is_student"]:

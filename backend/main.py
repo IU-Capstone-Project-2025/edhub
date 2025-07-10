@@ -13,6 +13,7 @@ import routers.parents
 import routers.students
 import routers.teachers
 import routers.users
+import database
 
 
 app = FastAPI()
