@@ -1,7 +1,9 @@
+import fastapi
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logic.users
 from auth import get_db
+import edhub_errors
 
 import routers.assignments
 import routers.submissions
@@ -30,6 +32,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(edhub_errors.EdHubException)
+async def edhub_exception_handler(request: fastapi.Request, exc: edhub_errors.EdHubException):
+    return exc.json_response()
 
 
 # app startup
