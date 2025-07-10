@@ -1,4 +1,5 @@
-from fastapi import HTTPException, UploadFile, Response
+from fastapi import UploadFile, Response
+import edhub_errors
 from constants import TIME_FORMAT
 import constraints
 import sql.assignments as sql_ass
@@ -46,11 +47,8 @@ def get_assignment(db_conn, course_id: str, assignment_id: str, user_email: str)
     with db_conn.cursor() as db_cursor:
         # checking constraints
         constraints.assert_course_access(db_cursor, user_email, course_id)
-
-        # searching for assignments
+        constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
         assignment = sql_ass.select_assignment(db_cursor, course_id, assignment_id)
-        if not assignment:
-            raise HTTPException(status_code=404, detail="Assignment not found")
 
         res = {
             "course_id": str(assignment[0]),
@@ -129,7 +127,7 @@ def download_assignment_attachment(
         # searching for assignment attachment
         file = sql_files.download_attachment(storage_db_cursor, file_id)
         if not file:
-            raise HTTPException(status_code=404, detail="Attachment not found")
+            raise edhub_errors.AttachmentNotFoundException(file_id)
 
         return Response(
             content=file[0],
