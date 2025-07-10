@@ -19,6 +19,7 @@ NO_SUBMISSION_TO_ASSIGNMENT = "NO_SUBMISSION_TO_ASSIGNMENT"
 NOT_AN_ADMIN = "NOT_AN_ADMIN"
 CANNOT_REMOVE_PARENT = "CANNOT_REMOVE_PARENT"
 CANNOT_REMOVE_STUDENT = "CANNOT_REMOVE_STUDENT"
+CANNOT_REMOVE_LAST_TEACHER = "CANNOT_REMOVE_LAST_TEACHER"
 FILE_TOO_LARGE = "FILE_TOO_LARGE"
 
 
@@ -178,6 +179,12 @@ class CannotRemoveStudentException(EdHubException):
     def __init__(self, course_id: str, user_login: str, student_login: str):
         super().__init__(403, f"The user \"{user_login}\" must be admin, the teacher at course {course_id}, or \"{student_login}\" to revoke the student of \"{student_login}\"",
                          CANNOT_REMOVE_STUDENT, course_id=course_id, user_login=user_login, student_login=student_login)
+
+
+class CannotRemoveLastTeacher(EdHubException):
+    def __init__(self, course_id: str, teacher_login: str):
+        super().__init__(403, f"\"{teacher_login}\" is the last teacher in the course {course_id}, cannot remove",
+                         CANNOT_REMOVE_LAST_TEACHER, course_id=course_id, teacher_login=teacher_login)
 
 
 class FileTooLargeException(EdHubException):
