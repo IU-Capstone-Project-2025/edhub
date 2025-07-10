@@ -80,7 +80,7 @@ async def create_assignment_attachment(
 
     The format of upload_time is TIME_FORMAT.
     """
-    with database.get_system_conn() as db_conn, database.get_system_conn() as storage_db_conn:
+    with database.get_system_conn() as db_conn, database.get_storage_conn() as storage_db_conn:
         return await logic_create_assignment_attachment(
             db_conn, storage_db_conn, course_id, assignment_id, file, user_email
         )
@@ -106,7 +106,7 @@ async def download_assignment_attachment(
     """
     Download the course assignment attachment by provided course_id, assignment_id, file_id.
     """
-    with database.get_system_conn() as db_conn, database.get_system_conn() as storage_db_conn:
+    with database.get_system_conn() as db_conn, database.get_storage_conn() as storage_db_conn:
         return logic_download_assignment_attachment(
             db_conn, storage_db_conn, course_id, assignment_id, file_id, user_email
         )
