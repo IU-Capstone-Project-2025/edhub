@@ -12,12 +12,19 @@ ASSIGNMENT_NOT_FOUND = "ASSIGNMENT_NOT_FOUND"
 NO_ACCESS_TO_COURSE = "NO_ACCESS_TO_COURSE"
 USER_LACKS_ROLE_IN_COURSE = "USER_LACKS_ROLE_IN_COURSE"
 USER_HAS_DIFFERENT_ROLE_IN_COURSE = "USER_HAS_DIFFERENT_ROLE_IN_COURSE"
+USER_HAS_SAME_ROLE_IN_COURSE = "USER_HAS_DIFFERENT_ROLE_IN_COURSE"
 NOT_PARENT_OF_STUDENT = "NOT_PARENT_OF_STUDENT"
 ALREADY_PARENT_OF_STUDENT = "ALREADY_PARENT_OF_STUDENT"
 NO_SUBMISSION_TO_ASSIGNMENT = "NO_SUBMISSION_TO_ASSIGNMENT"
 NOT_AN_ADMIN = "NOT_AN_ADMIN"
 CANNOT_REMOVE_PARENT = "CANNOT_REMOVE_PARENT"
+CANNOT_REMOVE_STUDENT = "CANNOT_REMOVE_STUDENT"
 FILE_TOO_LARGE = "FILE_TOO_LARGE"
+
+
+ROLE_STUDENT = "student"
+ROLE_TEACHER = "teacher"
+ROLE_PARENT = "parent"
 
 
 class EdHubException(Exception):
@@ -103,7 +110,7 @@ class UserLacksRoleInCourseException(EdHubException):
 
 class UserIsNotTeacherInCourseException(UserLacksRoleInCourseException):
     def __init__(self, course_id: str, user_login: str):
-        super().__init__(course_id, user_login, "teacher")
+        super().__init__(course_id, user_login, ROLE_TEACHER)
 
 
 class UserIsNotParentInCourseException(UserLacksRoleInCourseException):
@@ -125,13 +132,29 @@ class UserIsAlreadyParentOfStudentInCourseException(EdHubException):
 
 class UserIsNotStudentInCourseException(UserLacksRoleInCourseException):
     def __init__(self, course_id: str, user_login: str):
-        super().__init__(course_id, user_login, "student")
+        super().__init__(course_id, user_login, ROLE_STUDENT)
 
 
 class UserAlreadyHasDifferentRoleException(EdHubException):
     def __init__(self, course_id: str, user_login: str, oldrole: str, newrole: str):
-        super.__init__(403, f"In course {course_id}, the user \"{user_login}\" already has the role \"{oldrole}\", cannot assign role \"{newrole}\"",
-                       USER_HAS_DIFFERENT_ROLE_IN_COURSE, course_id=course_id, oldrole=oldrole, newrole=newrole)
+        super().__init__(403, f"In course {course_id}, the user \"{user_login}\" already has the role \"{oldrole}\", cannot assign role \"{newrole}\"",
+                         USER_HAS_DIFFERENT_ROLE_IN_COURSE, course_id=course_id, oldrole=oldrole, newrole=newrole)
+
+
+class UserAlreadyHasRoleException(EdHubException):
+    def __init__(self, course_id: str, user_login: str, role: str):
+        super().__init__(403, f"In course {course_id}, the user \"{user_login}\" already has the role \"{role}\"",
+                         USER_HAS_SAME_ROLE_IN_COURSE, course_id=course_id, role=role)
+
+
+class UserAlreadyStudentException(UserAlreadyHasRoleException):
+    def __init__(self, course_id: str, user_login: str):
+        super().__init__(course_id, user_login, ROLE_STUDENT)
+
+
+class UserAlreadyTeacherException(UserAlreadyHasRoleException):
+    def __init__(self, course_id: str, user_login: str):
+        super().__init__(course_id, user_login, ROLE_TEACHER)
 
 
 class NoSubmissionToAssignmentException(EdHubException):
@@ -149,6 +172,12 @@ class CannotRemoveParentException(EdHubException):
     def __init__(self, course_id: str, user_login: str, parent_login: str):
         super().__init__(403, f"The user \"{user_login}\" must be admin, the teacher at course {course_id}, or \"{parent_login}\" to revoke the parent access of \"{parent_login}\"",
                          CANNOT_REMOVE_PARENT, course_id=course_id, user_login=user_login, parent_login=parent_login)
+
+
+class CannotRemoveStudentException(EdHubException):
+    def __init__(self, course_id: str, user_login: str, student_login: str):
+        super().__init__(403, f"The user \"{user_login}\" must be admin, the teacher at course {course_id}, or \"{student_login}\" to revoke the student of \"{student_login}\"",
+                         CANNOT_REMOVE_STUDENT, course_id=course_id, user_login=user_login, student_login=student_login)
 
 
 class FileTooLargeException(EdHubException):

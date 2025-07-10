@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+import edhub_errors
 import constraints
 import sql.students as sql_students
 import logic.logging as logger
@@ -6,12 +6,8 @@ import logic.logging as logger
 
 def get_enrolled_students(db_conn, course_id: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_course_access(db_cursor, user_email, course_id)
-
-        # finding enrolled students
         students = sql_students.select_enrolled_students(db_cursor, course_id)
-
         res = [{"email": st[0], "name": st[1]} for st in students]
         return res
 
@@ -22,20 +18,18 @@ def invite_student(db_conn, course_id: str, student_email: str, teacher_email: s
         constraints.assert_user_exists(db_cursor, student_email)
         constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
 
-        # check if the student already enrolled to course
         if constraints.check_student_access(db_cursor, student_email, course_id):
-            raise HTTPException(
-                status_code=403,
-                detail="The invited user already has student rights in this course",
+            raise edhub_errors.UserAlreadyStudentException(course_id, student_email)
+
+        if constraints.check_teacher_access(db_cursor, student_email, course_id):
+            raise edhub_errors.UserAlreadyHasDifferentRoleException(
+                course_id, student_email, edhub_errors.ROLE_TEACHER, edhub_errors.ROLE_STUDENT
             )
 
-        # check if the potential student already has teacher rights at this course
-        if constraints.check_teacher_access(db_cursor, student_email, course_id):
-            raise HTTPException(status_code=403, detail="Can't invite course teacher as a student")
-
-        # check if the potential student already has parent rights at this course
         if constraints.check_parent_access(db_cursor, student_email, course_id):
-            raise HTTPException(status_code=403, detail="Can't invite parent as a student")
+            raise edhub_errors.UserAlreadyHasDifferentRoleException(
+                course_id, student_email, edhub_errors.ROLE_PARENT, edhub_errors.ROLE_STUDENT
+            )
 
         # invite student
         sql_students.insert_student_at(db_cursor, student_email, course_id)
@@ -47,18 +41,13 @@ def invite_student(db_conn, course_id: str, student_email: str, teacher_email: s
 
 def remove_student(db_conn, course_id: str, student_email: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
+        constraints.assert_student_access(db_cursor, student_email, course_id)
         if not (
             constraints.check_teacher_access(db_cursor, user_email, course_id)
             or (constraints.check_student_access(db_cursor, user_email, course_id) and student_email == user_email)
         ):
-            raise HTTPException(status_code=403, detail="User does not have permissions to delete this student")
+            raise edhub_errors.CannotRemoveStudentException(course_id, user_email, student_email)
 
-        # check if the student is enrolled to course
-        if not constraints.check_student_access(db_cursor, student_email, course_id):
-            raise HTTPException(status_code=404, detail="User to remove is not a student at this course")
-
-        # remove student
         sql_students.delete_student_at(db_cursor, course_id, student_email)
         db_conn.commit()
 
