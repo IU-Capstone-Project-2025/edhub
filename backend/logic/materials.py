@@ -1,4 +1,5 @@
-from fastapi import HTTPException, UploadFile, Response
+from fastapi import UploadFile, Response
+import edhub_errors
 from constants import TIME_FORMAT
 import constraints
 import sql.materials as sql_mat
@@ -43,11 +44,9 @@ def get_material(db_conn, course_id: str, material_id: str, user_email: str):
     with db_conn.cursor() as db_cursor:
         # checking constraints
         constraints.assert_course_access(db_cursor, user_email, course_id)
-
+        constraints.assert_material_exists(db_cursor, course_id, material_id)
         # searching for materials
         material = sql_mat.select_material(db_cursor, course_id, material_id)
-        if not material:
-            raise HTTPException(status_code=404, detail="Material not found")
 
         res = {
             "course_id": str(material[0]),
@@ -126,7 +125,7 @@ def download_material_attachment(
         # searching for material attachment
         file = sql_files.download_attachment(storage_db_cursor, file_id)
         if not file:
-            raise HTTPException(status_code=404, detail="Attachment not found")
+            raise edhub_errors.AttachmentNotFoundException(file_id)
 
         return Response(
             content=file[0],
