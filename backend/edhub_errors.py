@@ -17,6 +17,7 @@ ALREADY_PARENT_OF_STUDENT = "ALREADY_PARENT_OF_STUDENT"
 NO_SUBMISSION_TO_ASSIGNMENT = "NO_SUBMISSION_TO_ASSIGNMENT"
 NOT_AN_ADMIN = "NOT_AN_ADMIN"
 CANNOT_REMOVE_PARENT = "CANNOT_REMOVE_PARENT"
+FILE_TOO_LARGE = "FILE_TOO_LARGE"
 
 
 class EdHubException(Exception):
@@ -148,3 +149,9 @@ class CannotRemoveParentException(EdHubException):
     def __init__(self, course_id: str, user_login: str, parent_login: str):
         super().__init__(403, f"The user \"{user_login}\" must be admin, the teacher at course {course_id}, or \"{parent_login}\" to revoke the parent access of \"{parent_login}\"",
                          CANNOT_REMOVE_PARENT, course_id=course_id, user_login=user_login, parent_login=parent_login)
+
+
+class FileTooLargeException(EdHubException):
+    def __init__(self, max_size: int):
+        super().__init__(413, f"The file you tried to upload was too large (max {max_size} bytes)",
+                         FILE_TOO_LARGE, max_size=max_size)
