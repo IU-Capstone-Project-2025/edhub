@@ -72,7 +72,7 @@ def create_user(db_conn, user):
 
 def login(db_conn, user):
     with db_conn.cursor() as db_cursor:
-        constraints.assert_user_not_exists(db_cursor, user.email)
+        constraints.assert_user_exists(db_cursor, user.email)
         result = sql_users.select_passwordhash(db_cursor, user.email)
 
         # checking password

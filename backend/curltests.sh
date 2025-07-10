@@ -196,5 +196,6 @@ echo
 echo "== Admin remove course =="
 curl -s --fail-with-body -X POST "$API_URL/remove_course?course_id=$COURSE_ID" -H "Authorization: Bearer $TOKEN"
 if [ $? -gt 0 ]; then exit 1; fi
+echo
 
 echo "== All tests completed =="
