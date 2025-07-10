@@ -182,7 +182,7 @@ def get_all_users(db_conn, user_email: str):
 
 
 # create an initial admin account
-async def create_admin_account_if_not_exists(db_conn, db_cursor):
+async def create_admin_account_if_not_exists(db_conn):
     with db_conn.cursor() as db_cursor:
         if sql_users.admins_exist(db_cursor):
             return
