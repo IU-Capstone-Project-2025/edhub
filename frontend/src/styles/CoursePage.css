@@ -30,3 +30,18 @@
 .actions button:hover {
   background-color: #3fa046;
 }
+
+.switch-btn {
+  background-color: #4cb050;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.switch-btn:hover {
+  background-color: #3fa046;
+}

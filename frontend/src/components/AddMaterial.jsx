@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import axios from "axios"
 import "../styles/AddMaterial.css"
 
-export default function AddMaterial({ onClose, courseId }) {
+export default function AddMaterial({ onClose, courseId, onSuccess  }) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [loading, setLoading] = useState(false)
@@ -25,10 +25,11 @@ await axios.post("/api/create_material", form, {
         headers: {Authorization: `Bearer ${token}` },
         params:{title, description, course_id: courseId}
       })
-      alert("Material added successfully!")
       setTitle("")
       setDescription("")
       setLoading(false)
+      
+      onSuccess?.()
       onClose()
     } catch (err) {
       setLoading(false)
