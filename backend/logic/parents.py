@@ -1,7 +1,8 @@
-from fastapi import HTTPException
+import edhub_errors
 import constraints
 import sql.parents as sql_parents
 import logic.logging as logger
+import logic.users
 
 
 def get_students_parents(db_conn, course_id: str, student_email: str, user_email: str):
@@ -10,8 +11,7 @@ def get_students_parents(db_conn, course_id: str, student_email: str, user_email
         constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
         # check if the student is enrolled to course
-        if not constraints.check_student_access(db_cursor, student_email, course_id):
-            raise HTTPException(status_code=404, detail="Provided user in not a student at this course")
+        constraints.assert_student_access(db_cursor, student_email, course_id)
 
         # finding student's parents
         parents = sql_parents.select_students_parents(db_cursor, course_id, student_email)
@@ -34,16 +34,15 @@ def invite_parent(
 
         # check if the parent already assigned to the course with the student
         if constraints.check_parent_student_access(db_cursor, parent_email, student_email, course_id):
-            raise HTTPException(status_code=403, detail="Parent already assigned to this student at this course")
+            raise edhub_errors.UserIsAlreadyParentOfStudentInCourseException(course_id, parent_email, student_email)
 
-        # check if the potential parent already has teacher rights at this course
-        if constraints.check_teacher_access(db_cursor, parent_email, course_id):
-            raise HTTPException(status_code=403, detail="Can't invite course teacher as a parent")
+    roles = logic.users.get_user_role(db_conn, course_id, parent_email)
+    if roles["is_teacher"]:
+        raise edhub_errors.UserAlreadyHasDifferentRoleException(course_id, parent_email, "teacher", "parent")
+    if roles["is_student"]:
+        raise edhub_errors.UserAlreadyHasDifferentRoleException(course_id, parent_email, "student", "parent")
 
-        # check if the potential parent already has student rights at this course
-        if constraints.check_student_access(db_cursor, parent_email, course_id):
-            raise HTTPException(status_code=403, detail="Can't invite course student as a parent")
-
+    with db_conn.cursor() as db_cursor:
         # invite parent
         sql_parents.insert_parent_of_at_course(db_cursor, parent_email, student_email, course_id)
         db_conn.commit()
@@ -54,7 +53,7 @@ def invite_parent(
             f"Teacher {teacher_email} invited a parent {parent_email} for student {student_email}",
         )
 
-        return {"success": True}
+    return {"success": True}
 
 
 def remove_parent(
@@ -67,10 +66,11 @@ def remove_parent(
     with db_conn.cursor() as db_cursor:
         # checking constraints
         if not (
-            constraints.check_teacher_access(db_cursor, user_email, course_id)
+            constraints.check_admin_access(db_cursor, user_email)
+            or constraints.check_teacher_access(db_cursor, user_email, course_id)
             or (constraints.check_parent_access(db_cursor, user_email, course_id) and parent_email == user_email)
         ):
-            raise HTTPException(status_code=403, detail="User does not have permissions to delete this parent")
+            raise edhub_errors.CannotRemoveParentException(course_id, user_email, parent_email)
 
         # check if the parent assigned to the course with the student
         constraints.assert_parent_student_access(db_cursor, parent_email, student_email, course_id)

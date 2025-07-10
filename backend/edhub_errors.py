@@ -11,9 +11,12 @@ MATERIAL_NOT_FOUND = "MATERIAL_NOT_FOUND"
 ASSIGNMENT_NOT_FOUND = "ASSIGNMENT_NOT_FOUND"
 NO_ACCESS_TO_COURSE = "NO_ACCESS_TO_COURSE"
 USER_LACKS_ROLE_IN_COURSE = "USER_LACKS_ROLE_IN_COURSE"
+USER_HAS_DIFFERENT_ROLE_IN_COURSE = "USER_HAS_DIFFERENT_ROLE_IN_COURSE"
 NOT_PARENT_OF_STUDENT = "NOT_PARENT_OF_STUDENT"
+ALREADY_PARENT_OF_STUDENT = "ALREADY_PARENT_OF_STUDENT"
 NO_SUBMISSION_TO_ASSIGNMENT = "NO_SUBMISSION_TO_ASSIGNMENT"
 NOT_AN_ADMIN = "NOT_AN_ADMIN"
+CANNOT_REMOVE_PARENT = "CANNOT_REMOVE_PARENT"
 
 
 class EdHubException(Exception):
@@ -113,9 +116,21 @@ class UserIsNotParentOfStudentInCourseException(EdHubException):
                          NOT_PARENT_OF_STUDENT, course_id=course_id, user_login=user_login, student_login=student_login)
 
 
+class UserIsAlreadyParentOfStudentInCourseException(EdHubException):
+    def __init__(self, course_id: str, user_login: str, student_login: str):
+        super().__init__(403, f"In course {course_id}, the user \"{user_login}\" is already a parent of \"{student_login}\"",
+                         ALREADY_PARENT_OF_STUDENT, course_id=course_id, user_login=user_login, student_login=student_login)
+
+
 class UserIsNotStudentInCourseException(UserLacksRoleInCourseException):
     def __init__(self, course_id: str, user_login: str):
         super().__init__(course_id, user_login, "student")
+
+
+class UserAlreadyHasDifferentRoleException(EdHubException):
+    def __init__(self, course_id: str, user_login: str, oldrole: str, newrole: str):
+        super.__init__(403, f"In course {course_id}, the user \"{user_login}\" already has the role \"{oldrole}\", cannot assign role \"{newrole}\"",
+                       USER_HAS_DIFFERENT_ROLE_IN_COURSE, course_id=course_id, oldrole=oldrole, newrole=newrole)
 
 
 class NoSubmissionToAssignmentException(EdHubException):
@@ -127,3 +142,9 @@ class NoSubmissionToAssignmentException(EdHubException):
 class NotAnAdminException(EdHubException):
     def __init__(self, user_login: str):
         super().__init__(403, f"The user \"{user_login}\" is not an admin", NOT_AN_ADMIN, user_login=user_login)
+
+
+class CannotRemoveParentException(EdHubException):
+    def __init__(self, course_id: str, user_login: str, parent_login: str):
+        super().__init__(403, f"The user \"{user_login}\" must be admin, the teacher at course {course_id}, or \"{parent_login}\" to revoke the parent access of \"{parent_login}\"",
+                         CANNOT_REMOVE_PARENT, course_id=course_id, user_login=user_login, parent_login=parent_login)
