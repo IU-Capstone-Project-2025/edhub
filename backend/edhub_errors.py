@@ -7,11 +7,13 @@ USER_NOT_FOUND = "USER_NOT_FOUND"
 USER_EXISTS = "USER_EXISTS"
 COURSE_NOT_FOUND = "COURSE_NOT_FOUND"
 NOT_INTEGER = "NOT_INTEGER"
-COURSE_ITEM_NOT_FOUND = "COURSE_ITEM_NOT_FOUND"
+MATERIAL_NOT_FOUND = "MATERIAL_NOT_FOUND"
+ASSIGNMENT_NOT_FOUND = "ASSIGNMENT_NOT_FOUND"
 NO_ACCESS_TO_COURSE = "NO_ACCESS_TO_COURSE"
 USER_LACKS_ROLE_IN_COURSE = "USER_LACKS_ROLE_IN_COURSE"
-NOT_AN_ASSIGNMENT = "NOT_AN_ASSIGNMENT"
+NOT_PARENT_OF_STUDENT = "NOT_PARENT_OF_STUDENT"
 NO_SUBMISSION_TO_ASSIGNMENT = "NO_SUBMISSION_TO_ASSIGNMENT"
+NOT_AN_ADMIN = "NOT_AN_ADMIN"
 
 
 class EdHubException(Exception):
@@ -50,51 +52,78 @@ class CustomJWTException(EdHubException):
 class UserNotFoundException(EdHubException):
     def __init__(self, user_login: str):
         super().__init__(404, f"This user login is not registered in the system: {user_login}",
-                         USER_NOT_FOUND, user_login)
+                         USER_NOT_FOUND, user_login=user_login)
 
 
 class UserExistsException(EdHubException):
     def __init__(self, user_login: str):
         super().__init__(403, f"This user login has already been registered in the system: {user_login}",
-                         USER_EXISTS, user_login)
+                         USER_EXISTS, user_login=user_login)
 
 
 class CourseNotFoundException(EdHubException):
     def __init__(self, course_id: str):
-        super().__init__(404, f"The course ID {course_id} does not match any course", COURSE_NOT_FOUND, course_id)
+        super().__init__(404, f"The course ID {course_id} does not match any course",
+                         COURSE_NOT_FOUND, course_id=course_id)
+
+
+class MaterialNotFoundException(EdHubException):
+    def __init__(self, course_id: str, material_id: int):
+        super().__init__(404, f"The course {course_id} does not contain material {material_id}",
+                         MATERIAL_NOT_FOUND, course_id=course_id, material_id=material_id)
+
+
+class AssignmentNotFoundException(EdHubException):
+    def __init__(self, course_id: str, assignment_id: int):
+        super().__init__(404, f"The course {course_id} does not contain assignment {assignment_id}",
+                         ASSIGNMENT_NOT_FOUND, course_id=course_id, assignment_id=assignment_id)
 
 
 class ParameterNotIntegerException(EdHubException):
     def __init__(self, param_name: str, value: str):
         super().__init__(400, f"The value of parameter \"{param_name}\" must be integer, but received \"{value}\"",
-                         NOT_INTEGER, param_name, value)
-
-
-class CourseItemNotFoundException(EdHubException):
-    def __init__(self, course_id: str, item_id: int):
-        super().__init__(404, f"In the course {course_id}, the item {item_id} does not exist",
-                         COURSE_ITEM_NOT_FOUND, course_id, item_id)
+                         NOT_INTEGER, param_name=param_name, value=value)
 
 
 class NoAccessToCourseException(EdHubException):
     def __init__(self, course_id: str, user_login: str):
         super().__init__(403, f"The user \"{user_login}\" has no access to the course {course_id}",
-                         NO_ACCESS_TO_COURSE, course_id, user_login)
+                         NO_ACCESS_TO_COURSE, course_id=course_id, user_login=user_login)
 
 
 class UserLacksRoleInCourseException(EdHubException):
     def __init__(self, course_id: str, user_login: str, role: str):
         super().__init__(403, f"The user \"{user_login}\" must have the \"{role}\" role in the course {course_id}, but does not",
-                         USER_LACKS_ROLE_IN_COURSE, course_id, user_login, role)
+                         USER_LACKS_ROLE_IN_COURSE, course_id=course_id, user_login=user_login, role=role)
 
 
-class NotAnAssignmentException(EdHubException):
-    def __init__(self, course_id: str, item_id: int):
-        super().__init__(403, f"In the course {course_id}, the item {item_id} is not an assignment",
-                         NOT_AN_ASSIGNMENT, course_id, item_id)
+class UserIsNotTeacherInCourseException(UserLacksRoleInCourseException):
+    def __init__(self, course_id: str, user_login: str):
+        super().__init__(course_id, user_login, "teacher")
 
 
-class NoSubmissionToAssignment(EdHubException):
-    def __init__(self, course_id: str, assignment_item_id: int, user_login: str):
-        super().__init__(404, f"In the course {course_id}, the user \"{user_login}\" has not submitted anything for the assignment {assignment_item_id}",
-                         NO_SUBMISSION_TO_ASSIGNMENT, course_id, assignment_item_id, user_login)
+class UserIsNotParentInCourseException(UserLacksRoleInCourseException):
+    def __init__(self, course_id: str, user_login: str):
+        super().__init__(course_id, user_login, "parent")
+
+
+class UserIsNotParentOfStudentInCourseException(EdHubException):
+    def __init__(self, course_id: str, user_login: str, student_login: str):
+        super().__init__(403, f"In course {course_id}, the user \"{user_login}\" is not a parent of \"{student_login}\"",
+                         NOT_PARENT_OF_STUDENT, course_id=course_id, user_login=user_login, student_login=student_login)
+
+
+class UserIsNotStudentInCourseException(UserLacksRoleInCourseException):
+    def __init__(self, course_id: str, user_login: str):
+        super().__init__(course_id, user_login, "student")
+
+
+class NoSubmissionToAssignmentException(EdHubException):
+    def __init__(self, course_id: str, assignment_id: int, user_login: str):
+        super().__init__(404, f"In the course {course_id}, the user \"{user_login}\" has not submitted anything for the assignment {assignment_id}",
+                         NO_SUBMISSION_TO_ASSIGNMENT, course_id=course_id, assignment_id=assignment_id, user_login=user_login)
+
+
+class NotAnAdminException(EdHubException):
+    def __init__(self, user_login: str):
+        super().__init__(403, f"The user \"{user_login}\" is not an admin", NOT_AN_ADMIN, user_login=user_login)
