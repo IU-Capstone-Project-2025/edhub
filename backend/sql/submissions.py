@@ -1,4 +1,4 @@
-def sql_select_submission_grade(db_cursor, course_id, assignment_id, student_email):
+def select_submission_grade(db_cursor, course_id, assignment_id, student_email):
     db_cursor.execute(
         "SELECT grade FROM course_assignments_submissions WHERE courseid = %s AND assid = %s AND email = %s",
         (course_id, assignment_id, student_email),
@@ -6,14 +6,14 @@ def sql_select_submission_grade(db_cursor, course_id, assignment_id, student_ema
     return db_cursor.fetchone()
 
 
-def sql_insert_submission(db_cursor, course_id, assignment_id, student_email, comment):
+def insert_submission(db_cursor, course_id, assignment_id, student_email, comment):
     db_cursor.execute(
         "INSERT INTO course_assignments_submissions (courseid, assid, email, timeadded, timemodified, comment, grade, gradedby) VALUES (%s, %s, %s, now(), now(), %s, null, null)",
         (course_id, assignment_id, student_email, comment),
     )
 
 
-def sql_insert_submission_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, student_email, filename, contents):
+def insert_submission_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, student_email, filename, contents):
     storage_db_cursor.execute(
         """
         INSERT INTO files 
@@ -37,7 +37,7 @@ def sql_insert_submission_attachment(db_cursor, storage_db_cursor, course_id, as
     return db_cursor.fetchone()
 
 
-def sql_select_submission_attachments(db_cursor, course_id, assignment_id, student_email):
+def select_submission_attachments(db_cursor, course_id, assignment_id, student_email):
     db_cursor.execute(
         """
         SELECT fileid, filename, uploadtime
@@ -49,7 +49,7 @@ def sql_select_submission_attachments(db_cursor, course_id, assignment_id, stude
     return db_cursor.fetchall()
 
 
-def sql_update_submission_comment(db_cursor, comment, course_id, assignment_id, student_email):
+def update_submission_comment(db_cursor, comment, course_id, assignment_id, student_email):
     db_cursor.execute(
         """
         UPDATE course_assignments_submissions
@@ -60,7 +60,7 @@ def sql_update_submission_comment(db_cursor, comment, course_id, assignment_id, 
     )
 
 
-def sql_select_submissions(db_cursor, course_id, assignment_id):
+def select_submissions(db_cursor, course_id, assignment_id):
     db_cursor.execute(
         """
         SELECT
@@ -81,7 +81,7 @@ def sql_select_submissions(db_cursor, course_id, assignment_id):
     return db_cursor.fetchall()
 
 
-def sql_select_single_submission(db_cursor, course_id, assignment_id, student_email):
+def select_single_submission(db_cursor, course_id, assignment_id, student_email):
     db_cursor.execute(
         """
         SELECT
@@ -101,7 +101,7 @@ def sql_select_single_submission(db_cursor, course_id, assignment_id, student_em
     return db_cursor.fetchone()
 
 
-def sql_update_submission_grade(db_cursor, grade, user_email, course_id, assignment_id, student_email):
+def update_submission_grade(db_cursor, grade, user_email, course_id, assignment_id, student_email):
     db_cursor.execute(
         """
         UPDATE course_assignments_submissions

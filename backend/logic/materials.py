@@ -12,7 +12,7 @@ def create_material(db_conn, db_cursor, course_id: str, title: str, description:
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
     # create material
-    material_id = sql_mat.sql_insert_material(db_cursor, course_id, title, description, user_email)
+    material_id = sql_mat.insert_material(db_cursor, course_id, title, description, user_email)
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_MATERIAL_ADD, f"User {user_email} created a material {material_id} in {course_id}")
@@ -25,7 +25,7 @@ def remove_material(db_conn, db_cursor, course_id: str, material_id: str, user_e
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
     # remove material
-    sql_mat.sql_delete_material(db_cursor, course_id, material_id)
+    sql_mat.delete_material(db_cursor, course_id, material_id)
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_MATERIAL_DEL, f"User {user_email} removed a material {material_id} in {course_id}")
@@ -38,7 +38,7 @@ def get_material(db_cursor, course_id: str, material_id: str, user_email: str):
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # searching for materials
-    material = sql_mat.sql_select_material(db_cursor, course_id, material_id)
+    material = sql_mat.select_material(db_cursor, course_id, material_id)
     if not material:
         raise HTTPException(status_code=404, detail="Material not found")
 
@@ -62,7 +62,7 @@ async def create_material_attachment(db_conn, db_cursor, storage_db_conn, storag
     contents = await careful_upload(file)
 
     # save the file into database
-    attachment_metadata = sql_mat.sql_insert_material_attachment(db_cursor, storage_db_cursor, course_id, material_id, file.filename, contents)
+    attachment_metadata = sql_mat.insert_material_attachment(db_cursor, storage_db_cursor, course_id, material_id, file.filename, contents)
     db_conn.commit()
     storage_db_conn.commit()
 
@@ -82,7 +82,7 @@ def get_material_attachments(db_cursor, course_id: str, material_id: str, user_e
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # searching for material attachments
-    files = sql_mat.sql_select_material_attachments(db_cursor, course_id, material_id)
+    files = sql_mat.select_material_attachments(db_cursor, course_id, material_id)
 
     res = [{
         "course_id": course_id,
@@ -101,7 +101,7 @@ def download_material_attachment(db_cursor, storage_db_cursor, course_id: str, m
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # searching for material attachment
-    file = sql_files.sql_download_attachment(storage_db_cursor, file_id)
+    file = sql_files.download_attachment(storage_db_cursor, file_id)
     if not file:
         raise HTTPException(status_code=404, detail="Attachment not found")
 

@@ -3,7 +3,7 @@ import sql.logging as sql_log
 
 def log(db_conn, tag, msg):
     with db_conn.cursor() as db_cursor:
-        sql_log.sql_insert_log(db_cursor, tag, msg)
+        sql_log.insert_log(db_cursor, tag, msg)
         db_conn.commit()
 
 

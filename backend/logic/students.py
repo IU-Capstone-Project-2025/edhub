@@ -9,7 +9,7 @@ def get_enrolled_students(db_cursor, course_id: str, user_email: str):
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # finding enrolled students
-    students = sql_students.sql_select_enrolled_students(db_cursor, course_id)
+    students = sql_students.select_enrolled_students(db_cursor, course_id)
 
     res = [{"email": st[0], "name": st[1]} for st in students]
     return res
@@ -36,7 +36,7 @@ def invite_student(db_conn, db_cursor, course_id: str, student_email: str, teach
         raise HTTPException(status_code=403, detail="Can't invite parent as a student")
 
     # invite student
-    sql_students.sql_insert_student_at(db_cursor, student_email, course_id)
+    sql_students.insert_student_at(db_cursor, student_email, course_id)
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_STUDENT_ADD, f"Teacher {teacher_email} invited a student {student_email}")
@@ -56,7 +56,7 @@ def remove_student(db_conn, db_cursor, course_id: str, student_email: str, user_
         raise HTTPException(status_code=404, detail="User to remove is not a student at this course")
 
     # remove student
-    sql_students.sql_delete_student_at(db_cursor, course_id, student_email)
+    sql_students.delete_student_at(db_cursor, course_id, student_email)
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_STUDENT_DEL, f"Teacher {user_email} removed a student {student_email}")

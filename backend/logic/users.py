@@ -12,7 +12,7 @@ from secrets import token_hex
 def get_user_info(db_cursor, user_email: str):
     return {
         "email": user_email,
-        "name": sql_users.sql_get_user_name(db_cursor, user_email),
+        "name": sql_users.get_user_name(db_cursor, user_email),
     }
 
 
@@ -50,13 +50,13 @@ def create_user(db_conn, db_cursor, user):
         raise HTTPException(status_code=400, detail="Password is too weak")
 
     # checking whether such user exists
-    user_exists = sql_users.sql_select_user_exists(db_cursor, user.email)
+    user_exists = sql_users.select_user_exists(db_cursor, user.email)
     if user_exists:
         raise HTTPException(status_code=400, detail="User already exists")
 
     # hashing password
     hashed_password = pwd_hasher.hash(user.password)
-    sql_users.sql_insert_user(db_cursor, user.email, user.name, hashed_password)
+    sql_users.insert_user(db_cursor, user.email, user.name, hashed_password)
     db_conn.commit()
 
     # giving access_token
@@ -73,7 +73,7 @@ def create_user(db_conn, db_cursor, user):
 
 def login(db_cursor, user):
 
-    result = sql_users.sql_select_passwordhash(db_cursor, user.email)
+    result = sql_users.select_passwordhash(db_cursor, user.email)
 
     # checking whether such user exists
     if not result:
@@ -96,7 +96,7 @@ def login(db_cursor, user):
 
 def change_password(db_conn, db_cursor, user):
 
-    result = sql_users.sql_select_passwordhash(db_cursor, user.email)
+    result = sql_users.select_passwordhash(db_cursor, user.email)
 
     # checking whether such user exists
     if not result:
@@ -109,7 +109,7 @@ def change_password(db_conn, db_cursor, user):
 
     # changing the password to a new one
     hashed_new_password = pwd_hasher.hash(user.new_password)
-    sql_users.sql_update_password(db_cursor, user.email, hashed_new_password)
+    sql_users.update_password(db_cursor, user.email, hashed_new_password)
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_USER_CHPW, f"User {user.email} changed their password")
@@ -121,16 +121,16 @@ def remove_user(db_conn, db_cursor, user_email: str):
 
     # checking constraints
     constraints.assert_user_exists(db_cursor, user_email)
-    if sql_users.sql_count_admins(db_cursor) == 1:
+    if sql_users.count_admins(db_cursor) == 1:
         raise HTTPException(status_code=403, detail="Cannot remove the last administrator")
 
     # remove teacher role preparation: find courses with 1 teacher left
-    single_teacher_courses = sql_users.sql_select_single_teacher_courses(db_cursor, user_email)
+    single_teacher_courses = sql_users.select_single_teacher_courses(db_cursor, user_email)
     for course_id_to_delete in single_teacher_courses:  # Renamed variable to avoid conflict
-        sql_users.sql_delete_course(db_cursor, course_id_to_delete)
+        sql_users.delete_course(db_cursor, course_id_to_delete)
 
     # remove user
-    sql_users.sql_delete_user(db_cursor, user_email)
+    sql_users.delete_user(db_cursor, user_email)
 
     db_conn.commit()
 
@@ -146,8 +146,8 @@ def check_default_admin_exists(db_cursor) -> bool:
 def create_admin_account(db_conn, db_cursor):
     password = token_hex(32)
     hashed_password = pwd_hasher.hash(password)
-    sql_users.sql_insert_user(db_cursor, 'admin', 'admin', hashed_password)
-    sql_users.sql_give_admin_permissions(db_cursor, 'admin')
+    sql_users.insert_user(db_cursor, 'admin', 'admin', hashed_password)
+    sql_users.give_admin_permissions(db_cursor, 'admin')
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_USER_ADD, "Created new user: admin")
@@ -162,7 +162,7 @@ def give_admin_permissions(db_conn, db_cursor, object_email: str, subject_email:
     constraints.assert_admin_access(db_cursor, subject_email)
     constraints.assert_user_exists(db_cursor, object_email)
 
-    sql_users.sql_give_admin_permissions(db_cursor, object_email)
+    sql_users.give_admin_permissions(db_cursor, object_email)
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_ADMIN_ADD, f"Added admin privileges to user: {object_email}")
@@ -175,7 +175,7 @@ def get_all_users(db_cursor, user_email: str):
     constraints.assert_admin_access(db_cursor, user_email)
 
     # finding all users
-    users = sql_users.sql_select_all_users(db_cursor)
+    users = sql_users.select_all_users(db_cursor)
 
     res = [{"email": u[0], "name": u[1]} for u in users]
     return res
@@ -183,7 +183,7 @@ def get_all_users(db_cursor, user_email: str):
 
 # create an initial admin account
 async def create_admin_account_if_not_exists(db_conn, db_cursor):
-    if sql_users.sql_admins_exist(db_cursor):
+    if sql_users.admins_exist(db_cursor):
         return
     password = create_admin_account(db_conn, db_cursor)
     credentials = f"login: admin\npassword: {password}"

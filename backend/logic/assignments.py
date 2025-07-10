@@ -19,7 +19,7 @@ def create_assignment(
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
     # create assignment
-    assignment_id = sql_ass.sql_insert_assignment(db_cursor, course_id, title, description, user_email)
+    assignment_id = sql_ass.insert_assignment(db_cursor, course_id, title, description, user_email)
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_ASSIGNMENT_ADD, f"Created assignment {assignment_id}")
@@ -33,7 +33,7 @@ def remove_assignment(db_conn, db_cursor, course_id: str, assignment_id: str, us
     constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
     # remove assignment
-    sql_ass.sql_delete_assignment(db_cursor, course_id, assignment_id)
+    sql_ass.delete_assignment(db_cursor, course_id, assignment_id)
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_ASSIGNMENT_DEL, f"Removed assignment {assignment_id}")
@@ -47,7 +47,7 @@ def get_assignment(db_cursor, course_id: str, assignment_id: str, user_email: st
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # searching for assignments
-    assignment = sql_ass.sql_select_assignment(db_cursor, course_id, assignment_id)
+    assignment = sql_ass.select_assignment(db_cursor, course_id, assignment_id)
     if not assignment:
         raise HTTPException(status_code=404, detail="Assignment not found")
 
@@ -71,7 +71,7 @@ async def create_assignment_attachment(db_conn, db_cursor, storage_db_conn, stor
     contents = await careful_upload(file)
 
     # save the file into database
-    attachment_metadata = sql_ass.sql_insert_assignment_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, file.filename, contents)
+    attachment_metadata = sql_ass.insert_assignment_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, file.filename, contents)
     db_conn.commit()
     storage_db_conn.commit()
 
@@ -91,7 +91,7 @@ def get_assignment_attachments(db_cursor, course_id: str, assignment_id: str, us
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # searching for assignment attachments
-    files = sql_ass.sql_select_assignment_attachments(db_cursor, course_id, assignment_id)
+    files = sql_ass.select_assignment_attachments(db_cursor, course_id, assignment_id)
 
     res = [{
         "course_id": course_id,
@@ -110,7 +110,7 @@ def download_assignment_attachment(db_cursor, storage_db_cursor, course_id: str,
     constraints.assert_course_access(db_cursor, user_email, course_id)
 
     # searching for assignment attachment
-    file = sql_files.sql_download_attachment(storage_db_cursor, file_id)
+    file = sql_files.download_attachment(storage_db_cursor, file_id)
     if not file:
         raise HTTPException(status_code=404, detail="Attachment not found")
 
