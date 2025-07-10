@@ -25,6 +25,7 @@ FILE_TOO_LARGE = "FILE_TOO_LARGE"
 BAD_EMAIL_FORMAT = "BAD_EMAIL_FORMAT"
 PASSWORD_TOO_WEAK = "PASSWORD_TOO_WEAK"
 WRONG_PASSWORD = "WRONG_PASSWORD"
+STUDENT_CANNOT_VIEW_OTHER_STUDENT_GRADES = "STUDENT_CANNOT_VIEW_OTHER_STUDENT_GRADES"
 
 ROLE_STUDENT = "student"
 ROLE_TEACHER = "teacher"
@@ -214,3 +215,10 @@ class WrongPasswordException(EdHubException):
 class CannotRemoveLastAdminException(EdHubException):
     def __init__(self):
         super().__init__(403, "Cannot remove the only administrator in the system", CANNOT_REMOVE_LAST_ADMIN)
+
+
+class StudentCannotViewOthersGradesException(EdHubException):
+    def __init__(self, course_id: str, this_email: str, other_email: str):
+        super().__init__(403, f"As a student, \"{this_email}\" cannot view grades of another student, \"{other_email}\" (in course {course_id})",
+                         STUDENT_CANNOT_VIEW_OTHER_STUDENT_GRADES, course_id=course_id,
+                         this_email=this_email, other_email=other_email)

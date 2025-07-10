@@ -82,15 +82,14 @@ def get_all_grades(
     db_conn, course_id: str, students: list[str], gradables: list[int], user_email: str
 ) -> list[tuple[str, int, Union[None, int]]]:
     with db_conn.cursor() as db_cursor:
-        constraints.assert_user_exists(db_cursor, user_email)
-        constraints.assert_course_exists(db_cursor, course_id)
+        constraints.assert_course_access(db_cursor, user_email, course_id)
         role = logic.users.get_user_role(db_conn, course_id, user_email)
         if role["is_parent"]:
             constraints.assert_parent_of_all(db_cursor, user_email, students, course_id)
         elif role["is_student"]:
             for student in students:
                 if student != user_email:
-                    raise HTTPException(403, "A student cannot view other students' grades")
+                    raise edhub_errors.StudentCannotViewOthersGradesException(course_id, user_email, student)
         return sql.courses.select_grades_in_course(db_cursor, course_id, students, gradables)
 
 
