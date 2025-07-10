@@ -2,6 +2,7 @@ import React, {useEffect, useState } from "react"
 import "../styles/AssignmentPage.css"
 import {useParams} from "react-router-dom"
 import axios from "axios"
+import AddGrade from "../components/AddGrade"
 
 export default function AssignmentPage() {
   const { id, post_id } = useParams()
@@ -14,8 +15,8 @@ export default function AssignmentPage() {
   const [childrenEmail, setChildrenEmail] = useState(null)
   const [childrenSubmission, setChildrenSubmission] = useState(null)
   const [studentSubmissions, setStudentSubmissions] = useState([])
-  const [currentGrade, setCurrentGrade] = useState(null)
   const [currentStudentEmail, setCurrentStudentEmail] = useState(null)
+  const [showAddGrade, setShowAddGrade] = useState(false)
 
 
 
@@ -214,8 +215,10 @@ export default function AssignmentPage() {
             <div className="submitted-answer">
               <div className="my-comment-title">Your submission:</div>
               <div className="my-comment">{mySubmission.comment}</div>
+              <div>Submitted:{mySubmission.submission_time}</div>
+              <div>Last modification time:{mySubmission.last_modification_time}</div>
               {mySubmission.grade && (
-                <div className="my-grade">Grade: <b>{mySubmission.grade}</b> (by {mySubmission.gradedBy})</div>
+                <div className="my-grade">Grade: <b>{mySubmission.grade}</b> (by {mySubmission.gradedby_email})</div>
               )}
             </div>
           )}
@@ -223,8 +226,10 @@ export default function AssignmentPage() {
             <div className="submitted-answer">
               <div className="my-comment-title">Your child's {childrenSubmission.student_name} submission:</div>
               <div className="my-comment">{childrenSubmission.comment}</div>
+              <div>Submitted:{childrenSubmission.submission_time}</div>
+              <div>Last modification time:{childrenSubmission.last_modification_time}</div>
               {childrenSubmission.grade && (
-                <div className="my-grade">Grade: <b>{childrenSubmission.grade}</b> (by {childrenSubmission.gradedBy})</div>
+                <div className="my-grade">Grade: <b>{childrenSubmission.grade}</b> (by {childrenSubmission.gradedby_email})</div>
               )}
             </div>
           )}
@@ -237,12 +242,19 @@ export default function AssignmentPage() {
                   <div className="my-comment">
                     <b>{submission.student_name || submission.student_email || "Student"}:</b> {submission.comment}
                   </div>
-
+                  <div>Submitted:{submission.submission_time}</div>
+                  <div>Last modification time:{submission.last_modification_time}</div>
                   {submission.grade && (
                     <div className="my-grade">
                       Grade: <b>{submission.grade}</b> {submission.gradedBy && `(by ${submission.gradedBy})`}
                     </div>
                   )}
+                  <button 
+                    className="grade-btn"
+                    onClick={() => {
+                      setCurrentStudentEmail(submission.student_email)
+                      setShowAddGrade(true)
+                    }}>Rate</button>
                   <hr />
                 </div>
               ))}
@@ -251,7 +263,15 @@ export default function AssignmentPage() {
             
         </div>
       </div>
+      {showAddGrade && (
+        <AddGrade
+          onClose={() => setShowAddGrade(false)}
+          courseId={id}
+          assignmentId={post_id}
+          studentEmail={currentStudentEmail}
+        />
 
+      )}
     </div>
   )
 }

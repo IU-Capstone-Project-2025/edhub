@@ -100,7 +100,7 @@ def get_assignment_attachments(db_cursor, course_id: str, assignment_id: str, us
         "filename": file[1],
         "upload_time": file[2].strftime(TIME_FORMAT)
     } for file in files]
- 
+
     return res
 
 
@@ -119,3 +119,8 @@ def download_assignment_attachment(db_cursor, storage_db_cursor, course_id: str,
         media_type="application/octet-stream",
         headers={"Content-Disposition": f'attachment; filename="{file[1]}"'}
     )
+
+
+def get_all_assignments(db_cursor, course_id: str, user_email: str) -> list[int]:
+    constraints.assert_course_access(db_cursor, user_email, course_id)
+    return sql_ass.sql_get_all_assignments(db_cursor, course_id)
