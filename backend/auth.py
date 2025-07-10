@@ -6,28 +6,12 @@ from secrets import token_hex
 from jose import jwt, JWTError
 import psycopg2
 from datetime import datetime
+import database
 
 
-@contextmanager
-def get_db():
-    conn = psycopg2.connect(dbname="edhub", user="postgres", password="12345678", host="system_db", port="5432")
-    cursor = conn.cursor()
-    try:
-        yield conn, cursor
-    finally:
-        cursor.close()
-        conn.close()
+get_db = database.get_system_conn
 
-
-@contextmanager
-def get_storage_db():
-    conn = psycopg2.connect(dbname="edhub_storage", user="postgres", password="12345678", host="storage_db", port="5432")
-    cursor = conn.cursor()
-    try:
-        yield conn, cursor
-    finally:
-        cursor.close()
-        conn.close()
+get_storage_db = database.get_storage_conn
 
 
 router = APIRouter()
@@ -49,7 +33,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         # checking the fields
         if expire_timestamp is None or user_email is None:
             raise ValueError("Invalid token structure")
-        
+
         # checking token expiration time
         if datetime.utcnow() > datetime.fromtimestamp(expire_timestamp):
             raise ValueError("Token expired")
