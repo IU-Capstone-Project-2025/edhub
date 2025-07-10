@@ -6,10 +6,8 @@ import logic.logging as logger
 
 def get_course_teachers(db_conn, course_id: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_course_access(db_cursor, user_email, course_id)
 
-        # finding assigned teachers
         teachers = sql_teachers.select_course_teachers(db_cursor, course_id)
 
         res = [{"email": tch[0], "name": tch[1]} for tch in teachers]
@@ -18,7 +16,6 @@ def get_course_teachers(db_conn, course_id: str, user_email: str):
 
 def invite_teacher(db_conn, course_id: str, new_teacher_email: str, teacher_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_user_exists(db_cursor, new_teacher_email)
         constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
 
@@ -45,7 +42,6 @@ def invite_teacher(db_conn, course_id: str, new_teacher_email: str, teacher_emai
 
 def remove_teacher(db_conn, course_id: str, removing_teacher_email: str, teacher_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_user_exists(db_cursor, removing_teacher_email)
         constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
         constraints.assert_teacher_access(db_cursor, removing_teacher_email, course_id)

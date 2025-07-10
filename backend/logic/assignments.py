@@ -16,10 +16,8 @@ def create_assignment(
     user_email: str,
 ):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
-        # create assignment
         assignment_id = sql_ass.insert_assignment(db_cursor, course_id, title, description, user_email)
         db_conn.commit()
 
@@ -30,11 +28,9 @@ def create_assignment(
 
 def remove_assignment(db_conn, course_id: str, assignment_id: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
         constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
-        # remove assignment
         sql_ass.delete_assignment(db_cursor, course_id, assignment_id)
         db_conn.commit()
 
@@ -45,7 +41,6 @@ def remove_assignment(db_conn, course_id: str, assignment_id: str, user_email: s
 
 def get_assignment(db_conn, course_id: str, assignment_id: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_course_access(db_cursor, user_email, course_id)
         constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
         assignment = sql_ass.select_assignment(db_cursor, course_id, assignment_id)
@@ -65,14 +60,11 @@ async def create_assignment_attachment(
     db_conn, storage_db_conn, course_id: str, assignment_id: str, file: UploadFile, user_email: str
 ):
     with db_conn.cursor() as db_cursor, storage_db_conn.cursor() as storage_db_cursor:
-        # checking constraints
         constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
         constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
-        # read the file
         contents = await careful_upload(file)
 
-        # save the file into database
         attachment_metadata = sql_ass.insert_assignment_attachment(
             db_cursor, storage_db_cursor, course_id, assignment_id, file.filename, contents
         )
@@ -95,11 +87,9 @@ async def create_assignment_attachment(
 
 def get_assignment_attachments(db_conn, course_id: str, assignment_id: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
         constraints.assert_course_access(db_cursor, user_email, course_id)
 
-        # searching for assignment attachments
         files = sql_ass.select_assignment_attachments(db_cursor, course_id, assignment_id)
 
         res = [
@@ -120,11 +110,9 @@ def download_assignment_attachment(
     db_conn, storage_db_conn, course_id: str, assignment_id: str, file_id: str, user_email: str
 ):
     with db_conn.cursor() as db_cursor, storage_db_conn.cursor() as storage_db_cursor:
-        # checking constraints
         constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
         constraints.assert_course_access(db_cursor, user_email, course_id)
 
-        # searching for assignment attachment
         file = sql_files.download_attachment(storage_db_cursor, file_id)
         if not file:
             raise edhub_errors.AttachmentNotFoundException(file_id)

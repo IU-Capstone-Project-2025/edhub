@@ -19,7 +19,6 @@ def get_user_info(db_conn, user_email: str):
 
 def get_user_role(db_conn, course_id: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # getting info about the roles
         res = {
             "is_teacher": constraints.check_teacher_access(db_cursor, user_email, course_id),
             "is_student": constraints.check_student_access(db_cursor, user_email, course_id),
@@ -32,7 +31,6 @@ def get_user_role(db_conn, course_id: str, user_email: str):
 
 def create_user(db_conn, user):
     with db_conn.cursor() as db_cursor:
-        # validation of email format
         pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         if not (
             match(pattern, user.email)
@@ -42,7 +40,6 @@ def create_user(db_conn, user):
         ):
             raise edhub_errors.BadEmailFormatException(user.email)
 
-        # validation of password complexity (length, digit(s), letter(s), special symbol(s))
         if not (
             len(user.password) >= 8
             and search(r"\d", user.password)
@@ -53,12 +50,10 @@ def create_user(db_conn, user):
 
         constraints.assert_user_not_exists(db_cursor, user.email)
 
-        # hashing password
         hashed_password = pwd_hasher.hash(user.password)
         sql_users.insert_user(db_cursor, user.email, user.name, hashed_password)
         db_conn.commit()
 
-        # giving access_token
         data = {
             "email": user.email,
             "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
@@ -75,12 +70,10 @@ def login(db_conn, user):
         constraints.assert_user_exists(db_cursor, user.email)
         result = sql_users.select_passwordhash(db_cursor, user.email)
 
-        # checking password
         hashed_password = result[0]
         if not pwd_hasher.verify(user.password, hashed_password):
             raise edhub_errors.WrongPasswordException()
 
-        # giving access token
         data = {
             "email": user.email,
             "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
@@ -95,12 +88,10 @@ def change_password(db_conn, user):
         constraints.assert_user_exists(db_cursor, user.email)
         result = sql_users.select_passwordhash(db_cursor, user.email)
 
-        # checking password
         hashed_password = result[0]
         if not pwd_hasher.verify(user.password, hashed_password):
             raise edhub_errors.WrongPasswordException()
 
-        # changing the password to a new one
         hashed_new_password = pwd_hasher.hash(user.new_password)
         sql_users.update_password(db_cursor, user.email, hashed_new_password)
         db_conn.commit()
@@ -112,7 +103,6 @@ def change_password(db_conn, user):
 
 def remove_user(db_conn, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_user_exists(db_cursor, user_email)
         if sql_users.select_is_admin(db_cursor, user_email) and sql_users.count_admins(db_cursor) == 1:
             raise edhub_errors.CannotRemoveLastAdminException()
@@ -122,7 +112,6 @@ def remove_user(db_conn, user_email: str):
         for course_id_to_delete in single_teacher_courses:  # Renamed variable to avoid conflict
             sql_users.delete_course(db_cursor, course_id_to_delete)
 
-        # remove user
         sql_users.delete_user(db_cursor, user_email)
 
         db_conn.commit()
@@ -148,7 +137,6 @@ def create_admin_account(db_conn):
 
 def give_admin_permissions(db_conn, object_email: str, subject_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_admin_access(db_cursor, subject_email)
         constraints.assert_user_exists(db_cursor, object_email)
 
@@ -162,17 +150,14 @@ def give_admin_permissions(db_conn, object_email: str, subject_email: str):
 
 def get_all_users(db_conn, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_admin_access(db_cursor, user_email)
 
-        # finding all users
         users = sql_users.select_all_users(db_cursor)
 
         res = [{"email": u[0], "name": u[1]} for u in users]
         return res
 
 
-# create an initial admin account
 async def create_admin_account_if_not_exists(db_conn):
     with db_conn.cursor() as db_cursor:
         if sql_users.admins_exist(db_cursor):

@@ -17,21 +17,18 @@ from edhub_errors import EdHubException
 #
 
 
-# checking whether the user exists in our LMS
 def value_assert_user_exists(db_cursor, user_email: str) -> Union[None, EdHubException]:
     if not sql.users.select_user_exists(db_cursor, user_email):
         return edhub_errors.UserNotFoundException(user_email)
     return None
 
 
-# checking whether the user exists in our LMS
 def assert_user_exists(db_cursor, user_email: str):
     err = value_assert_user_exists(db_cursor, user_email)
     if err is not None:
         raise err
 
 
-# checking whether the user exists in our LMS
 def check_user_exists(db_cursor, user_email: str) -> bool:
     return value_assert_user_exists(db_cursor, user_email) is None
 
@@ -48,7 +45,6 @@ def assert_user_not_exists(db_cursor, user_email: str):
         raise err
 
 
-# checking whether the course exists in our LMS
 def value_assert_course_exists(db_cursor, course_id: str) -> Union[None, EdHubException]:
     db_cursor.execute("SELECT EXISTS(SELECT 1 FROM courses WHERE courseid = %s)", (course_id,))
     course_exists = db_cursor.fetchone()[0]
@@ -57,19 +53,16 @@ def value_assert_course_exists(db_cursor, course_id: str) -> Union[None, EdHubEx
     return None
 
 
-# checking whether the course exists in our LMS
 def assert_course_exists(db_cursor, course_id: str):
     err = value_assert_course_exists(db_cursor, course_id)
     if err is not None:
         raise err
 
 
-# checking whether the course exists in our LMS
 def check_course_exists(db_cursor, course_id: str) -> bool:
     return value_assert_course_exists(db_cursor, course_id) is None
 
 
-# checking whether the material exists in the course
 def value_assert_material_exists(db_cursor, course_id: str, material_id: str) -> Union[None, EdHubException]:
     try:
         material_id = int(material_id)
@@ -88,19 +81,16 @@ def value_assert_material_exists(db_cursor, course_id: str, material_id: str) ->
     return None
 
 
-# checking whether the material exists in the course
 def assert_material_exists(db_cursor, course_id: str, material_id: str):
     err = value_assert_material_exists(db_cursor, course_id, material_id)
     if err is not None:
         raise err
 
 
-# checking whether the material exists in the course
 def check_material_exists(db_cursor, course_id: str, material_id: str) -> bool:
     return value_assert_material_exists(db_cursor, course_id, material_id) is None
 
 
-# checking whether the assignment exists in the course
 def value_assert_assignment_exists(db_cursor, course_id: str, assignment_id: str) -> Union[None, EdHubException]:
     try:
         assignment_id = int(assignment_id)
@@ -120,19 +110,16 @@ def value_assert_assignment_exists(db_cursor, course_id: str, assignment_id: str
     return None
 
 
-# checking whether the assignment exists in the course
 def assert_assignment_exists(db_cursor, course_id: str, assignment_id: str):
     err = value_assert_assignment_exists(db_cursor, course_id, assignment_id)
     if err is not None:
         raise err
 
 
-# checking whether the assignment exists in the course
 def check_assignment_exists(db_cursor, course_id: str, assignment_id: str) -> bool:
     return value_assert_assignment_exists(db_cursor, course_id, assignment_id) is None
 
 
-# checking whether the user has general access to the course,
 def value_assert_course_access(db_cursor, user_email: str, course_id: str) -> Union[None, EdHubException]:
     err = value_assert_user_exists(db_cursor, user_email)
     if err is not None:
@@ -160,19 +147,16 @@ def value_assert_course_access(db_cursor, user_email: str, course_id: str) -> Un
     return None
 
 
-# checking whether the user has general access to the course,
 def assert_course_access(db_cursor, user_email: str, course_id: str):
     err = value_assert_course_access(db_cursor, user_email, course_id)
     if err is not None:
         raise err
 
 
-# checking whether the user has general access to the course,
 def check_course_access(db_cursor, user_email: str, course_id: str) -> bool:
     return value_assert_course_access(db_cursor, user_email, course_id) is None
 
 
-# checking whether the user has teacher access to the course
 def value_assert_teacher_access(db_cursor, teacher_email: str, course_id: str) -> Union[None, EdHubException]:
     err = value_assert_user_exists(db_cursor, teacher_email)
     if err is not None:
@@ -196,19 +180,16 @@ def value_assert_teacher_access(db_cursor, teacher_email: str, course_id: str) -
     return None
 
 
-# checking whether the user has teacher access to the course
 def assert_teacher_access(db_cursor, teacher_email: str, course_id: str):
     err = value_assert_teacher_access(db_cursor, teacher_email, course_id)
     if err is not None:
         raise err
 
 
-# checking whether the user has teacher access to the course
 def check_teacher_access(db_cursor, teacher_email: str, course_id: str) -> bool:
     return value_assert_teacher_access(db_cursor, teacher_email, course_id) is None
 
 
-# checking whether the user has student access to the course
 def value_assert_student_access(db_cursor, student_email: str, course_id: str) -> Union[None, EdHubException]:
     err = value_assert_user_exists(db_cursor, student_email)
     if err is not None:
@@ -232,19 +213,16 @@ def value_assert_student_access(db_cursor, student_email: str, course_id: str) -
     return None
 
 
-# checking whether the user has student access to the course
 def assert_student_access(db_cursor, student_email: str, course_id: str):
     err = value_assert_student_access(db_cursor, student_email, course_id)
     if err is not None:
         raise err
 
 
-# checking whether the user has student access to the course
 def check_student_access(db_cursor, student_email: str, course_id: str) -> bool:
     return value_assert_student_access(db_cursor, student_email, course_id) is None
 
 
-# checking whether the user has parent access to the course
 def value_assert_parent_access(db_cursor, parent_email: str, course_id: str) -> Union[None, EdHubException]:
     err = value_assert_user_exists(db_cursor, parent_email)
     if err is not None:
@@ -268,19 +246,16 @@ def value_assert_parent_access(db_cursor, parent_email: str, course_id: str) -> 
     return None
 
 
-# checking whether the user has parent access to the course
 def assert_parent_access(db_cursor, parent_email: str, course_id: str):
     err = value_assert_parent_access(db_cursor, parent_email, course_id)
     if err is not None:
         raise err
 
 
-# checking whether the user has parent access to the course
 def check_parent_access(db_cursor, parent_email: str, course_id: str) -> bool:
     return value_assert_parent_access(db_cursor, parent_email, course_id) is None
 
 
-# checking whether the user has parent access with the student in the course
 def value_assert_parent_student_access(
     db_cursor, parent_email: str, student_email: str, course_id: str
 ) -> Union[None, EdHubException]:
@@ -309,26 +284,22 @@ def value_assert_parent_student_access(
     return None
 
 
-# checking whether the user has parent access with the student in the course
 def assert_parent_student_access(db_cursor, parent_email: str, student_email: str, course_id: str):
     err = value_assert_parent_student_access(db_cursor, parent_email, student_email, course_id)
     if err is not None:
         raise err
 
 
-# checking whether the user has parent access with the student in the course
 def check_parent_student_access(db_cursor, parent_email: str, student_email: str, course_id: str) -> bool:
     return value_assert_parent_student_access(db_cursor, parent_email, student_email, course_id) is None
 
 
-# checking if the submission exists
 def value_assert_submission_exists(
     db_cursor, course_id: str, assignment_id: str, student_email: str
 ) -> Union[None, EdHubException]:
     err = value_assert_assignment_exists(db_cursor, course_id, assignment_id)
     if err is not None:
         return err
-    # check if the student is enrolled to course
     err = value_assert_student_access(db_cursor, student_email, course_id)
     if err is not None:
         return err
@@ -342,14 +313,12 @@ def value_assert_submission_exists(
     return None
 
 
-# checking if the submission exists
 def assert_submission_exists(db_cursor, course_id: str, assignment_id: str, student_email: str):
     err = value_assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
     if err is not None:
         raise err
 
 
-# checking if the submission exists
 def check_submission_exists(db_cursor, course_id: str, assignment_id: str, student_email: str) -> bool:
     return value_assert_submission_exists(db_cursor, course_id, assignment_id, student_email) is None
 
@@ -384,7 +353,6 @@ def check_parent_of_all(db_cursor, parent_email: str, student_emails: list[str],
     return value_assert_parent_of_all(db_cursor, parent_email, student_emails, course_id) is None
 
 
-# checking whether the user has admin access
 def value_assert_admin_access(db_cursor, user_email: str) -> Union[None, EdHubException]:
     err = value_assert_user_exists(db_cursor, user_email)
     if err is not None:
@@ -398,13 +366,11 @@ def value_assert_admin_access(db_cursor, user_email: str) -> Union[None, EdHubEx
     return None
 
 
-# checking whether the user has admin access
 def assert_admin_access(db_cursor, user_email: str):
     err = value_assert_admin_access(db_cursor, user_email)
     if err is not None:
         raise err
 
 
-# checking whether the user has admin access
 def check_admin_access(db_cursor, user_email: str) -> bool:
     return value_assert_admin_access(db_cursor, user_email) is None

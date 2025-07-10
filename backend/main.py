@@ -13,7 +13,6 @@ import routers.parents
 import routers.students
 import routers.teachers
 import routers.users
-import database
 
 
 app = FastAPI()
@@ -40,7 +39,6 @@ async def edhub_exception_handler(request: fastapi.Request, exc: edhub_errors.Ed
     return exc.json_response()
 
 
-# app startup
 @app.on_event("startup")
 async def startup_event():
     with database.get_system_conn() as conn:

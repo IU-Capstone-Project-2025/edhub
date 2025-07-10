@@ -10,10 +10,8 @@ from logic.uploading import careful_upload
 
 def create_material(db_conn, course_id: str, title: str, description: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
-        # create material
         material_id = sql_mat.insert_material(db_cursor, course_id, title, description, user_email)
         db_conn.commit()
 
@@ -25,11 +23,9 @@ def create_material(db_conn, course_id: str, title: str, description: str, user_
 
 def remove_material(db_conn, course_id: str, material_id: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_material_exists(db_cursor, course_id, material_id)
         constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
-        # remove material
         sql_mat.delete_material(db_cursor, course_id, material_id)
         db_conn.commit()
 
@@ -42,10 +38,8 @@ def remove_material(db_conn, course_id: str, material_id: str, user_email: str):
 
 def get_material(db_conn, course_id: str, material_id: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_course_access(db_cursor, user_email, course_id)
         constraints.assert_material_exists(db_cursor, course_id, material_id)
-        # searching for materials
         material = sql_mat.select_material(db_cursor, course_id, material_id)
 
         res = {
@@ -63,14 +57,11 @@ async def create_material_attachment(
     db_conn, storage_db_conn, course_id: str, material_id: str, file: UploadFile, user_email: str
 ):
     with db_conn.cursor() as db_cursor, storage_db_conn.cursor() as storage_db_cursor:
-        # checking constraints
         constraints.assert_material_exists(db_cursor, course_id, material_id)
         constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
-        # read the file
         contents = await careful_upload(file)
 
-        # save the file into database
         attachment_metadata = sql_mat.insert_material_attachment(
             db_cursor, storage_db_cursor, course_id, material_id, file.filename, contents
         )
@@ -93,11 +84,9 @@ async def create_material_attachment(
 
 def get_material_attachments(db_conn, course_id: str, material_id: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_material_exists(db_cursor, course_id, material_id)
         constraints.assert_course_access(db_cursor, user_email, course_id)
 
-        # searching for material attachments
         files = sql_mat.select_material_attachments(db_cursor, course_id, material_id)
 
         res = [
@@ -118,11 +107,9 @@ def download_material_attachment(
     db_conn, storage_db_conn, course_id: str, material_id: str, file_id: str, user_email: str
 ):
     with db_conn.cursor() as db_cursor, storage_db_conn.cursor() as storage_db_cursor:
-        # checking constraints
         constraints.assert_material_exists(db_cursor, course_id, material_id)
         constraints.assert_course_access(db_cursor, user_email, course_id)
 
-        # searching for material attachment
         file = sql_files.download_attachment(storage_db_cursor, file_id)
         if not file:
             raise edhub_errors.AttachmentNotFoundException(file_id)

@@ -16,18 +16,15 @@ def submit_assignment(
     student_email: str,
 ):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
         constraints.assert_student_access(db_cursor, student_email, course_id)
 
         submission = sql_submit.select_submission_grade(db_cursor, course_id, assignment_id, student_email)
 
-        # inserting submission
         if submission is None:
             sql_submit.insert_submission(db_cursor, course_id, assignment_id, student_email, comment)
             db_conn.commit()
 
-        # updating submission if not graded
         elif submission and submission[0] in (None, "null"):
             sql_submit.update_submission_comment(db_cursor, comment, course_id, assignment_id, student_email)
             db_conn.commit()
@@ -46,11 +43,9 @@ def submit_assignment(
 
 def get_assignment_submissions(db_conn, course_id: str, assignment_id: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
         constraints.assert_teacher_access(db_cursor, user_email, course_id)
 
-        # finding students' submissions
         submissions = sql_submit.select_submissions(db_cursor, course_id, assignment_id)
 
         res = [
@@ -78,7 +73,6 @@ def get_submission(
     user_email: str,
 ):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
         constraints.assert_student_access(db_cursor, student_email, course_id)
         if not (
@@ -114,7 +108,6 @@ def grade_submission(
     user_email: str,
 ):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_teacher_access(db_cursor, user_email, course_id)
         constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
 
@@ -146,10 +139,8 @@ async def create_submission_attachment(
         if sql_submit.select_submission_grade(db_cursor, course_id, assignment_id, student_email)[0] is not None:
             raise edhub_errors.CannotEditGradedSubmissionException()
 
-        # read the file
         contents = await careful_upload(file)
 
-        # save the file into database
         attachment_metadata = sql_submit.insert_submission_attachment(
             db_cursor, storage_db_cursor, course_id, assignment_id, student_email, file.filename, contents
         )
@@ -173,7 +164,6 @@ async def create_submission_attachment(
 
 def get_submission_attachments(db_conn, course_id: str, assignment_id: str, student_email: str, user_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
         if not (
             constraints.check_teacher_access(db_cursor, user_email, course_id)
@@ -182,7 +172,6 @@ def get_submission_attachments(db_conn, course_id: str, assignment_id: str, stud
         ):
             raise edhub_errors.NoAccessToSubmissionException(course_id, user_email, student_email)
 
-        # searching for submission attachments
         files = sql_submit.select_submission_attachments(db_cursor, course_id, assignment_id, student_email)
 
         res = [
@@ -204,7 +193,6 @@ def download_submission_attachment(
     db_conn, storage_db_conn, course_id: str, assignment_id: str, student_email: str, file_id: str, user_email: str
 ):
     with db_conn.cursor() as db_cursor, storage_db_conn.cursor() as storage_db_cursor:
-        # checking constraints
         constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
         if not (
             constraints.check_teacher_access(db_cursor, user_email, course_id)
@@ -213,7 +201,6 @@ def download_submission_attachment(
         ):
             raise edhub_errors.NoAccessToSubmissionException(course_id, user_email, student_email)
 
-        # searching for submission attachment
         file = sql_files.download_attachment(storage_db_cursor, file_id)
         if not file:
             raise edhub_errors.AttachmentNotFoundException(file_id)

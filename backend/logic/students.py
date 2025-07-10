@@ -14,7 +14,6 @@ def get_enrolled_students(db_conn, course_id: str, user_email: str):
 
 def invite_student(db_conn, course_id: str, student_email: str, teacher_email: str):
     with db_conn.cursor() as db_cursor:
-        # checking constraints
         constraints.assert_user_exists(db_cursor, student_email)
         constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
 
@@ -31,7 +30,6 @@ def invite_student(db_conn, course_id: str, student_email: str, teacher_email: s
                 course_id, student_email, edhub_errors.ROLE_PARENT, edhub_errors.ROLE_STUDENT
             )
 
-        # invite student
         sql_students.insert_student_at(db_cursor, student_email, course_id)
         db_conn.commit()
 

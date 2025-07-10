@@ -6,11 +6,11 @@ from jose import jwt, JWTError
 from datetime import datetime
 import edhub_errors
 import database
+import constraints
 
 
 router = APIRouter()
 
-# setting for JWT and autorization
 SECRET_KEY = token_hex(32)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -24,11 +24,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         expire_timestamp = payload.get("exp")
         user_email = payload.get("email")
 
-        # checking the fields
         if expire_timestamp is None or user_email is None:
             raise edhub_errors.InvalidTokenStructureException()
 
-        # checking token expiration time
         if datetime.utcnow() > datetime.fromtimestamp(expire_timestamp):
             raise edhub_errors.TokenExpiredException()
 
@@ -36,11 +34,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         detail = str(e)
         raise edhub_errors.CustomJWTException(detail)
 
-    # checking whether such user exists
     with database.get_system_conn() as db_conn, db_conn.cursor() as db_cursor:
-        db_cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (user_email,))
-        user_exists = db_cursor.fetchone()[0]
-        if not user_exists:
-            raise edhub_errors.UserNotFoundException(user_email)
+        constraints.assert_user_exists(db_cursor, user_email)
 
     return user_email
