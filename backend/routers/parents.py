@@ -1,6 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends
 
+from auth import get_current_user
 from logic.parents import (
     get_students_parents as logic_get_students_parents,
     invite_parent as logic_invite_parent,
@@ -8,6 +9,8 @@ from logic.parents import (
     get_parents_children as logic_get_parents_children,
 )
 import json_classes
+
+import database
 
 router = APIRouter()
 
@@ -20,9 +23,8 @@ async def get_students_parents(course_id: str, student_email: str, user_email: s
     Teacher role required.
     """
 
-    # connection to database
-    with get_db() as (db_conn, db_cursor):
-        return logic_get_students_parents(db_cursor, course_id, student_email, user_email)
+    with database.get_system_conn() as db_conn:
+        return logic_get_students_parents(db_conn, course_id, student_email, user_email)
 
 
 @router.post("/invite_parent", response_model=json_classes.Success)
@@ -38,9 +40,8 @@ async def invite_parent(
     Teacher role required.
     """
 
-    # connection to database
-    with get_db() as (db_conn, db_cursor):
-        return logic_invite_parent(db_conn, db_cursor, course_id, student_email, parent_email, teacher_email)
+    with database.get_system_conn() as db_conn:
+        return logic_invite_parent(db_conn, course_id, student_email, parent_email, teacher_email)
 
 
 @router.post("/remove_parent", response_model=json_classes.Success)
@@ -58,9 +59,8 @@ async def remove_parent(
     Parent can only remove themselves.
     """
 
-    # connection to database
-    with get_db() as (db_conn, db_cursor):
-        return logic_remove_parent(db_conn, db_cursor, course_id, student_email, parent_email, user_email)
+    with database.get_system_conn() as db_conn:
+        return logic_remove_parent(db_conn, course_id, student_email, parent_email, user_email)
 
 
 @router.get("/get_parents_children", response_model=List[json_classes.User])
@@ -71,6 +71,5 @@ async def get_parents_children(course_id: str, user_email: str = Depends(get_cur
     Parent role required.
     """
 
-    # connection to database
-    with get_db() as (db_conn, db_cursor):
-        return logic_get_parents_children(db_cursor, course_id, user_email)
+    with database.get_system_conn() as db_conn:
+        return logic_get_parents_children(db_conn, course_id, user_email)
