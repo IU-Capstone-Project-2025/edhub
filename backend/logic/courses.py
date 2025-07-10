@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+import edhub_errors
 from constants import TIME_FORMAT
 import constraints
 import sql.courses
@@ -52,8 +52,6 @@ def get_course_info(db_conn, course_id: str, user_email: str):
     with db_conn.cursor() as db_cursor:
         constraints.assert_course_access(db_cursor, user_email, course_id)
         course = sql.courses.select_course_info(db_cursor, course_id)
-        if not course:
-            raise HTTPException(status_code=404, detail="Course not found")
         res = {
             "course_id": str(course[0]),
             "title": course[1],
