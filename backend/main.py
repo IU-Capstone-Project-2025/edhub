@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logic.users
-from auth import get_db
 
 import routers.assignments
 import routers.submissions
@@ -11,6 +10,7 @@ import routers.parents
 import routers.students
 import routers.teachers
 import routers.users
+import database
 
 
 app = FastAPI()
@@ -35,5 +35,5 @@ app.add_middleware(
 # app startup
 @app.on_event("startup")
 async def startup_event():
-    with get_db() as (conn, cur):
-        await logic.users.create_admin_account_if_not_exists(conn, cur)
+    with database.get_system_conn() as conn:
+        await logic.users.create_admin_account_if_not_exists(conn)

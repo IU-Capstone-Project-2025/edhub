@@ -6,28 +6,7 @@ from secrets import token_hex
 from jose import jwt, JWTError
 import psycopg2
 from datetime import datetime
-
-
-@contextmanager
-def get_db():
-    conn = psycopg2.connect(dbname="edhub", user="postgres", password="12345678", host="system_db", port="5432")
-    cursor = conn.cursor()
-    try:
-        yield conn, cursor
-    finally:
-        cursor.close()
-        conn.close()
-
-
-@contextmanager
-def get_storage_db():
-    conn = psycopg2.connect(dbname="edhub_storage", user="postgres", password="12345678", host="storage_db", port="5432")
-    cursor = conn.cursor()
-    try:
-        yield conn, cursor
-    finally:
-        cursor.close()
-        conn.close()
+import database
 
 
 router = APIRouter()
@@ -49,7 +28,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         # checking the fields
         if expire_timestamp is None or user_email is None:
             raise ValueError("Invalid token structure")
-        
+
         # checking token expiration time
         if datetime.utcnow() > datetime.fromtimestamp(expire_timestamp):
             raise ValueError("Token expired")
@@ -59,7 +38,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail=detail)
 
     # checking whether such user exists
-    with get_db() as (db_conn, db_cursor):
+    with database.get_system_conn() as db_conn, db_conn.cursor() as db_cursor:
         db_cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE email = %s)", (user_email,))
         user_exists = db_cursor.fetchone()[0]
         if not user_exists:

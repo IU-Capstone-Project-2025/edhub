@@ -1,7 +1,8 @@
 from typing import List
 from fastapi import APIRouter, Depends
 
-from auth import get_current_user, get_db
+from auth import get_current_user
+import database
 import json_classes
 from logic.students import (
     get_enrolled_students as logic_get_enrolled_students,
@@ -19,8 +20,8 @@ async def get_enrolled_students(course_id: str, user_email: str = Depends(get_cu
 
     Return the email and name of each student.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_get_enrolled_students(db_cursor, course_id, user_email)
+    with database.get_system_conn() as db_conn:
+        return logic_get_enrolled_students(db_conn, course_id, user_email)
 
 
 @router.post("/invite_student", response_model=json_classes.Success)
@@ -30,8 +31,8 @@ async def invite_student(course_id: str, student_email: str, teacher_email: str 
 
     Teacher role required.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_invite_student(db_conn, db_cursor, course_id, student_email, teacher_email)
+    with database.get_system_conn() as db_conn:
+        return logic_invite_student(db_conn, course_id, student_email, teacher_email)
 
 
 @router.post("/remove_student", response_model=json_classes.Success)
@@ -43,5 +44,5 @@ async def remove_student(course_id: str, student_email: str, user_email: str = D
 
     Student can only remove themselves.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_remove_student(db_conn, db_cursor, course_id, student_email, user_email)
+    with database.get_system_conn() as db_conn:
+        return logic_remove_student(db_conn, course_id, student_email, user_email)

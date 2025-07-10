@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, UploadFile, File
 from typing import List
 
-from auth import get_current_user, get_db, get_storage_db
+from auth import get_current_user
+import database
 import json_classes
 from logic.submissions import (
     submit_assignment as logic_submit_assignment,
@@ -32,9 +33,8 @@ async def submit_assignment(
     Student cannot submit already graded assignment.
     """
 
-    # connection to database
-    with get_db() as (db_conn, db_cursor):
-        return logic_submit_assignment(db_conn, db_cursor, course_id, assignment_id, comment, student_email)
+    with database.get_system_conn() as db_conn:
+        return logic_submit_assignment(db_conn, course_id, assignment_id, comment, student_email)
 
 
 @router.get("/get_assignment_submissions", response_model=List[json_classes.Submission])
@@ -53,9 +53,8 @@ async def get_assignment_submissions(course_id: str, assignment_id: str, user_em
     `grade` and `gradedby_email` can be `null` if the assignment was not graded yet.
     """
 
-    # connection to database
-    with get_db() as (db_conn, db_cursor):
-        return logic_get_assignment_submissions(db_cursor, course_id, assignment_id, user_email)
+    with database.get_system_conn() as db_conn:
+        return logic_get_assignment_submissions(db_conn, course_id, assignment_id, user_email)
 
 
 @router.get("/get_submission", response_model=json_classes.Submission)
@@ -79,9 +78,8 @@ async def get_submission(
     `grade` and `gradedby_email` can be `null` if the assignment was not graded yet.
     """
 
-    # connection to database
-    with get_db() as (db_conn, db_cursor):
-        return logic_get_submission(db_cursor, course_id, assignment_id, student_email, user_email)
+    with database.get_system_conn() as db_conn:
+        return logic_get_submission(db_conn, course_id, assignment_id, student_email, user_email)
 
 
 @router.post("/grade_submission", response_model=json_classes.Success)
@@ -98,11 +96,9 @@ async def grade_submission(
     Teacher role required.
     """
 
-    # connection to database
-    with get_db() as (db_conn, db_cursor):
+    with database.get_system_conn() as db_conn:
         return logic_grade_submission(
             db_conn,
-            db_cursor,
             course_id,
             assignment_id,
             student_email,
@@ -128,12 +124,22 @@ async def create_submission_attachment(
 
     The format of upload_time is TIME_FORMAT.
     """
-    with get_db() as (db_conn, db_cursor), get_storage_db() as (storage_db_conn, storage_db_cursor):
-        return await logic_create_submission_attachment(db_conn, db_cursor, storage_db_conn, storage_db_cursor, course_id, assignment_id, student_email, file, user_email)
+    with database.get_system_conn() as db_conn, database.get_storage_conn() as storage_db_conn:
+        return await logic_create_submission_attachment(
+            db_conn,
+            storage_db_conn,
+            course_id,
+            assignment_id,
+            student_email,
+            file,
+            user_email,
+        )
 
 
 @router.get("/get_submission_attachments", response_model=List[json_classes.SubmissionAttachmentMetadata])
-async def get_submission_attachments(course_id: str, assignment_id: str, student_email: str, user_email: str = Depends(get_current_user)):
+async def get_submission_attachments(
+    course_id: str, assignment_id: str, student_email: str, user_email: str = Depends(get_current_user)
+):
     """
     Get the list of attachments to the course assignment submission by provided course_id, assignment_id, student_email.
 
@@ -141,14 +147,18 @@ async def get_submission_attachments(course_id: str, assignment_id: str, student
 
     The format of upload_time is TIME_FORMAT.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_get_submission_attachments(db_cursor, course_id, assignment_id, student_email, user_email)
+    with database.get_system_conn() as db_conn:
+        return logic_get_submission_attachments(db_conn, course_id, assignment_id, student_email, user_email)
 
 
 @router.get("/download_submission_attachment")
-async def download_submission_attachment(course_id: str, assignment_id: str, student_email: str, file_id: str, user_email: str = Depends(get_current_user)):
+async def download_submission_attachment(
+    course_id: str, assignment_id: str, student_email: str, file_id: str, user_email: str = Depends(get_current_user)
+):
     """
     Download the attachment to the course assignment submission by provided course_id, assignment_id, student_email, file_id.
     """
-    with get_db() as (db_conn, db_cursor), get_storage_db() as (storage_db_conn, storage_db_cursor):
-        return logic_download_submission_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, student_email, file_id, user_email)
+    with database.get_system_conn() as db_conn, database.get_storage_conn() as storage_db_conn:
+        return logic_download_submission_attachment(
+            db_conn, storage_db_conn, course_id, assignment_id, student_email, file_id, user_email
+        )
