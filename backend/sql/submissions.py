@@ -101,7 +101,7 @@ def select_submissions(conn, course_id: str, assignment_id: int) -> list[Submiss
         return [SubmissionDTO(*attrs) for attrs in db_cursor.fetchall()]
 
 
-def select_single_submission(conn, course_id: str, assignment_id: int, student_email: str) -> Union[None, SubmissionDTO]:
+def select_single_submission(conn, course_id: str, assignment_id: int, student_email: str) -> SubmissionDTO:
     with conn.cursor() as db_cursor:
         db_cursor.execute(
             """
@@ -119,10 +119,7 @@ def select_single_submission(conn, course_id: str, assignment_id: int, student_e
             """,
             (course_id, assignment_id, student_email),
         )
-        res = db_cursor.fetchone()
-    if res is None:
-        return None
-    return SubmissionDTO(*res)
+        return SubmissionDTO(*db_cursor.fetchone())
 
 
 def update_submission_grade(conn, grade: int, user_email: str, course_id: str, assignment_id: int, student_email: str) -> None:
