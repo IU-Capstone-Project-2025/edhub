@@ -5,16 +5,7 @@ import logic.logging as logger
 import logic.users
 
 
-def get_students_parents(db_conn, course_id: str, student_email: str, user_email: str):
-    with db_conn.cursor() as db_cursor:
-        constraints.assert_teacher_access(db_cursor, user_email, course_id)
-
-        constraints.assert_student_access(db_cursor, student_email, course_id)
-
-        parents = sql_parents.select_students_parents(db_cursor, course_id, student_email)
-
-        res = [{"email": par[0], "name": par[1]} for par in parents]
-        return res
+get_students_parents = sql_parents.select_students_parents
 
 
 def invite_parent(
@@ -24,12 +15,8 @@ def invite_parent(
     parent_email: str,
     teacher_email: str,
 ):
-    with db_conn.cursor() as db_cursor:
-        constraints.assert_teacher_access(db_cursor, teacher_email, course_id)
-        constraints.assert_student_access(db_cursor, student_email, course_id)
-
-        if constraints.check_parent_student_access(db_cursor, parent_email, student_email, course_id):
-            raise edhub_errors.UserIsAlreadyParentOfStudentInCourseException(course_id, parent_email, student_email)
+    if constraints.check_parent_student_access(db_conn, parent_email, student_email, course_id):
+        raise edhub_errors.UserIsAlreadyParentOfStudentInCourseException(course_id, parent_email, student_email)
 
     roles = logic.users.get_user_role(db_conn, course_id, parent_email)
     if roles["is_teacher"]:

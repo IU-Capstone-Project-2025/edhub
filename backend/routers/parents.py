@@ -9,6 +9,7 @@ from logic.parents import (
     get_parents_children as logic_get_parents_children,
 )
 import json_classes
+import constraints
 
 import database
 
@@ -22,9 +23,11 @@ async def get_students_parents(course_id: str, student_email: str, user_email: s
 
     Teacher role required.
     """
-
     with database.get_system_conn() as db_conn:
-        return logic_get_students_parents(db_conn, course_id, student_email, user_email)
+        constraints.assert_student_access(db_conn, student_email, course_id)
+        constraints.assert_teacher_access(db_conn, user_email, course_id)
+        parents = logic_get_students_parents(db_conn, course_id, student_email, user_email)
+        return [{"email": par.email, "name": par.publicname} for par in parents]
 
 
 @router.post("/invite_parent", response_model=json_classes.Success)
@@ -39,8 +42,9 @@ async def invite_parent(
 
     Teacher role required.
     """
-
     with database.get_system_conn() as db_conn:
+        constraints.assert_teacher_access(db_conn, teacher_email, course_id)
+        constraints.assert_student_access(db_conn, student_email, course_id)
         return logic_invite_parent(db_conn, course_id, student_email, parent_email, teacher_email)
 
 
