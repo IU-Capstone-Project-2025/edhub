@@ -11,6 +11,7 @@ from logic.assignments import (
     get_assignment_attachments as logic_get_assignment_attachments,
     download_assignment_attachment as logic_download_assignment_attachment,
 )
+import constraints
 
 import database
 
@@ -32,8 +33,10 @@ async def create_assignment(
 
     Returns the (course_id, assignment_id) for the new assignment in case of success.
     """
-    with database.get_system_conn() as db_conn:
-        return logic_create_assignment(db_conn, course_id, title, description, user_email)
+    with database.get_system_conn() as conn:
+        constraints.assert_teacher_access(conn, user_email, course_id)
+        assignment_id = logic_create_assignment(conn, course_id, title, description, user_email)
+        return {"course_id": course_id, "assignment_id": assignment_id}
 
 
 @router.post("/remove_assignment", response_model=json_classes.Success)
