@@ -1,43 +1,57 @@
-def select_submission_grade(db_cursor, course_id, assignment_id, student_email):
-    db_cursor.execute(
-        "SELECT grade FROM course_assignments_submissions WHERE courseid = %s AND assid = %s AND email = %s",
-        (course_id, assignment_id, student_email),
-    )
-    return db_cursor.fetchone()
+from sql.dto import AttachmentDTO
 
 
-def insert_submission(db_cursor, course_id, assignment_id, student_email, comment):
-    db_cursor.execute(
-        "INSERT INTO course_assignments_submissions (courseid, assid, email, timeadded, timemodified, comment, grade, gradedby) VALUES (%s, %s, %s, now(), now(), %s, null, null)",
-        (course_id, assignment_id, student_email, comment),
-    )
+def select_submission_grade(conn, course_id: str, assignment_id: int, student_email: str) -> Union[int, None]:
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            "SELECT grade FROM course_assignments_submissions WHERE courseid = %s AND assid = %s AND email = %s",
+            (course_id, assignment_id, student_email),
+        )
+        return db_cursor.fetchone()[0]
 
 
-def insert_submission_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, student_email, filename, contents):
-    storage_db_cursor.execute(
-        """
-        INSERT INTO files 
-        (id, content)
-        VALUES (gen_random_uuid(), %s)
-        RETURNING id
-        """,
-        (contents, )
-    )
-    fileid = storage_db_cursor.fetchone()[0]
-    
-    db_cursor.execute(
-        """
-        INSERT INTO submissions_files 
-        (courseid, assid, email, fileid, filename, uploadtime)
-        VALUES (%s, %s, %s, %s, %s, now())
-        RETURNING fileid, uploadtime
-        """,
-        (course_id, assignment_id, student_email, fileid, filename),
-    )
-    return db_cursor.fetchone()
+def insert_submission(conn, course_id: str, assignment_id: int, student_email: str, comment: str) -> None:
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """INSERT INTO course_assignments_submissions
+            (courseid, assid, email, timeadded, timemodified, comment, grade, gradedby)
+            VALUES (%s, %s, %s, now(), now(), %s, null, null)""",
+            (course_id, assignment_id, student_email, comment),
+        )
 
 
-def select_submission_attachments(db_cursor, course_id, assignment_id, student_email):
+def insert_submission_attachment(system_conn, storage_conn, course_id: str, assignment_id: int,
+                                 student_email: str, filename: str, contents: bytes) -> tuple[str, datetime]:
+    """
+    Returns the id of the new file and its upload time
+    """
+    with storage_conn.cursor() as storage_db_cursor:
+        storage_db_cursor.execute(
+            """
+            INSERT INTO files
+            (id, content)
+            VALUES (gen_random_uuid(), %s)
+            RETURNING id
+            """,
+            (contents, )
+        )
+        fileid = storage_db_cursor.fetchone()[0]
+
+    with system_conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """
+            INSERT INTO submissions_files
+            (courseid, assid, email, fileid, filename, uploadtime)
+            VALUES (%s, %s, %s, %s, %s, now())
+            RETURNING fileid, uploadtime
+            """,
+            (course_id, assignment_id, student_email, fileid, filename),
+        )
+        return db_cursor.fetchone()
+
+
+def select_submission_attachments(conn, course_id: str, assignment_id: int, student_email: str) -> list[AttachmentDTO]:
+    with conn.cursor() as db_cursor:
     db_cursor.execute(
         """
         SELECT fileid, filename, uploadtime
@@ -49,7 +63,8 @@ def select_submission_attachments(db_cursor, course_id, assignment_id, student_e
     return db_cursor.fetchall()
 
 
-def update_submission_comment(db_cursor, comment, course_id, assignment_id, student_email):
+def update_submission_comment(conn, comment, course_id, assignment_id, student_email):
+    with conn.cursor() as db_cursor:
     db_cursor.execute(
         """
         UPDATE course_assignments_submissions
@@ -60,7 +75,8 @@ def update_submission_comment(db_cursor, comment, course_id, assignment_id, stud
     )
 
 
-def select_submissions(db_cursor, course_id, assignment_id):
+def select_submissions(conn, course_id, assignment_id):
+    with conn.cursor() as db_cursor:
     db_cursor.execute(
         """
         SELECT
@@ -81,7 +97,8 @@ def select_submissions(db_cursor, course_id, assignment_id):
     return db_cursor.fetchall()
 
 
-def select_single_submission(db_cursor, course_id, assignment_id, student_email):
+def select_single_submission(conn, course_id, assignment_id, student_email):
+    with conn.cursor() as db_cursor:
     db_cursor.execute(
         """
         SELECT
@@ -101,7 +118,8 @@ def select_single_submission(db_cursor, course_id, assignment_id, student_email)
     return db_cursor.fetchone()
 
 
-def update_submission_grade(db_cursor, grade, user_email, course_id, assignment_id, student_email):
+def update_submission_grade(conn, grade, user_email, course_id, assignment_id, student_email):
+    with conn.cursor() as db_cursor:
     db_cursor.execute(
         """
         UPDATE course_assignments_submissions
