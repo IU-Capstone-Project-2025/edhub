@@ -54,7 +54,7 @@ async def remove_assignment(course_id: str, assignment_id: str, user_email: str 
         constraints.assert_teacher_access(db_conn, user_email, course_id)
         logic_remove_assignment(db_conn, course_id, assignment_id)
         logger.log(db_conn, logger.TAG_ASSIGNMENT_DEL, f"User {user_email} removed assignment {assignment_id} in course {course_id}")
-        return json_classes.success()
+        return json_classes.Success()
 
 
 @router.get("/get_assignment", response_model=json_classes.Assignment)

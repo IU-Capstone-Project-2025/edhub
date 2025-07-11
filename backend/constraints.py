@@ -451,3 +451,35 @@ def assert_material_attachment_exists(conn, course_id: str, material_id: int, fi
 
 def check_material_attachment_exists(conn, course_id: str, material_id: int, file_id: str) -> bool:
     return value_assert_material_attachment_exists(conn, course_id, material_id, file_id) is None
+
+
+def value_assert_all_students_grades_accessbile(
+    conn, course_id: str, user_email: str, students: list[str]
+) -> Union[None, EdHubException]:
+    err = value_assert_course_access(conn, user_email, course_id)
+    if err is not None:
+        return err
+    if sql.users.select_is_admin(conn, user_email):
+        return None
+    if check_teacher_access(conn, user_email, course_id):
+        return None
+    if check_parent_access(conn, user_email, course_id):
+        return value_assert_parent_of_all(conn, user_email, students, course_id)
+    if check_student_access(conn, user_email, course_id):
+        for email in students:
+            if email != user_email:
+                return edhub_errors.StudentCannotViewOthersGradesException(course_id, user_email, email)
+
+
+def assert_all_students_grades_accessbile(
+    conn, course_id: str, user_email: str, students: list[str]
+):
+    err = value_assert_all_students_grades_accessbile(conn, course_id, user_email, students)
+    if err is not None:
+        raise err
+
+
+def check_all_students_grades_accessbile(
+    conn, course_id: str, user_email: str, students: list[str]
+) -> bool:
+    return value_assert_all_students_grades_accessbile(conn, course_id, user_email, students) is None
