@@ -126,7 +126,7 @@ def remove_user(db_conn, db_cursor, user_email: str):
 
     # remove teacher role preparation: find courses with 1 teacher left
     single_teacher_courses = repo_users.sql_select_single_teacher_courses(db_cursor, user_email)
-    for course_id_to_delete in single_teacher_courses:  # Renamed variable to avoid conflict
+    for course_id_to_delete in single_teacher_courses:
         repo_users.sql_delete_course(db_cursor, course_id_to_delete)
 
     # remove user
