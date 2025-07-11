@@ -57,3 +57,20 @@ class CourseFeedItemDTO:
         self.post_type = post_type
         self.timeadded = timeadded
         self.author_email = author_email
+
+
+class MaterialDTO:
+    course_id: str
+    material_id: str
+    timeadded: datetime
+    name: str
+    description: str
+    author_email: str
+
+    def __init__(self, course_id: str, material_id: str, timeadded: datetime, name: str, description: str, author_email: str):
+        self.course_id = course_id
+        self.material_id = material_id
+        self.timeadded = timeadded
+        self.name = name
+        self.description = description
+        self.author_email = author_email
