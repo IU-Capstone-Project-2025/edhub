@@ -1,6 +1,15 @@
 from datetime import datetime
 
 
+class UserEmailNameDTO:
+    email: str
+    publicname: str
+
+    def __init__(self, email: str, publicname: str):
+        self.email = email
+        self.publicname = publicname
+
+
 class AssignmentDTO:
     course_id: str
     assignment_id: int

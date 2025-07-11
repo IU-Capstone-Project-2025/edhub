@@ -1,4 +1,7 @@
-def select_students_parents(conn, course_id: str, student_email: str) -> list[tuple[str, str]]:
+from sql.dto import UserEmailNameDTO
+
+
+def select_students_parents(conn, course_id: str, student_email: str) -> list[UserEmailNameDTO]:
     """
     Returns a list of pairs `(email, publicName)` of all parents of the given student at the given course
     """
@@ -14,7 +17,7 @@ def select_students_parents(conn, course_id: str, student_email: str) -> list[tu
             """,
             (course_id, student_email),
         )
-        return db_cursor.fetchall()
+        return [UserEmailNameDTO(*attrs) for attrs in db_cursor.fetchall()]
 
 
 def insert_parent_of_at_course(conn, parent_email: str, student_email: str, course_id: str) -> None:
@@ -33,7 +36,7 @@ def delete_parent_of_at_course(conn, course_id: str, student_email: str, parent_
         )
 
 
-def select_parents_children(conn, course_id: str, parent_email: str) -> list[tuple[str, str]]:
+def select_parents_children(conn, course_id: str, parent_email: str) -> list[UserEmailNameDTO]:
     """
     Returns a list of pairs `(email, publicName)` of all children of the given parent at the given course
     """
@@ -49,7 +52,7 @@ def select_parents_children(conn, course_id: str, parent_email: str) -> list[tup
             """,
             (course_id, parent_email),
         )
-        return db_cursor.fetchall()
+        return [UserEmailNameDTO(*attrs) for attrs in db_cursor.fetchall()]
 
 
 def sql_has_child_at_course(conn, course_id: str, parent_email: str, student_email: str) -> bool:
