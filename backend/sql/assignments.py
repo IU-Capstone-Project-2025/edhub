@@ -79,6 +79,19 @@ def select_assignment_attachments(conn, course_id: str, assignment_id: int) -> l
         return [AttachmentInfoDTO(*attrs) for attrs in db_cursor.fetchall()]
 
 
+def select_single_assignment_attachment(conn, course_id: str, assignment_id: int, file_id: str) -> AttachmentInfoDTO:
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """
+            SELECT fileid, filename, uploadtime
+            FROM assignment_files
+            WHERE courseid = %s AND assid = %s AND fileid = %s
+            """,
+            (course_id, assignment_id, file_id),
+        )
+        return AttachmentInfoDTO(*db_cursor.fetchone())
+
+
 def sql_get_all_assignments(conn, course_id: str) -> list[int]:
     with conn.cursor() as db_cursor:
         db_cursor.execute("SELECT assid FROM course_assignments WHERE courseid = %s",

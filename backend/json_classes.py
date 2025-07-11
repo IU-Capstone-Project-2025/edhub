@@ -6,6 +6,10 @@ class Success(BaseModel):
     success: bool
 
 
+def success() -> Success:
+    return Success(success=True)
+
+
 class User(BaseModel):
     email: str
     name: str

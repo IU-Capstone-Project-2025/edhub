@@ -385,3 +385,69 @@ def assert_admin_access(conn, user_email: str):
 
 def check_admin_access(conn, user_email: str) -> bool:
     return value_assert_admin_access(conn, user_email) is None
+
+
+def value_assert_file_exists(storage_conn, file_id: str) -> Union[None, EdHubException]:
+    with storage_conn.cursor() as db_cursor:
+        db_cursor.execute("SELECT EXISTS(SELECT 1 FROM files WHERE id = %s)", (file_id,))
+        if db_cursor.fetchone()[0]:
+            return None
+    return edhub_errors.AttachmentNotFoundException(file_id)
+
+
+def assert_file_exists(storage_conn, file_id: str):
+    err = value_assert_file_exists(storage_conn, file_id)
+    if err is not None:
+        raise err
+
+
+def check_file_exists(storage_conn, file_id: str) -> bool:
+    return value_assert_file_exists(storage_conn, file_id) is None
+
+
+def value_assert_assignment_attachment_exists(conn, course_id: str, assignment_id: int, file_id: str) -> Union[None, EdHubException]:
+    err = value_assert_assignment_exists(conn, course_id, assignment_id)
+    if err is not None:
+        return err
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """SELECT EXISTS (SELECT 1 FROM assignment_files WHERE courseid = %s AND
+            assid = %s AND fileid = %s)""", (course_id, assignment_id, file_id)
+        )
+        if db_cursor.fetchone()[0]:
+            return None
+    return edhub_errors.AttachmentNotFoundInAssignmentException(course_id, assignment_id, file_id)
+
+
+def assert_assignment_attachment_exists(conn, course_id: str, assignment_id: int, file_id: str):
+    err = value_assert_assignment_attachment_exists(conn, course_id, assignment_id, file_id)
+    if err is not None:
+        raise err
+
+
+def check_assignment_attachment_exists(conn, course_id: str, assignment_id: int, file_id: str) -> bool:
+    return value_assert_assignment_attachment_exists(conn, course_id, assignment_id, file_id) is None
+
+
+def value_assert_material_attachment_exists(conn, course_id: str, material_id: int, file_id: str) -> Union[None, EdHubException]:
+    err = value_assert_material_exists(conn, course_id, material_id)
+    if err is not None:
+        return err
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """SELECT EXISTS (SELECT 1 FROM material_files WHERE courseid = %s AND
+            matid = %s AND fileid = %s)""", (course_id, material_id, file_id)
+        )
+        if db_cursor.fetchone()[0]:
+            return None
+    return edhub_errors.AttachmentNotFoundInMaterialException(course_id, material_id, file_id)
+
+
+def assert_material_attachment_exists(conn, course_id: str, material_id: int, file_id: str):
+    err = value_assert_material_attachment_exists(conn, course_id, material_id, file_id)
+    if err is not None:
+        raise err
+
+
+def check_material_attachment_exists(conn, course_id: str, material_id: int, file_id: str) -> bool:
+    return value_assert_material_attachment_exists(conn, course_id, material_id, file_id) is None

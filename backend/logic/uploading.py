@@ -5,7 +5,10 @@ MAX_SIZE = 5 * 1024 * 1024
 CHUNK_SIZE = 64 * 1024
 
 
-async def careful_upload(file: UploadFile):
+async def careful_upload(file: UploadFile) -> bytes:
+    """
+    Returns the content of the file, if the size does not exceed MAX_SIZE.
+    """
     total_size = 0
     chunks = []
     while True:

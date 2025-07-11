@@ -30,6 +30,8 @@ CANNOT_EDIT_GRADED_SUBMISSION = "CANNOT_EDIT_GRADED_SUBMISSION"
 CANNOT_ACCESS_SUBMISSION = "CANNOT_ACCESS_SUBMISSION"
 CANNOT_EDIT_OTHERS_SUBMISSION = "CANNOT_EDIT_OTHERS_SUBMISSION"
 ATTACHMENT_NOT_FOUND = "ATTACHMENT_NOT_FOUND"
+ATTACHMENT_NOT_FOUND_IN_ASSIGNMENT = "ATTACHMENT_NOT_FOUND_IN_ASSIGNMENT"
+ATTACHMENT_NOT_FOUND_IN_MATERIAL = "ATTACHMENT_NOT_FOUND_IN_MATERIAL"
 
 ROLE_STUDENT = "student"
 ROLE_TEACHER = "teacher"
@@ -248,3 +250,15 @@ class NoAccessToSubmissionException(EdHubException):
 class AttachmentNotFoundException(EdHubException):
     def __init__(self, file_id: str):
         super().__init__(404, f"Attachment {file_id} not found", ATTACHMENT_NOT_FOUND, file_id=file_id)
+
+
+class AttachmentNotFoundInAssignmentException(EdHubException):
+    def __init__(self, course_id: str, assignment_id: int, file_id: str):
+        super().__init__(404, f"Attachment {file_id} not found in assignment {assignment_id} of course {course_id}",
+                         ATTACHMENT_NOT_FOUND_IN_ASSIGNMENT, course_id=course_id, assignment_id=assignment_id, file_id=file_id)
+
+
+class AttachmentNotFoundInMaterialException(EdHubException):
+    def __init__(self, course_id: str, material_id: int, file_id: str):
+        super().__init__(404, f"Attachment {file_id} not found in material {material_id} of course {course_id}",
+                         ATTACHMENT_NOT_FOUND_IN_MATERIAL, course_id=course_id, material_id=material_id, file_id=file_id)
