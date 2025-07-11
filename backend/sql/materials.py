@@ -77,3 +77,16 @@ def select_material_attachments(conn, course_id: str, material_id: int) -> list[
             (course_id, material_id),
         )
         return [AttachmentInfoDTO(*attrs) for attrs in db_cursor.fetchall()]
+
+
+def select_single_material_attachment(conn, course_id: str, material_id: int, file_id: str) -> AttachmentInfoDTO:
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """
+            SELECT fileid, filename, uploadtime
+            FROM material_files
+            WHERE courseid = %s AND matid = %s AND fileid = %s
+            """,
+            (course_id, material_id, file_id),
+        )
+        return AttachmentInfoDTO(*db_cursor.fetchone())
