@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Union
 
 
 class UserEmailNameDTO:
@@ -83,3 +84,23 @@ class MaterialDTO:
         self.name = name
         self.description = description
         self.author_email = author_email
+
+
+class SubmissionDTO:
+    email: str
+    publicname: str
+    timeadded: datetime
+    timemodified: datetime
+    comment: str
+    grade: Union[int, None]
+    gradedby: Union[str, None]
+
+    def __init__(self, email: str, publicname: str, timeadded: datetime, timemodified: datetime,
+                 comment: str, grade: Union[int, None], gradedby: Union[str, None]):
+        self.email = email
+        self.publicname = publicname
+        self.timeadded = timeadded
+        self.timemodified = timemodified
+        self.comment = comment
+        self.grade = grade
+        self.gradedby = gradedby
