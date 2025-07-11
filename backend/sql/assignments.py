@@ -1,67 +1,86 @@
-def insert_assignment(db_cursor, course_id, title, description, user_email):
-    db_cursor.execute(
-        "INSERT INTO course_assignments (courseid, name, description, timeadded, author) VALUES (%s, %s, %s, now(), %s) RETURNING assid",
-        (course_id, title, description, user_email),
-    )
-    return db_cursor.fetchone()[0]
+from datetime import datetime
+from sql.dto import AssignmentDTO, AttachmentDTO
 
 
-def delete_assignment(db_cursor, course_id, assignment_id):
-    db_cursor.execute(
-        "DELETE FROM course_assignments WHERE courseid = %s AND assid = %s",
-        (course_id, assignment_id),
-    )
+def insert_assignment(conn, course_id: str, title: str, description: str, author_email: str) -> int:
+    """
+    Returns the ID of the new assignment within the course.
+    """
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """INSERT INTO course_assignments (courseid, name, description, timeadded, author)
+            VALUES (%s, %s, %s, now(), %s) RETURNING assid""",
+            (course_id, title, description, author_email),
+        )
+        return db_cursor.fetchone()[0]
 
 
-def select_assignment(db_cursor, course_id, assignment_id):
-    db_cursor.execute(
-        """
-        SELECT courseid, assid, timeadded, name, description, author
-        FROM course_assignments
-        WHERE courseid = %s AND assid = %s
-        """,
-        (course_id, assignment_id),
-    )
-    return db_cursor.fetchone()
+def delete_assignment(conn, course_id: str, assignment_id: int) -> None:
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            "DELETE FROM course_assignments WHERE courseid = %s AND assid = %s",
+            (course_id, assignment_id),
+        )
 
 
-def insert_assignment_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, filename, contents):
-    storage_db_cursor.execute(
-        """
-        INSERT INTO files 
-        (id, content)
-        VALUES (gen_random_uuid(), %s)
-        RETURNING id
-        """,
-        (contents, )
-    )
-    fileid = storage_db_cursor.fetchone()[0]
-
-    db_cursor.execute(
-        """
-        INSERT INTO assignment_files 
-        (courseid, assid, fileid, filename, uploadtime)
-        VALUES (%s, %s, %s, %s, now())
-        RETURNING fileid, uploadtime
-        """,
-        (course_id, assignment_id, fileid, filename),
-    )
-    return db_cursor.fetchone()
+def select_assignment(conn, course_id: str, assignment_id: int) -> AssignmentDTO:
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """
+            SELECT courseid, assid, timeadded, name, description, author
+            FROM course_assignments
+            WHERE courseid = %s AND assid = %s
+            """,
+            (course_id, assignment_id),
+        )
+        return AssignmentDTO(*db_cursor.fetchone())
 
 
-def select_assignment_attachments(db_cursor, course_id, assignment_id):
-    db_cursor.execute(
-        """
-        SELECT fileid, filename, uploadtime
-        FROM assignment_files
-        WHERE courseid = %s AND assid = %s
-        """,
-        (course_id, assignment_id),
-    )
-    return db_cursor.fetchall()
+def insert_assignment_attachment(system_conn, storage_conn, course_id: str, assignment_id: int,
+                                 filename: str, contents: bytes) -> tuple[str, datetime]:
+    """
+    Returns the fileid and uploadtime of the new file
+    """
+    with storage_conn.cursor() as storage_db_cursor:
+        storage_db_cursor.execute(
+            """
+            INSERT INTO files
+            (id, content)
+            VALUES (gen_random_uuid(), %s)
+            RETURNING id
+            """,
+            (contents, )
+        )
+        fileid = storage_db_cursor.fetchone()[0]
+
+    with system_conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """
+            INSERT INTO assignment_files
+            (courseid, assid, fileid, filename, uploadtime)
+            VALUES (%s, %s, %s, %s, now())
+            RETURNING fileid, uploadtime
+            """,
+            (course_id, assignment_id, fileid, filename),
+        )
+        return db_cursor.fetchone()
 
 
-def sql_get_all_assignments(db_cursor, course_id: str) -> list[int]:
-    db_cursor.execute("SELECT assid FROM course_assignments WHERE courseid = %s",
-                      (course_id,))
-    return [i[0] for i in db_cursor.fetchall()]
+def select_assignment_attachments(conn, course_id: str, assignment_id: int) -> list[AttachmentDTO]:
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """
+            SELECT fileid, filename, uploadtime
+            FROM assignment_files
+            WHERE courseid = %s AND assid = %s
+            """,
+            (course_id, assignment_id),
+        )
+        return [AttachmentDTO(*attrs) for attrs in db_cursor.fetchall()]
+
+
+def sql_get_all_assignments(conn, course_id: str) -> list[int]:
+    with conn.cursor() as db_cursor:
+        db_cursor.execute("SELECT assid FROM course_assignments WHERE courseid = %s",
+                          (course_id,))
+        return [i[0] for i in db_cursor.fetchall()]
