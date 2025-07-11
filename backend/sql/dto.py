@@ -27,7 +27,7 @@ class AssignmentDTO:
         self.author_email = author_email
 
 
-class AttachmentDTO:
+class AttachmentInfoDTO:
     fileid: str
     filename: str
     uploadtime: datetime

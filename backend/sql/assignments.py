@@ -1,5 +1,5 @@
 from datetime import datetime
-from sql.dto import AssignmentDTO, AttachmentDTO
+from sql.dto import AssignmentDTO, AttachmentInfoDTO
 
 
 def insert_assignment(conn, course_id: str, title: str, description: str, author_email: str) -> int:
@@ -66,7 +66,7 @@ def insert_assignment_attachment(system_conn, storage_conn, course_id: str, assi
         return db_cursor.fetchone()
 
 
-def select_assignment_attachments(conn, course_id: str, assignment_id: int) -> list[AttachmentDTO]:
+def select_assignment_attachments(conn, course_id: str, assignment_id: int) -> list[AttachmentInfoDTO]:
     with conn.cursor() as db_cursor:
         db_cursor.execute(
             """
@@ -76,7 +76,7 @@ def select_assignment_attachments(conn, course_id: str, assignment_id: int) -> l
             """,
             (course_id, assignment_id),
         )
-        return [AttachmentDTO(*attrs) for attrs in db_cursor.fetchall()]
+        return [AttachmentInfoDTO(*attrs) for attrs in db_cursor.fetchall()]
 
 
 def sql_get_all_assignments(conn, course_id: str) -> list[int]:

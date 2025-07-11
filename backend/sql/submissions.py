@@ -1,4 +1,4 @@
-from sql.dto import AttachmentDTO
+from sql.dto import AttachmentInfoDTO
 
 
 def select_submission_grade(conn, course_id: str, assignment_id: int, student_email: str) -> Union[int, None]:
@@ -50,7 +50,7 @@ def insert_submission_attachment(system_conn, storage_conn, course_id: str, assi
         return db_cursor.fetchone()
 
 
-def select_submission_attachments(conn, course_id: str, assignment_id: int, student_email: str) -> list[AttachmentDTO]:
+def select_submission_attachments(conn, course_id: str, assignment_id: int, student_email: str) -> list[AttachmentInfoDTO]:
     with conn.cursor() as db_cursor:
     db_cursor.execute(
         """

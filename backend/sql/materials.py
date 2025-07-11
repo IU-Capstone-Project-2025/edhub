@@ -1,5 +1,5 @@
 from datetime import datetime
-from sql.dto import MaterialDTO, AttachmentDTO
+from sql.dto import MaterialDTO, AttachmentInfoDTO
 
 
 def insert_material(conn, course_id: str, title: str, description: str, author_email: str) -> int:
@@ -66,7 +66,7 @@ def insert_material_attachment(system_conn, storage_conn, course_id: str,
         return db_cursor.fetchone()
 
 
-def select_material_attachments(conn, course_id: str, material_id: int) -> list[AttachmentDTO]:
+def select_material_attachments(conn, course_id: str, material_id: int) -> list[AttachmentInfoDTO]:
     with conn.cursor() as db_cursor:
         db_cursor.execute(
             """
@@ -76,4 +76,4 @@ def select_material_attachments(conn, course_id: str, material_id: int) -> list[
             """,
             (course_id, material_id),
         )
-        return [AttachmentDTO(*attrs) for attrs in db_cursor.fetchall()]
+        return [AttachmentInfoDTO(*attrs) for attrs in db_cursor.fetchall()]
