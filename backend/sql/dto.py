@@ -27,3 +27,33 @@ class AttachmentDTO:
         self.fileid = fileid
         self.filename = filename
         self.uploadtime = uploadtime
+
+
+class CourseInfoDTO:
+    course_id: str
+    name: str
+    time_created: datetime
+    student_count: int
+
+    def __init__(self, course_id: str, name: str, time_created: datetime, student_count: int):
+        self.course_id = course_id
+        self.name = name
+        self.time_created = time_created
+        self.student_count = student_count
+
+
+class CourseFeedItemDTO:
+    POST_ASSIGNMENT = 'ass'
+    POST_MATERIAL = 'mat'
+    course_id: str
+    post_id: str
+    post_type: str
+    timeadded: datetime
+    author_email: str
+
+    def __init__(self, course_id: str, post_id: str, post_type: str, timeadded: datetime, author_email: str):
+        self.course_id = course_id
+        self.post_id = post_id
+        self.post_type = post_type
+        self.timeadded = timeadded
+        self.author_email = author_email
