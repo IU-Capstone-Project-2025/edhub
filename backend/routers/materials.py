@@ -55,7 +55,7 @@ async def remove_material(course_id: str, material_id: str, user_email: str = De
     with database.get_system_conn() as db_conn:
         constraints.assert_material_exists(db_conn, course_id, material_id)
         constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
-        logic_remove_material(db_conn, course_id, material_id, user_email)
+        logic_remove_material(db_conn, course_id, material_id)
         logger.log(
             db_conn, logger.TAG_MATERIAL_DEL, f"User {user_email} removed a material {material_id} in {course_id}"
         )
@@ -76,7 +76,7 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
     with database.get_system_conn() as db_conn:
         constraints.assert_course_access(db_conn, user_email, course_id)
         constraints.assert_material_exists(db_conn, course_id, material_id)
-        mat = logic_get_material(db_conn, course_id, material_id, user_email)
+        mat = logic_get_material(db_conn, course_id, material_id)
         return {
             "course_id": mat.course_id,
             "material_id": mat.material_id,
@@ -138,7 +138,7 @@ async def get_material_attachments(course_id: str, material_id: str, user_email:
         constraints.assert_material_exists(db_conn, course_id, material_id)
         constraints.assert_course_access(db_conn, user_email, course_id)
         atts: list[AttachmentInfoDTO]
-        atts = logic_get_material_attachments(db_conn, course_id, material_id, user_email)
+        atts = logic_get_material_attachments(db_conn, course_id, material_id)
         return [
             {
                 "course_id": course_id,

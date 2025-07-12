@@ -58,6 +58,6 @@ async def remove_student(course_id: str, student_email: str, user_email: str = D
             or (constraints.check_student_access(conn, user_email, course_id) and student_email == user_email)
         ):
             raise edhub_errors.CannotRemoveStudentException(course_id, user_email, student_email)
-        logic_remove_student(conn, course_id, student_email, user_email)
+        logic_remove_student(conn, course_id, student_email)
         logger.log(conn, logger.TAG_STUDENT_DEL, f"Teacher {user_email} removed a student {student_email}")
     return json_classes.successful

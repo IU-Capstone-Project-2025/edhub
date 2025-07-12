@@ -62,7 +62,7 @@ async def remove_course(course_id: str, user_email: str = Depends(get_current_us
     """
     with database.get_system_conn() as db_conn:
         constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
-        logic.courses.remove_course(db_conn, course_id, user_email)
+        logic.courses.remove_course(db_conn, course_id)
         logger.log(db_conn, logger.TAG_COURSE_DEL, f"User {user_email} deleted course {course_id}")
         return json_classes.successful
 
@@ -94,7 +94,7 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
     """
     with database.get_system_conn() as db_conn:
         constraints.assert_course_access(db_conn, user_email, course_id)
-        feed = logic.courses.get_course_feed(db_conn, course_id, user_email)
+        feed = logic.courses.get_course_feed(db_conn, course_id)
         return [
             {
                 "course_id": post.course_id,

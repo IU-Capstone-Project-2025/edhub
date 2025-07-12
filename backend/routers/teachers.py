@@ -22,7 +22,7 @@ async def get_course_teachers(course_id: str, user_email: str = Depends(get_curr
     """
     with database.get_system_conn() as conn:
         constraints.assert_course_access(conn, user_email, course_id)
-        teachers = logic_get_course_teachers(conn, course_id, user_email)
+        teachers = logic_get_course_teachers(conn, course_id)
     return [{"email": tch.email, "name": tch.publicname} for tch in teachers]
 
 
