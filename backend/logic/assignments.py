@@ -54,3 +54,6 @@ def download_assignment_attachment(
     metadata = sql_ass.select_single_assignment_attachment(conn, course_id, assignment_id, file_id)
     content = sql_files.download_attachment(storage_conn, file_id)
     return metadata, content
+
+
+get_all_assignments = sql_ass.get_all_assignments

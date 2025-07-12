@@ -55,7 +55,7 @@ def select_parents_children(conn, course_id: str, parent_email: str) -> list[Use
         return [UserEmailNameDTO(*attrs) for attrs in db_cursor.fetchall()]
 
 
-def sql_has_child_at_course(conn, course_id: str, parent_email: str, student_email: str) -> bool:
+def has_child_at_course(conn, course_id: str, parent_email: str, student_email: str) -> bool:
     with conn.cursor() as db_cursor:
         db_cursor.execute(
             """

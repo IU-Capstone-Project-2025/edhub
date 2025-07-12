@@ -441,7 +441,7 @@ def value_assert_parent_of_all(conn, parent_email: str,
             err = value_assert_user_exists(db_cursor, student)
             if err is not None:
                 return err
-            ok = sql.parents.sql_has_child_at_course(db_cursor, course_id, parent_email, student)
+            ok = sql.parents.has_child_at_course(db_cursor, course_id, parent_email, student)
             if not ok:
                 return edhub_errors.UserIsNotParentOfStudentInCourseException(course_id, parent_email, student)
     return None

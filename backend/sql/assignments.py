@@ -92,7 +92,7 @@ def select_single_assignment_attachment(conn, course_id: str, assignment_id: int
         return AttachmentInfoDTO(*db_cursor.fetchone())
 
 
-def sql_get_all_assignments(conn, course_id: str) -> list[int]:
+def get_all_assignments(conn, course_id: str) -> list[int]:
     with conn.cursor() as db_cursor:
         db_cursor.execute("SELECT assid FROM course_assignments WHERE courseid = %s",
                           (course_id,))
