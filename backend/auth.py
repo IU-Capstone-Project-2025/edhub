@@ -34,7 +34,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         detail = str(e)
         raise edhub_errors.CustomJWTException(detail)
 
-    with database.get_system_conn() as db_conn, db_conn.cursor() as db_cursor:
-        constraints.assert_user_exists(db_cursor, user_email)
+    with database.get_system_conn() as db_conn:
+        constraints.assert_user_exists(db_conn, user_email)
 
     return user_email
