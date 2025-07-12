@@ -37,7 +37,7 @@ async def create_assignment(
     Returns the (course_id, assignment_id) for the new assignment in case of success.
     """
     with database.get_system_conn() as conn:
-        constraints.assert_teacher_access(conn, user_email, course_id)
+        constraints.assert_teacher_or_admin_access(conn, user_email, course_id)
         assignment_id = logic_create_assignment(conn, course_id, title, description)
         logger.log(conn, logger.TAG_ASSIGNMENT_ADD, f"User {user_email} created assignment {assignment_id} in course {course_id}")
         return {"course_id": course_id, "assignment_id": assignment_id}
@@ -51,7 +51,7 @@ async def remove_assignment(course_id: str, assignment_id: str, user_email: str 
     Teacher role required.
     """
     with database.get_system_conn() as db_conn:
-        constraints.assert_teacher_access(db_conn, user_email, course_id)
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
         logic_remove_assignment(db_conn, course_id, assignment_id)
         logger.log(db_conn, logger.TAG_ASSIGNMENT_DEL, f"User {user_email} removed assignment {assignment_id} in course {course_id}")
         return json_classes.Success()
@@ -98,7 +98,7 @@ async def create_assignment_attachment(
     The format of upload_time is TIME_FORMAT.
     """
     with database.get_system_conn() as db_conn, database.get_storage_conn() as storage_db_conn:
-        constraints.assert_teacher_access(db_conn, user_email, course_id)
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
         contents = await careful_upload(file)
         fileid, uploadtime = logic_create_assignment_attachment(
             db_conn, storage_db_conn, course_id, assignment_id, contents

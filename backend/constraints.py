@@ -173,11 +173,9 @@ def value_assert_teacher_access(conn, teacher_email: str, course_id: str) -> Uni
             """
             SELECT EXISTS(
                 SELECT 1 FROM teaches WHERE email = %s AND courseid = %s
-                UNION
-                SELECT 1 FROM users WHERE email = %s AND isadmin
             )
         """,
-            (teacher_email, course_id, teacher_email),
+            (teacher_email, course_id),
         )
         has_access = db_cursor.fetchone()[0]
     if not has_access:
@@ -195,7 +193,73 @@ def check_teacher_access(conn, teacher_email: str, course_id: str) -> bool:
     return value_assert_teacher_access(conn, teacher_email, course_id) is None
 
 
+def value_assert_teacher_or_admin_access(conn, teacher_email: str, course_id: str) -> Union[None, EdHubException]:
+    err = value_assert_user_exists(conn, teacher_email)
+    if err is not None:
+        return err
+    err = value_assert_course_exists(conn, course_id)
+    if err is not None:
+        return err
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """
+            SELECT EXISTS(
+                SELECT 1 FROM teaches WHERE email = %s AND courseid = %s
+                UNION
+                SELECT 1 FROM users WHERE email = %s AND isadmin
+            )
+        """,
+            (teacher_email, course_id, teacher_email),
+        )
+        has_access = db_cursor.fetchone()[0]
+    if not has_access:
+        return edhub_errors.UserIsNotTeacherInCourseException(course_id, teacher_email)
+    return None
+
+
+def assert_teacher_or_admin_access(conn, teacher_email: str, course_id: str):
+    err = value_assert_teacher_or_admin_access(conn, teacher_email, course_id)
+    if err is not None:
+        raise err
+
+
+def check_teacher_or_admin_access(conn, teacher_email: str, course_id: str) -> bool:
+    return value_assert_teacher_or_admin_access(conn, teacher_email, course_id) is None
+
+
 def value_assert_student_access(conn, student_email: str, course_id: str) -> Union[None, EdHubException]:
+    err = value_assert_user_exists(conn, student_email)
+    if err is not None:
+        return err
+    err = value_assert_course_exists(conn, course_id)
+    if err is not None:
+        return err
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """
+            SELECT EXISTS(
+                SELECT 1 FROM student_at WHERE email = %s AND courseid = %s
+            )
+        """,
+            (student_email, course_id),
+        )
+        has_access = db_cursor.fetchone()[0]
+    if not has_access:
+        return edhub_errors.UserIsNotStudentInCourseException(course_id, student_email)
+    return None
+
+
+def assert_student_access(conn, student_email: str, course_id: str):
+    err = value_assert_student_access(conn, student_email, course_id)
+    if err is not None:
+        raise err
+
+
+def check_student_access(conn, student_email: str, course_id: str) -> bool:
+    return value_assert_student_access(conn, student_email, course_id) is None
+
+
+def value_assert_student_or_admin_access(conn, student_email: str, course_id: str) -> Union[None, EdHubException]:
     err = value_assert_user_exists(conn, student_email)
     if err is not None:
         return err
@@ -219,17 +283,49 @@ def value_assert_student_access(conn, student_email: str, course_id: str) -> Uni
     return None
 
 
-def assert_student_access(conn, student_email: str, course_id: str):
-    err = value_assert_student_access(conn, student_email, course_id)
+def assert_student_or_admin_access(conn, student_email: str, course_id: str):
+    err = value_assert_student_or_admin_access(conn, student_email, course_id)
     if err is not None:
         raise err
 
 
-def check_student_access(conn, student_email: str, course_id: str) -> bool:
-    return value_assert_student_access(conn, student_email, course_id) is None
+def check_student_or_admin_access(conn, student_email: str, course_id: str) -> bool:
+    return value_assert_student_or_admin_access(conn, student_email, course_id) is None
 
 
 def value_assert_parent_access(conn, parent_email: str, course_id: str) -> Union[None, EdHubException]:
+    err = value_assert_user_exists(conn, parent_email)
+    if err is not None:
+        return err
+    err = value_assert_course_exists(conn, course_id)
+    if err is not None:
+        return err
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """
+            SELECT EXISTS(
+                SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND courseid = %s
+            )
+        """,
+            (parent_email, course_id),
+        )
+        has_access = db_cursor.fetchone()[0]
+    if not has_access:
+        return edhub_errors.UserIsNotParentInCourseException(course_id, parent_email)
+    return None
+
+
+def assert_parent_access(conn, parent_email: str, course_id: str):
+    err = value_assert_parent_access(conn, parent_email, course_id)
+    if err is not None:
+        raise err
+
+
+def check_parent_access(conn, parent_email: str, course_id: str) -> bool:
+    return value_assert_parent_access(conn, parent_email, course_id) is None
+
+
+def value_assert_parent_or_admin_access(conn, parent_email: str, course_id: str) -> Union[None, EdHubException]:
     err = value_assert_user_exists(conn, parent_email)
     if err is not None:
         return err
@@ -253,14 +349,14 @@ def value_assert_parent_access(conn, parent_email: str, course_id: str) -> Union
     return None
 
 
-def assert_parent_access(conn, parent_email: str, course_id: str):
-    err = value_assert_parent_access(conn, parent_email, course_id)
+def assert_parent_or_admin_access(conn, parent_email: str, course_id: str):
+    err = value_assert_parent_or_admin_access(conn, parent_email, course_id)
     if err is not None:
         raise err
 
 
-def check_parent_access(conn, parent_email: str, course_id: str) -> bool:
-    return value_assert_parent_access(conn, parent_email, course_id) is None
+def check_parent_or_admin_access(conn, parent_email: str, course_id: str) -> bool:
+    return value_assert_parent_or_admin_access(conn, parent_email, course_id) is None
 
 
 def value_assert_parent_student_access(
@@ -280,8 +376,6 @@ def value_assert_parent_student_access(
             """
             SELECT EXISTS(
                 SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND studentemail = %s AND courseid = %s
-                UNION
-                SELECT 1 FROM users WHERE email = %s AND isadmin
             )
         """,
             (parent_email, student_email, course_id, parent_email),
@@ -459,9 +553,7 @@ def value_assert_all_students_grades_accessbile(
     err = value_assert_course_access(conn, user_email, course_id)
     if err is not None:
         return err
-    if sql.users.select_is_admin(conn, user_email):
-        return None
-    if check_teacher_access(conn, user_email, course_id):
+    if check_teacher_or_admin_access(conn, user_email, course_id):
         return None
     if check_parent_access(conn, user_email, course_id):
         return value_assert_parent_of_all(conn, user_email, students, course_id)

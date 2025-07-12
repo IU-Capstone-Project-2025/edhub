@@ -61,7 +61,7 @@ async def remove_course(course_id: str, user_email: str = Depends(get_current_us
     Teacher role required.
     """
     with database.get_system_conn() as db_conn:
-        constraints.assert_teacher_access(db_conn, user_email, course_id)
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
         logic.courses.remove_course(db_conn, course_id, user_email)
         logger.log(db_conn, logger.TAG_COURSE_DEL, f"User {user_email} deleted course {course_id}")
         return json_classes.Success()
@@ -115,7 +115,7 @@ async def download_full_course_grade_table(course_id: str, user_email: str = Dep
     COLUMNS: student login, student display name, then assignment names
     """
     with database.get_system_conn() as db_conn:
-        constraints.assert_teacher_access(db_conn, user_email, course_id)
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
         students = [i["email"] for i in logic.students.get_enrolled_students(db_conn, course_id)]
         gradables = logic.assignments.get_all_assignments(db_conn, course_id)
         csv_text = logic.courses.get_grade_table_csv(db_conn, course_id, students, gradables)

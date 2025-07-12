@@ -37,7 +37,7 @@ async def create_material(
     Returns the (course_id, material_id) for the new material in case of success.
     """
     with database.get_system_conn() as db_conn:
-        constraints.assert_teacher_access(db_conn, user_email, course_id)
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
         matid = logic_create_material(db_conn, course_id, title, description, user_email)
         logger.log(
             db_conn, logger.TAG_MATERIAL_ADD, f"User {user_email} created a material {matid} in {course_id}"
@@ -54,7 +54,7 @@ async def remove_material(course_id: str, material_id: str, user_email: str = De
     """
     with database.get_system_conn() as db_conn:
         constraints.assert_material_exists(db_conn, course_id, material_id)
-        constraints.assert_teacher_access(db_conn, user_email, course_id)
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
         logic_remove_material(db_conn, course_id, material_id, user_email)
         logger.log(
             db_conn, logger.TAG_MATERIAL_DEL, f"User {user_email} removed a material {material_id} in {course_id}"
@@ -105,7 +105,7 @@ async def create_material_attachment(
     """
     with database.get_system_conn() as db_conn:
         constraints.assert_material_exists(db_conn, course_id, material_id)
-        constraints.assert_teacher_access(db_conn, user_email, course_id)
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
     file_content = careful_upload(file)
     with database.get_system_conn() as db_conn, database.get_storage_conn() as storage_db_conn:
         att = logic_create_material_attachment(

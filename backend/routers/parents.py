@@ -25,7 +25,7 @@ async def get_students_parents(course_id: str, student_email: str, user_email: s
     """
     with database.get_system_conn() as db_conn:
         constraints.assert_student_access(db_conn, student_email, course_id)
-        constraints.assert_teacher_access(db_conn, user_email, course_id)
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
         parents = logic_get_students_parents(db_conn, course_id, student_email, user_email)
         return [{"email": par.email, "name": par.publicname} for par in parents]
 
@@ -46,6 +46,7 @@ async def invite_parent(
         constraints.assert_teacher_access(db_conn, teacher_email, course_id)
         constraints.assert_student_access(db_conn, student_email, course_id)
         return logic_invite_parent(db_conn, course_id, student_email, parent_email, teacher_email)
+        return json_classes.Success()
 
 
 @router.post("/remove_parent", response_model=json_classes.Success)
