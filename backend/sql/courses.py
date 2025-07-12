@@ -20,7 +20,7 @@ def select_available_courses(conn, user_email: str) -> list[str]:
             """,
             (user_email, user_email, user_email),
         )
-        return db_cursor.fetchall()
+        return [i[0] for i in db_cursor.fetchall()]
 
 
 def select_all_courses(conn) -> list[str]:
