@@ -28,7 +28,7 @@ async def get_students_parents(course_id: str, student_email: str, user_email: s
     with database.get_system_conn() as db_conn:
         constraints.assert_student_access(db_conn, student_email, course_id)
         constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
-        parents = logic_get_students_parents(db_conn, course_id, student_email, user_email)
+        parents = logic_get_students_parents(db_conn, course_id, student_email)
         return [{"email": par.email, "name": par.publicname} for par in parents]
 
 
@@ -76,7 +76,7 @@ async def remove_parent(
             or (constraints.check_parent_access(db_conn, user_email, course_id) and parent_email == user_email)
         ):
             raise edhub_errors.CannotRemoveParentException(course_id, user_email, parent_email)
-        logic_remove_parent(db_conn, course_id, student_email, parent_email, user_email)
+        logic_remove_parent(db_conn, course_id, student_email, parent_email)
         logger.log(
             db_conn,
             logger.TAG_PARENT_DEL,

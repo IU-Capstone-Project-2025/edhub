@@ -29,7 +29,6 @@ def remove_parent(
     course_id: str,
     student_email: str,
     parent_email: str,
-    user_email: str,
 ) -> None:
     constraints.assert_parent_student_access(db_conn, parent_email, student_email, course_id)
     sql_parents.delete_parent_of_at_course(db_conn, course_id, student_email, parent_email)
