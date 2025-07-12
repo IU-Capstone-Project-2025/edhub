@@ -32,7 +32,7 @@ get_course_feed = sql.courses.select_course_feed
 
 
 def get_grade_table(
-    db_conn, course_id: str, students: list[str], gradables: list[int], user_email: str
+    db_conn, course_id: str, students: list[str], gradables: list[int]
 ) -> list[list[Union[int, None]]]:
     """
     Returns:
