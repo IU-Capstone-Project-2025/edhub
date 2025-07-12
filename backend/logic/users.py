@@ -7,8 +7,7 @@ import sql.users as sql_users
 from regex import match, search
 from secrets import token_hex
 from sql.dto import UserEmailNameDTO, UserRolesDTO
-from json_classes import UserCreate
-from logic.logging import logger
+import logic.logging as logger
 
 
 def get_user_info(conn, user_email: str) -> UserEmailNameDTO:
@@ -27,25 +26,25 @@ def get_user_role(conn, course_id: str, user_email: str) -> UserRolesDTO:
 def create_user(conn, email: str, password: str, publicname: str) -> None:
     pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     if not (
-        match(pattern, user.email)
-        and len(user.email) <= 254
-        and not ".." in user.email
-        and len(user.email.split("@")[0]) <= 64
+        match(pattern, email)
+        and len(email) <= 254
+        and not ".." in email
+        and len(email.split("@")[0]) <= 64
     ):
-        raise edhub_errors.BadEmailFormatException(user.email)
+        raise edhub_errors.BadEmailFormatException(email)
 
     if not (
-        len(user.password) >= 8
-        and search(r"\d", user.password)
-        and search(r"\p{L}", user.password)
-        and search(r"[^\p{L}\p{N}\s]", user.password)
+        len(password) >= 8
+        and search(r"\d", password)
+        and search(r"\p{L}", password)
+        and search(r"[^\p{L}\p{N}\s]", password)
     ):
         raise edhub_errors.PasswordTooWeakException()
 
-    constraints.assert_user_not_exists(conn, user.email)
+    constraints.assert_user_not_exists(conn, email)
 
-    hashed_password = pwd_hasher.hash(user.password)
-    sql_users.insert_user(conn, user.email, user.name, hashed_password)
+    hashed_password = pwd_hasher.hash(password)
+    sql_users.insert_user(conn, email, publicname, hashed_password)
 
 
 def login(conn, email: str, password: str) -> str:
@@ -68,7 +67,7 @@ def get_access_token(email: str) -> str:
     Expires in `ACCESS_TOKEN_EXPIRE_MINUTES` from `datetime.utcnow()`.
     """
     data = {
-        "email": user.email,
+        "email": email,
         "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     }
     return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
