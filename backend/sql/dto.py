@@ -2,6 +2,19 @@ from datetime import datetime
 from typing import Union
 
 
+class UserRolesDTO:
+    is_student: bool
+    is_parent: bool
+    is_teacher: bool
+    is_admin: bool
+
+    def __init__(self, is_student: bool, is_parent: bool, is_teacher: bool, is_admin: bool):
+        self.is_student = is_student
+        self.is_parent = is_parent
+        self.is_teacher = is_teacher
+        self.is_admin = is_admin
+
+
 class UserEmailNameDTO:
     email: str
     publicname: str

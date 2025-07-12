@@ -40,7 +40,7 @@ def update_password(conn, email: str, hashed_new_password: str) -> None:
 
 def select_single_teacher_courses(conn, user_email: str) -> list[str]:
     """
-    Returns the list of course IDs where there is only one teacher
+    Returns the list of course IDs where the only teacher is `user_email`
     """
     with conn.cursor() as db_cursor:
         db_cursor.execute(

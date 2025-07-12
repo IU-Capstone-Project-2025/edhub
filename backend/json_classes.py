@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Union
-from sql.dto import UserEmailNameDTO
+from sql.dto import UserEmailNameDTO, UserRolesDTO
 
 
 class Success(BaseModel):
@@ -24,6 +24,15 @@ class CourseRole(BaseModel):
     is_student: bool
     is_parent: bool
     is_admin: bool
+
+    @staticmethod
+    def from_dto(dto: UserRolesDTO) -> "CourseRole":
+        return CourseRole(
+            is_teacher=dto.is_teacher,
+            is_student=dto.is_student,
+            is_parent=dto.is_parent,
+            is_admin=dto.is_admin,
+        )
 
 
 class CourseId(BaseModel):
