@@ -40,7 +40,7 @@ async def invite_student(course_id: str, student_email: str, teacher_email: str 
         constraints.assert_teacher_or_admin_access(conn, teacher_email, course_id)
         logic_invite_student(conn, course_id, student_email, teacher_email)
         logger.log(conn, logger.TAG_STUDENT_ADD, f"Teacher {teacher_email} invited a student {student_email}")
-    return json_classes.Success()
+    return json_classes.successful
 
 
 @router.post("/remove_student", response_model=json_classes.Success)
@@ -60,4 +60,4 @@ async def remove_student(course_id: str, student_email: str, user_email: str = D
             raise edhub_errors.CannotRemoveStudentException(course_id, user_email, student_email)
         logic_remove_student(conn, course_id, student_email, user_email)
         logger.log(conn, logger.TAG_STUDENT_DEL, f"Teacher {user_email} removed a student {student_email}")
-    return json_classes.Success()
+    return json_classes.successful

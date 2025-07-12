@@ -75,7 +75,7 @@ async def change_password(user: json_classes.UserNewPassword):
     with database.get_system_conn() as conn:
         logic_change_password(conn, user.email, user.password, user.new_password)
         logger.log(conn, logger.TAG_USER_CHPW, f"User {user.email} changed their password")
-    return json_classes.Success()
+    return json_classes.successful
 
 
 @router.post("/remove_user", response_model=json_classes.Success)
@@ -94,7 +94,7 @@ async def remove_user(user_email: str = Depends(get_current_user)):
     with database.get_system_conn() as conn:
         logic_remove_user(conn, user_email)
         logger.log(conn, logger.TAG_USER_DEL, f"Removed user {user_email} from the system")
-    return json_classes.Success()
+    return json_classes.successful
 
 
 @router.post("/give_admin_permissions", response_model=json_classes.Success)
@@ -108,7 +108,7 @@ async def give_admin_permissions(object_email: str, my_email: str = Depends(get_
         constraints.assert_admin_access(conn, my_email)
         logic_give_admin_permissions(conn, object_email)
         logger.log(conn, logger.TAG_ADMIN_ADD, f"Added admin privileges to user: {object_email}")
-    return json_classes.Success()
+    return json_classes.successful
 
 
 @router.get("/get_all_users", response_model=List[json_classes.User])

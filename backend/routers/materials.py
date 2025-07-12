@@ -59,7 +59,7 @@ async def remove_material(course_id: str, material_id: str, user_email: str = De
         logger.log(
             db_conn, logger.TAG_MATERIAL_DEL, f"User {user_email} removed a material {material_id} in {course_id}"
         )
-        return json_classes.Success()
+        return json_classes.successful
 
 
 @router.get("/get_material", response_model=json_classes.Material)

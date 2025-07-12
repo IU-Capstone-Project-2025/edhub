@@ -24,7 +24,7 @@ async def available_courses(user_email: str = Depends(get_current_user)):
     Note that this endpoint ignores the user's admin status.
     """
     with database.get_system_conn() as db_conn:
-        return [json_classes.CourseId(id) for id in logic.courses.available_courses(db_conn, user_email)]
+        return [{"course_id": id} for id in logic.courses.available_courses(db_conn, user_email)]
 
 
 @router.get("/get_all_courses", response_model=List[json_classes.CourseId])
@@ -36,7 +36,7 @@ async def get_all_courses(user_email: str = Depends(get_current_user)):
     """
     with database.get_system_conn() as db_conn:
         constraints.assert_admin_access(db_conn, user_email)
-        return [json_classes.CourseId(id) for id in logic.courses.get_all_courses(db_conn)]
+        return [{"course_id": id} for id in logic.courses.get_all_courses(db_conn)]
 
 
 @router.post("/create_course", response_model=json_classes.CourseId)
@@ -64,7 +64,7 @@ async def remove_course(course_id: str, user_email: str = Depends(get_current_us
         constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
         logic.courses.remove_course(db_conn, course_id, user_email)
         logger.log(db_conn, logger.TAG_COURSE_DEL, f"User {user_email} deleted course {course_id}")
-        return json_classes.Success()
+        return json_classes.successful
 
 
 @router.get("/get_course_info", response_model=json_classes.Course)

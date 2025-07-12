@@ -53,7 +53,7 @@ async def invite_parent(
             logger.TAG_PARENT_ADD,
             f"Teacher {teacher_email} invited a parent {parent_email} for student {student_email}",
         )
-    return json_classes.Success()
+    return json_classes.successful
 
 
 @router.post("/remove_parent", response_model=json_classes.Success)
@@ -82,7 +82,7 @@ async def remove_parent(
             logger.TAG_PARENT_DEL,
             f"Teacher {user_email} removed a parent {parent_email} for student {student_email}",
         )
-    return json_classes.Success()
+    return json_classes.successful
 
 
 @router.get("/get_parents_children", response_model=List[json_classes.User])

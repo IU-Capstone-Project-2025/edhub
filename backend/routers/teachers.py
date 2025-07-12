@@ -41,7 +41,7 @@ async def invite_teacher(
         constraints.assert_teacher_or_admin_access(conn, teacher_email, course_id)
         logic_invite_teacher(conn, course_id, new_teacher_email)
         logger.log(conn, logger.TAG_TEACHER_ADD, f"Teacher {teacher_email} invited a teacher {new_teacher_email}")
-    return json_classes.Success()
+    return json_classes.successful
 
 
 @router.post("/remove_teacher", response_model=json_classes.Success)
@@ -65,4 +65,4 @@ async def remove_teacher(
         logger.log(
             conn, logger.TAG_TEACHER_DEL, f"User {teacher_email} removed a teacher {removing_teacher_email}"
         )
-    return json_classes.Success()
+    return json_classes.successful

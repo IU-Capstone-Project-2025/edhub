@@ -6,8 +6,8 @@ from sql.dto import UserEmailNameDTO, UserRolesDTO
 class Success(BaseModel):
     success: bool
 
-    def __init__(self):
-        super().__init__(success=True)
+
+successful = Success(success=True)
 
 
 class User(BaseModel):
@@ -37,9 +37,6 @@ class CourseRole(BaseModel):
 
 class CourseId(BaseModel):
     course_id: str
-
-    def __init__(self, course_id: str):
-        super().__init__(course_id=course_id)
 
 
 class Course(CourseId):

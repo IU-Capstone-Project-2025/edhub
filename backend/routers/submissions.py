@@ -44,7 +44,7 @@ async def submit_assignment(
             logger.TAG_ASSIGNMENT_SUBMIT,
             f"Student {student_email} submitted an assignment {assignment_id} in {course_id}",
         )
-    return json_classes.Success()
+    return json_classes.successful
 
 
 @router.get("/get_assignment_submissions", response_model=List[json_classes.Submission])
@@ -143,7 +143,7 @@ async def grade_submission(
             logger.TAG_ASSIGNMENT_GRADE,
             f"Teacher {user_email} graded an assignment {assignment_id} in {course_id} by {student_email}",
         )
-    return json_classes.Success()
+    return json_classes.successful
 
 
 @router.post("/create_submission_attachment", response_model=json_classes.SubmissionAttachmentMetadata)
