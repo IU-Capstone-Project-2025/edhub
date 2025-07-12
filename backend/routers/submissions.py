@@ -198,7 +198,7 @@ async def get_submission_attachments(
     """
     with database.get_system_conn() as conn:
         if not (
-            constraints.check_teacher_access(conn, user_email, course_id)
+            constraints.check_teacher_or_admin_access(conn, user_email, course_id)
             or constraints.check_parent_student_access(conn, user_email, student_email, course_id)
             or student_email == user_email
         ):
@@ -226,7 +226,7 @@ async def download_submission_attachment(
     """
     with database.get_system_conn() as conn, database.get_storage_conn() as storage_conn:
         if not (
-            constraints.check_teacher_access(conn, user_email, course_id)
+            constraints.check_teacher_or_admin_access(conn, user_email, course_id)
             or constraints.check_parent_student_access(conn, user_email, student_email, course_id)
             or student_email == user_email
         ):

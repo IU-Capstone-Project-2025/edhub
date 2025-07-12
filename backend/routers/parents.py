@@ -45,7 +45,7 @@ async def invite_parent(
     Teacher role required.
     """
     with database.get_system_conn() as db_conn:
-        constraints.assert_teacher_access(db_conn, teacher_email, course_id)
+        constraints.assert_teacher_or_admin_access(db_conn, teacher_email, course_id)
         constraints.assert_student_access(db_conn, student_email, course_id)
         logic_invite_parent(db_conn, course_id, student_email, parent_email)
         logger.log(
