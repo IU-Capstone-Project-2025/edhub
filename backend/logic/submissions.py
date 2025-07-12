@@ -1,4 +1,3 @@
-from fastapi import UploadFile, Response
 import edhub_errors
 import constraints
 import sql.submissions as sql_submit

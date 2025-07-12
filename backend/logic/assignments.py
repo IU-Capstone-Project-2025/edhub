@@ -1,20 +1,16 @@
-from fastapi import UploadFile, Response
-import edhub_errors
-from constants import TIME_FORMAT
 import constraints
 import sql.assignments as sql_ass
 import sql.files as sql_files
-from logic.uploading import careful_upload
 from sql.dto import AssignmentDTO, AttachmentInfoDTO
 from datetime import datetime
 
 
-def create_assignment(conn, course_id: str, title: str, description: str) -> int:
+def create_assignment(conn, course_id: str, title: str, description: str, author_email: str) -> int:
     """
     Returns the ID of the new assignment within the course.
     """
     constraints.assert_course_exists(conn, course_id)
-    assignment_id = sql_ass.insert_assignment(conn, course_id, title, description, user_email)
+    assignment_id = sql_ass.insert_assignment(conn, course_id, title, description, author_email)
     return assignment_id
 
 

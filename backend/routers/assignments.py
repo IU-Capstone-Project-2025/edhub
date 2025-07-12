@@ -38,7 +38,7 @@ async def create_assignment(
     """
     with database.get_system_conn() as conn:
         constraints.assert_teacher_or_admin_access(conn, user_email, course_id)
-        assignment_id = logic_create_assignment(conn, course_id, title, description)
+        assignment_id = logic_create_assignment(conn, course_id, title, description, user_email)
         logger.log(conn, logger.TAG_ASSIGNMENT_ADD, f"User {user_email} created assignment {assignment_id} in course {course_id}")
         return {"course_id": course_id, "assignment_id": assignment_id}
 

@@ -1,6 +1,3 @@
-import edhub_errors
-from constants import TIME_FORMAT
-import constraints
 import sql.courses
 import sql.teachers
 import sql.users
