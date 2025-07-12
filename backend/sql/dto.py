@@ -17,9 +17,10 @@ class AssignmentDTO:
     timeadded: datetime
     name: str
     description: str
-    author_email: str
+    author_email: Union[None, str]
 
-    def __init__(self, course_id: str, assignment_id: int, timeadded: datetime, name: str, description: str, author_email: str):
+    def __init__(self, course_id: str, assignment_id: int, timeadded: datetime,
+                 name: str, description: str, author_email: Union[None, str]):
         self.course_id = course_id
         self.assignment_id = assignment_id
         self.timeadded = timeadded
@@ -75,9 +76,10 @@ class MaterialDTO:
     timeadded: datetime
     name: str
     description: str
-    author_email: str
+    author_email: Union[None, str]
 
-    def __init__(self, course_id: str, material_id: str, timeadded: datetime, name: str, description: str, author_email: str):
+    def __init__(self, course_id: str, material_id: str, timeadded: datetime, name: str,
+                 description: str, author_email: Union[str, None]):
         self.course_id = course_id
         self.material_id = material_id
         self.timeadded = timeadded

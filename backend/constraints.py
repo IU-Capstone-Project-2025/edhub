@@ -523,6 +523,31 @@ def check_assignment_attachment_exists(conn, course_id: str, assignment_id: int,
     return value_assert_assignment_attachment_exists(conn, course_id, assignment_id, file_id) is None
 
 
+def value_assert_submission_attachment_exists(conn, course_id: str, assignment_id: int,
+                                              student_email: str, file_id: str) -> Union[None, EdHubException]:
+    err = value_assert_submission_exists(conn, course_id, assignment_id, student_email)
+    if err is not None:
+        return err
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """SELECT EXISTS (SELECT 1 FROM submissions_files WHERE courseid = %s AND
+            assid = %s AND email = %s AND fileid = %s)""", (course_id, assignment_id, student_email, file_id)
+        )
+        if db_cursor.fetchone()[0]:
+            return None
+    return edhub_errors.AttachmentNotFoundInSubmissionException(course_id, assignment_id, student_email, file_id)
+
+
+def assert_submission_attachment_exists(conn, course_id: str, attachment_id: int, student_email: str, file_id: str):
+    err = value_assert_submission_attachment_exists(conn, course_id, attachment_id, student_email, file_id)
+    if err is not None:
+        raise err
+
+
+def check_submission_attachment_exists(conn, course_id: str, attachment_id: int, student_email: str, file_id: str) -> bool:
+    return value_assert_submission_attachment_exists(conn, course_id, attachment_id, student_email, file_id) is None
+
+
 def value_assert_material_attachment_exists(conn, course_id: str, material_id: int, file_id: str) -> Union[None, EdHubException]:
     err = value_assert_material_exists(conn, course_id, material_id)
     if err is not None:

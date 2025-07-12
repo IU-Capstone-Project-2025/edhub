@@ -32,6 +32,7 @@ CANNOT_EDIT_OTHERS_SUBMISSION = "CANNOT_EDIT_OTHERS_SUBMISSION"
 ATTACHMENT_NOT_FOUND = "ATTACHMENT_NOT_FOUND"
 ATTACHMENT_NOT_FOUND_IN_ASSIGNMENT = "ATTACHMENT_NOT_FOUND_IN_ASSIGNMENT"
 ATTACHMENT_NOT_FOUND_IN_MATERIAL = "ATTACHMENT_NOT_FOUND_IN_MATERIAL"
+ATTACHMENT_NOT_FOUND_IN_SUBMISSION = "ATTACHMENT_NOT_FOUND_IN_SUBMISSION"
 
 ROLE_STUDENT = "student"
 ROLE_TEACHER = "teacher"
@@ -262,3 +263,10 @@ class AttachmentNotFoundInMaterialException(EdHubException):
     def __init__(self, course_id: str, material_id: int, file_id: str):
         super().__init__(404, f"Attachment {file_id} not found in material {material_id} of course {course_id}",
                          ATTACHMENT_NOT_FOUND_IN_MATERIAL, course_id=course_id, material_id=material_id, file_id=file_id)
+
+
+class AttachmentNotFoundInSubmissionException(EdHubException):
+    def __init__(self, course_id: str, assignment_id: int, student_login: str, file_id: str):
+        super().__init__(404, f"Attachment {file_id} not found in the submission by {student_login} to assignment {assignment_id} of course {course_id}",
+                         ATTACHMENT_NOT_FOUND_IN_SUBMISSION, course_id=course_id,
+                         assignment_id=assignment_id, student_login=student_login, file_id=file_id)

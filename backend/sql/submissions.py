@@ -1,5 +1,6 @@
 from typing import Union
 from sql.dto import AttachmentInfoDTO, SubmissionDTO
+from datetime import datetime
 
 
 def select_submission_grade(conn, course_id: str, assignment_id: int, student_email: str) -> Union[int, None]:
@@ -62,6 +63,20 @@ def select_submission_attachments(conn, course_id: str, assignment_id: int, stud
             (course_id, assignment_id, student_email),
         )
         return [AttachmentInfoDTO(*attrs) for attrs in db_cursor.fetchall()]
+
+
+def select_single_submission_attachment(conn, course_id: str, assignment_id: int,
+                                        student_email: str, file_id: str) -> AttachmentInfoDTO:
+    with conn.cursor() as db_cursor:
+        db_cursor.execute(
+            """
+            SELECT fileid, filename, uploadtime
+            FROM submissions_files
+            WHERE courseid = %s AND assid = %s AND email = %s AND fileid = %s
+            """,
+            (course_id, assignment_id, student_email, file_id),
+        )
+        return AttachmentInfoDTO(*db_cursor.fetchone())
 
 
 def update_submission_comment(conn, comment: str, course_id: str, assignment_id: int, student_email: str) -> None:

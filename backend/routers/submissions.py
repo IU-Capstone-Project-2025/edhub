@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import Response, APIRouter, Depends, UploadFile, File
 from typing import List
 
 from auth import get_current_user
@@ -13,7 +13,11 @@ from logic.submissions import (
     get_submission_attachments as logic_get_submission_attachments,
     download_submission_attachment as logic_download_submission_attachment,
 )
-
+import logic.logging as logger
+from logic.uploading import careful_upload
+from constants import TIME_FORMAT
+import edhub_errors
+import constraints
 
 router = APIRouter()
 
@@ -30,11 +34,17 @@ async def submit_assignment(
 
     Student role required.
 
-    Student cannot submit already graded assignment.
+    Student cannot submit to an already graded assignment.
     """
-
-    with database.get_system_conn() as db_conn:
-        return logic_submit_assignment(db_conn, course_id, assignment_id, comment, student_email)
+    with database.get_system_conn() as conn:
+        constraints.assert_student_or_admin_access(conn, student_email, course_id)
+        logic_submit_assignment(conn, course_id, assignment_id, comment, student_email)
+        logger.log(
+            conn,
+            logger.TAG_ASSIGNMENT_SUBMIT,
+            f"Student {student_email} submitted an assignment {assignment_id} in {course_id}",
+        )
+    return json_classes.Success()
 
 
 @router.get("/get_assignment_submissions", response_model=List[json_classes.Submission])
@@ -52,9 +62,23 @@ async def get_assignment_submissions(course_id: str, assignment_id: str, user_em
 
     `grade` and `gradedby_email` can be `null` if the assignment was not graded yet.
     """
-
-    with database.get_system_conn() as db_conn:
-        return logic_get_assignment_submissions(db_conn, course_id, assignment_id, user_email)
+    with database.get_system_conn() as conn:
+        constraints.assert_teacher_or_admin_access(conn, user_email, course_id)
+        subs = logic_get_assignment_submissions(conn, course_id, assignment_id)
+        return [
+            {
+                "course_id": course_id,
+                "assignment_id": assignment_id,
+                "student_email": sub.email,
+                "student_name": sub.publicname,
+                "submission_time": sub.timeadded.strftime(TIME_FORMAT),
+                "last_modification_time": sub.timemodified.strftime(TIME_FORMAT),
+                "comment": sub.comment,
+                "grade": sub.grade,
+                "gradedby_email": sub.gradedby,
+            }
+            for sub in subs
+        ]
 
 
 @router.get("/get_submission", response_model=json_classes.Submission)
@@ -77,9 +101,25 @@ async def get_submission(
 
     `grade` and `gradedby_email` can be `null` if the assignment was not graded yet.
     """
-
-    with database.get_system_conn() as db_conn:
-        return logic_get_submission(db_conn, course_id, assignment_id, student_email, user_email)
+    with database.get_system_conn() as conn:
+        if not (
+            constraints.check_teacher_or_admin_access(conn, user_email, course_id)
+            or constraints.check_parent_student_access(conn, user_email, student_email, course_id)
+            or student_email == user_email
+        ):
+            raise edhub_errors.NoAccessToSubmissionException(course_id, student_email, user_email)
+        sub = logic_get_submission(conn, course_id, assignment_id, student_email)
+    return {
+        "course_id": course_id,
+        "assignment_id": assignment_id,
+        "student_email": sub.email,
+        "student_name": sub.publicname,
+        "submission_time": sub.timeadded.strftime(TIME_FORMAT),
+        "last_modification_time": sub.timemodified.strftime(TIME_FORMAT),
+        "comment": sub.comment,
+        "grade": sub.grade,
+        "gradedby_email": sub.gradedby,
+    }
 
 
 @router.post("/grade_submission", response_model=json_classes.Success)
@@ -91,20 +131,19 @@ async def grade_submission(
     user_email: str = Depends(get_current_user),
 ):
     """
-    Allows teacher to grade student's submission.
+    Grade a student's submission.
 
     Teacher role required.
     """
-
-    with database.get_system_conn() as db_conn:
-        return logic_grade_submission(
-            db_conn,
-            course_id,
-            assignment_id,
-            student_email,
-            grade,
-            user_email,
+    with database.get_system_conn() as conn:
+        constraints.assert_teacher_or_admin_access(conn, user_email, course_id)
+        logic_grade_submission(conn, course_id, assignment_id, student_email, grade, user_email)
+        logger.log(
+            conn,
+            logger.TAG_ASSIGNMENT_GRADE,
+            f"Teacher {user_email} graded an assignment {assignment_id} in {course_id} by {student_email}",
         )
+    return json_classes.Success()
 
 
 @router.post("/create_submission_attachment", response_model=json_classes.SubmissionAttachmentMetadata)
@@ -125,15 +164,25 @@ async def create_submission_attachment(
     The format of upload_time is TIME_FORMAT.
     """
     with database.get_system_conn() as db_conn, database.get_storage_conn() as storage_db_conn:
-        return await logic_create_submission_attachment(
-            db_conn,
-            storage_db_conn,
-            course_id,
-            assignment_id,
-            student_email,
-            file,
-            user_email,
+        if student_email != user_email:
+            raise edhub_errors.CannotEditOthersSubmissionException(user_email, student_email)
+        contents = await careful_upload(file)
+        res = logic_create_submission_attachment(
+            db_conn, storage_db_conn, course_id, assignment_id, student_email, file.filename, contents
         )
+        logger.log(
+            db_conn,
+            logger.TAG_ATTACHMENT_ADD_SUB,
+            f"User {user_email} created an attachment {file.filename} for the submission for the assignment {assignment_id} in course {course_id}",
+        )
+    return {
+        "course_id": course_id,
+        "assignment_id": assignment_id,
+        "student_email": student_email,
+        "file_id": res[0],
+        "filename": file.filename,
+        "upload_time": res[1].strftime(TIME_FORMAT),
+    }
 
 
 @router.get("/get_submission_attachments", response_model=List[json_classes.SubmissionAttachmentMetadata])
@@ -147,8 +196,25 @@ async def get_submission_attachments(
 
     The format of upload_time is TIME_FORMAT.
     """
-    with database.get_system_conn() as db_conn:
-        return logic_get_submission_attachments(db_conn, course_id, assignment_id, student_email, user_email)
+    with database.get_system_conn() as conn:
+        if not (
+            constraints.check_teacher_access(conn, user_email, course_id)
+            or constraints.check_parent_student_access(conn, user_email, student_email, course_id)
+            or student_email == user_email
+        ):
+            raise edhub_errors.NoAccessToSubmissionException(course_id, user_email, student_email)
+        atts = logic_get_submission_attachments(conn, course_id, assignment_id, student_email)
+    return [
+        {
+            "course_id": course_id,
+            "assignment_id": assignment_id,
+            "student_email": student_email,
+            "file_id": file.fileid,
+            "filename": file.filename,
+            "upload_time": file.uploadtime.strftime(TIME_FORMAT),
+        }
+        for file in atts
+    ]
 
 
 @router.get("/download_submission_attachment")
@@ -158,7 +224,18 @@ async def download_submission_attachment(
     """
     Download the attachment to the course assignment submission by provided course_id, assignment_id, student_email, file_id.
     """
-    with database.get_system_conn() as db_conn, database.get_storage_conn() as storage_db_conn:
-        return logic_download_submission_attachment(
-            db_conn, storage_db_conn, course_id, assignment_id, student_email, file_id, user_email
+    with database.get_system_conn() as conn, database.get_storage_conn() as storage_conn:
+        if not (
+            constraints.check_teacher_access(conn, user_email, course_id)
+            or constraints.check_parent_student_access(conn, user_email, student_email, course_id)
+            or student_email == user_email
+        ):
+            raise edhub_errors.NoAccessToSubmissionException(course_id, user_email, student_email)
+        metadata, content = logic_download_submission_attachment(
+            conn, storage_conn, course_id, assignment_id, student_email, file_id
+        )
+        return Response(
+            content=content,
+            media_type="application/octet-stream",
+            headers={"Content-Disposition": f'attachment; filename="{metadata.filename}"'},
         )

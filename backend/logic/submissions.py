@@ -1,102 +1,45 @@
 from fastapi import UploadFile, Response
 import edhub_errors
-from constants import TIME_FORMAT
 import constraints
 import sql.submissions as sql_submit
 import sql.files as sql_files
-import logic.logging as logger
-from logic.uploading import careful_upload
+from sql.dto import SubmissionDTO
+from datetime import datetime
+from sql.dto import AttachmentInfoDTO
 
 
 def submit_assignment(
-    db_conn,
+    conn,
     course_id: str,
     assignment_id: str,
     comment: str,
     student_email: str,
-):
-    with db_conn.cursor() as db_cursor:
-        constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
-        constraints.assert_student_access(db_cursor, student_email, course_id)
+) -> None:
+    constraints.assert_assignment_exists(conn, course_id, assignment_id)
+    if not constraints.check_submission_exists(conn, course_id, assignment_id, student_email):
+        sql_submit.insert_submission(conn, course_id, assignment_id, student_email, comment)
+        return
 
-        submission = sql_submit.select_submission_grade(db_cursor, course_id, assignment_id, student_email)
-
-        if submission is None:
-            sql_submit.insert_submission(db_cursor, course_id, assignment_id, student_email, comment)
-            db_conn.commit()
-
-        elif submission and submission[0] in (None, "null"):
-            sql_submit.update_submission_comment(db_cursor, comment, course_id, assignment_id, student_email)
-            db_conn.commit()
-
-        else:
-            raise edhub_errors.CannotEditGradedSubmissionException()
-
-        logger.log(
-            db_conn,
-            logger.TAG_ASSIGNMENT_SUBMIT,
-            f"Student {student_email} submitted an assignment{assignment_id} in {course_id}",
-        )
-
-        return {"success": True}
+    grade = sql_submit.select_submission_grade(conn, course_id, assignment_id, student_email)
+    if grade is None:
+        sql_submit.update_submission_comment(conn, comment, course_id, assignment_id, student_email)
+        return
+    raise edhub_errors.CannotEditGradedSubmissionException()
 
 
-def get_assignment_submissions(db_conn, course_id: str, assignment_id: str, user_email: str):
-    with db_conn.cursor() as db_cursor:
-        constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
-        constraints.assert_teacher_access(db_cursor, user_email, course_id)
-
-        submissions = sql_submit.select_submissions(db_cursor, course_id, assignment_id)
-
-        res = [
-            {
-                "course_id": course_id,
-                "assignment_id": assignment_id,
-                "student_email": sub[0],
-                "student_name": sub[1],
-                "submission_time": sub[2].strftime(TIME_FORMAT),
-                "last_modification_time": sub[3].strftime(TIME_FORMAT),
-                "comment": sub[4],
-                "grade": sub[5],
-                "gradedby_email": sub[6],
-            }
-            for sub in submissions
-        ]
-        return res
+def get_assignment_submissions(db_conn, course_id: str, assignment_id: str) -> list[SubmissionDTO]:
+    constraints.assert_assignment_exists(db_conn, course_id, assignment_id)
+    return sql_submit.select_submissions(db_conn, course_id, assignment_id)
 
 
 def get_submission(
-    db_conn,
+    conn,
     course_id: str,
     assignment_id: str,
     student_email: str,
-    user_email: str,
-):
-    with db_conn.cursor() as db_cursor:
-        constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
-        constraints.assert_student_access(db_cursor, student_email, course_id)
-        if not (
-            constraints.check_teacher_access(db_cursor, user_email, course_id)
-            or constraints.check_parent_student_access(db_cursor, user_email, student_email, course_id)
-            or student_email == user_email
-        ):
-            raise edhub_errors.NoAccessToSubmissionException(course_id, student_email, user_email)
-
-        constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
-        submission = sql_submit.select_single_submission(db_cursor, course_id, assignment_id, student_email)
-
-        res = {
-            "course_id": course_id,
-            "assignment_id": assignment_id,
-            "student_email": submission[0],
-            "student_name": submission[1],
-            "submission_time": submission[2].strftime(TIME_FORMAT),
-            "last_modification_time": submission[3].strftime(TIME_FORMAT),
-            "comment": submission[4],
-            "grade": submission[5],
-            "gradedby_email": submission[6],
-        }
-        return res
+) -> SubmissionDTO:
+    constraints.assert_submission_exists(conn, course_id, assignment_id, student_email)
+    return sql_submit.select_single_submission(conn, course_id, assignment_id, student_email)
 
 
 def grade_submission(
@@ -105,108 +48,39 @@ def grade_submission(
     assignment_id: str,
     student_email: str,
     grade: str,
-    user_email: str,
-):
-    with db_conn.cursor() as db_cursor:
-        constraints.assert_teacher_access(db_cursor, user_email, course_id)
-        constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
-
-        sql_submit.update_submission_grade(db_cursor, grade, user_email, course_id, assignment_id, student_email)
-        db_conn.commit()
-
-        logger.log(
-            db_conn,
-            logger.TAG_ASSIGNMENT_GRADE,
-            f"Teacher {user_email} graded an assignment {assignment_id} in {course_id} by {student_email}",
-        )
-
-        return {"success": True}
+    grader_email: str,
+) -> None:
+    constraints.assert_submission_exists(db_conn, course_id, assignment_id, student_email)
+    sql_submit.update_submission_grade(db_conn, grade, grader_email, course_id, assignment_id, student_email)
 
 
-async def create_submission_attachment(
-    db_conn,
-    storage_db_conn,
+def create_submission_attachment(
+    conn,
+    storage_conn,
     course_id: str,
     assignment_id: str,
     student_email: str,
-    file: UploadFile,
-    user_email: str,
-):
-    with db_conn.cursor() as db_cursor, storage_db_conn.cursor() as storage_db_cursor:
-        constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
-        if student_email != user_email:
-            raise edhub_errors.CannotEditOthersSubmissionException(user_email, student_email)
-        if sql_submit.select_submission_grade(db_cursor, course_id, assignment_id, student_email)[0] is not None:
-            raise edhub_errors.CannotEditGradedSubmissionException()
-
-        contents = await careful_upload(file)
-
-        attachment_metadata = sql_submit.insert_submission_attachment(
-            db_cursor, storage_db_cursor, course_id, assignment_id, student_email, file.filename, contents
-        )
-        db_conn.commit()
-        storage_db_conn.commit()
-
-        logger.log(
-            db_conn,
-            logger.TAG_ATTACHMENT_ADD_SUB,
-            f"User {user_email} created an attachment {file.filename} for the submission for the assignment {assignment_id} in course {course_id}",
-        )
-        return {
-            "course_id": course_id,
-            "assignment_id": assignment_id,
-            "student_email": student_email,
-            "file_id": attachment_metadata[0],
-            "filename": file.filename,
-            "upload_time": attachment_metadata[1].strftime(TIME_FORMAT),
-        }
+    filename: str,
+    contents: bytes
+) -> tuple[str, datetime]:
+    constraints.assert_submission_exists(conn, course_id, assignment_id, student_email)
+    if sql_submit.select_submission_grade(conn, course_id, assignment_id, student_email) is not None:
+        raise edhub_errors.CannotEditGradedSubmissionException()
+    return sql_submit.insert_submission_attachment(
+        conn, storage_conn, course_id, assignment_id, student_email, filename, contents
+    )
 
 
-def get_submission_attachments(db_conn, course_id: str, assignment_id: str, student_email: str, user_email: str):
-    with db_conn.cursor() as db_cursor:
-        constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
-        if not (
-            constraints.check_teacher_access(db_cursor, user_email, course_id)
-            or constraints.check_parent_student_access(db_cursor, user_email, student_email, course_id)
-            or student_email == user_email
-        ):
-            raise edhub_errors.NoAccessToSubmissionException(course_id, user_email, student_email)
-
-        files = sql_submit.select_submission_attachments(db_cursor, course_id, assignment_id, student_email)
-
-        res = [
-            {
-                "course_id": course_id,
-                "assignment_id": assignment_id,
-                "student_email": student_email,
-                "file_id": file[0],
-                "filename": file[1],
-                "upload_time": file[2].strftime(TIME_FORMAT),
-            }
-            for file in files
-        ]
-
-        return res
+def get_submission_attachments(conn, course_id: str, assignment_id: str, student_email: str) -> list[AttachmentInfoDTO]:
+    constraints.assert_submission_exists(conn, course_id, assignment_id, student_email)
+    return sql_submit.select_submission_attachments(conn, course_id, assignment_id, student_email)
 
 
 def download_submission_attachment(
-    db_conn, storage_db_conn, course_id: str, assignment_id: str, student_email: str, file_id: str, user_email: str
-):
-    with db_conn.cursor() as db_cursor, storage_db_conn.cursor() as storage_db_cursor:
-        constraints.assert_submission_exists(db_cursor, course_id, assignment_id, student_email)
-        if not (
-            constraints.check_teacher_access(db_cursor, user_email, course_id)
-            or constraints.check_parent_student_access(db_cursor, user_email, student_email, course_id)
-            or student_email == user_email
-        ):
-            raise edhub_errors.NoAccessToSubmissionException(course_id, user_email, student_email)
-
-        file = sql_files.download_attachment(storage_db_cursor, file_id)
-        if not file:
-            raise edhub_errors.AttachmentNotFoundException(file_id)
-
-        return Response(
-            content=file[0],
-            media_type="application/octet-stream",
-            headers={"Content-Disposition": f'attachment; filename="{file[1]}"'},
-        )
+    conn, storage_conn, course_id: str, assignment_id: str, student_email: str, file_id: str
+) -> tuple[AttachmentInfoDTO, bytes]:
+    constraints.assert_submission_attachment_exists(conn, course_id, assignment_id, student_email)
+    constraints.assert_file_exists(storage_conn, file_id)
+    content = sql_files.download_attachment(storage_conn, file_id)
+    metadata = sql_submit.select_single_submission_attachment(conn, course_id, assignment_id, student_email, file_id)
+    return metadata, content
