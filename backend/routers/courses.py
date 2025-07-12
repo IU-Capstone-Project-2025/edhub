@@ -116,7 +116,7 @@ async def download_full_course_grade_table(course_id: str, user_email: str = Dep
     """
     with database.get_system_conn() as db_conn:
         constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
-        students = [i["email"] for i in logic.students.get_enrolled_students(db_conn, course_id)]
+        students = [i.email for i in logic.students.get_enrolled_students(db_conn, course_id)]
         gradables = logic.assignments.get_all_assignments(db_conn, course_id)
         csv_text = logic.courses.get_grade_table_csv(db_conn, course_id, students, gradables)
         return responses.PlainTextResponse(
