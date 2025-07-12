@@ -72,12 +72,12 @@ async def get_assignment(course_id: str, assignment_id: str, user_email: str = D
         constraints.assert_course_access(conn, user_email, course_id)
         assignment = logic_get_assignment(conn, course_id, assignment_id)
     return {
-        "course_id": str(assignment[0]),
-        "assignment_id": assignment[1],
-        "creation_time": assignment[2].strftime(TIME_FORMAT),
-        "title": assignment[3],
-        "description": assignment[4],
-        "author": assignment[5],
+        "course_id": str(assignment.course_id),
+        "assignment_id": assignment.assignment_id,
+        "creation_time": assignment.timeadded.strftime(TIME_FORMAT),
+        "title": assignment.name,
+        "description": assignment.description,
+        "author": assignment.author_email,
     }
 
 
