@@ -10,6 +10,7 @@ def mk_database(dbname, user, password, host, port):
         try:
             yield conn
         finally:
+            conn.commit()
             conn.close()
 
     return get_conn

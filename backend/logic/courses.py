@@ -60,16 +60,15 @@ def get_grade_table_csv(db_conn, course_id: str, students: list[str], gradables:
 
     COLUMNS: student login, student display name, then assignment names
     """
-    with db_conn.cursor() as db_cursor:
-        table = get_grade_table(db_conn, course_id, students, gradables)
-        columns = itertools.chain(
-            (
-                "Login",
-                "Public Name",
-            ),
-            gradables,
-        )
-        for login, row in zip(students, table):
-            row.insert(0, login)
-            row.insert(1, sql.users.get_user_name(db_cursor, login))
-        return logic.csvtables.encode_to_csv_with_columns(columns, table)
+    table = get_grade_table(db_conn, course_id, students, gradables)
+    columns = itertools.chain(
+        (
+            "Login",
+            "Public Name",
+        ),
+        gradables,
+    )
+    for login, row in zip(students, table):
+        row.insert(0, login)
+        row.insert(1, sql.users.get_user_name(db_conn, login))
+    return logic.csvtables.encode_to_csv_with_columns(columns, table)
