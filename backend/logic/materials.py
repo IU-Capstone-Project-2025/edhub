@@ -4,7 +4,7 @@ import sql.files as sql_files
 from sql.dto import AttachmentInfoDTO
 
 
-create_material = sql_mat.create_material
+create_material = sql_mat.insert_material
 
 
 remove_material = sql_mat.delete_material
