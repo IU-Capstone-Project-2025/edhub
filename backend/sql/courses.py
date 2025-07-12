@@ -58,7 +58,7 @@ def select_course_info(conn, course_id: str) -> CourseInfoDTO:
             """,
             (course_id,),
         )
-        return CourseInfoDTO(db_cursor.fetchone())
+        return CourseInfoDTO(*db_cursor.fetchone())
 
 
 def select_course_feed(conn, course_id: str) -> list[CourseFeedItemDTO]:
