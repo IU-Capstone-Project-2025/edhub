@@ -378,7 +378,7 @@ def value_assert_parent_student_access(
                 SELECT 1 FROM parent_of_at_course WHERE parentemail = %s AND studentemail = %s AND courseid = %s
             )
         """,
-            (parent_email, student_email, course_id, parent_email),
+            (parent_email, student_email, course_id),
         )
         has_access = db_cursor.fetchone()[0]
     if not has_access:
@@ -412,7 +412,7 @@ def value_assert_submission_exists(
         )
         submitted = db_cursor.fetchone()[0]
     if not submitted:
-        return edhub_errors.NoSubmissionToAssignmentException(course_id, assignment_id, student_email)
+        return edhub_errors.NoSubmissionToAssignmentException(course_id, int(assignment_id), student_email)
     return None
 
 

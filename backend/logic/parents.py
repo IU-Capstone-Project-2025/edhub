@@ -12,7 +12,6 @@ def invite_parent(
     course_id: str,
     student_email: str,
     parent_email: str,
-    teacher_email: str,
 ) -> None:
     if constraints.check_parent_student_access(db_conn, parent_email, student_email, course_id):
         raise edhub_errors.UserIsAlreadyParentOfStudentInCourseException(course_id, parent_email, student_email)
