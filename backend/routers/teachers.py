@@ -9,6 +9,8 @@ from logic.teachers import (
     invite_teacher as logic_invite_teacher,
     remove_teacher as logic_remove_teacher,
 )
+import constraints
+import logic.logging as logger
 
 router = APIRouter()
 
@@ -18,8 +20,10 @@ async def get_course_teachers(course_id: str, user_email: str = Depends(get_curr
     """
     Get the list of teachers teaching the course with the provided course_id.
     """
-    with database.get_system_conn() as db_conn:
-        return logic_get_course_teachers(db_conn, course_id, user_email)
+    with database.get_system_conn() as conn:
+        constraints.assert_course_access(conn, user_email, course_id)
+        teachers = logic_get_course_teachers(conn, course_id, user_email)
+    return [{"email": tch.email, "name": tch.publicname} for tch in teachers]
 
 
 @router.post("/invite_teacher", response_model=json_classes.Success)
@@ -33,8 +37,11 @@ async def invite_teacher(
 
     Teacher role required.
     """
-    with database.get_system_conn() as db_conn:
-        return logic_invite_teacher(db_conn, course_id, new_teacher_email, teacher_email)
+    with database.get_system_conn() as conn:
+        constraints.assert_teacher_or_admin_access(conn, teacher_email, course_id)
+        logic_invite_teacher(conn, course_id, new_teacher_email)
+        logger.log(conn, logger.TAG_TEACHER_ADD, f"Teacher {teacher_email} invited a teacher {new_teacher_email}")
+    return json_classes.Success()
 
 
 @router.post("/remove_teacher", response_model=json_classes.Success)
@@ -50,7 +57,12 @@ async def remove_teacher(
 
     Teacher can remove themself.
 
-    At least one teacher should stay in the course.
+    At least one teacher must stay in the course.
     """
-    with database.get_system_conn() as db_conn:
-        return logic_remove_teacher(db_conn, course_id, removing_teacher_email, teacher_email)
+    with database.get_system_conn() as conn:
+        constraints.assert_teacher_or_admin_access(conn, teacher_email, course_id)
+        logic_remove_teacher(conn, course_id, removing_teacher_email, teacher_email)
+        logger.log(
+            conn, logger.TAG_TEACHER_DEL, f"User {teacher_email} removed a teacher {removing_teacher_email}"
+        )
+    return json_classes.Success()
