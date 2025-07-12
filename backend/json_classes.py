@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Union
+from sql.dto import UserEmailNameDTO
 
 
 class Success(BaseModel):
@@ -12,6 +13,10 @@ class Success(BaseModel):
 class User(BaseModel):
     email: str
     name: str
+
+    @staticmethod
+    def from_dto(dto: UserEmailNameDTO) -> "User":
+        return User(email=dto.email, name=dto.publicname)
 
 
 class CourseRole(BaseModel):
