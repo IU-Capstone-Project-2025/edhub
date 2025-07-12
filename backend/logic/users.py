@@ -90,7 +90,7 @@ def remove_user(conn, user_email: str):
 
     # remove teacher role preparation: find courses
     single_teacher_courses = sql_users.select_single_teacher_courses(conn, user_email)
-    for course_id_to_delete in single_teacher_courses:  # Renamed variable to avoid conflict
+    for course_id_to_delete in single_teacher_courses:
         sql_users.delete_course(conn, course_id_to_delete)
 
     sql_users.delete_user(conn, user_email)
