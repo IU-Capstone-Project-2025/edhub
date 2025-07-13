@@ -33,6 +33,7 @@ ATTACHMENT_NOT_FOUND = "ATTACHMENT_NOT_FOUND"
 ATTACHMENT_NOT_FOUND_IN_ASSIGNMENT = "ATTACHMENT_NOT_FOUND_IN_ASSIGNMENT"
 ATTACHMENT_NOT_FOUND_IN_MATERIAL = "ATTACHMENT_NOT_FOUND_IN_MATERIAL"
 ATTACHMENT_NOT_FOUND_IN_SUBMISSION = "ATTACHMENT_NOT_FOUND_IN_SUBMISSION"
+POOL_FULL = "POOL_FULL"
 
 ROLE_STUDENT = "student"
 ROLE_TEACHER = "teacher"
@@ -270,3 +271,8 @@ class AttachmentNotFoundInSubmissionException(EdHubException):
         super().__init__(404, f"Attachment {file_id} not found in the submission by {student_login} to assignment {assignment_id} of course {course_id}",
                          ATTACHMENT_NOT_FOUND_IN_SUBMISSION, course_id=course_id,
                          assignment_id=assignment_id, student_login=student_login, file_id=file_id)
+
+
+class PoolFullException(EdHubException):
+    def __init__(self):
+        super().__init__(503, f"All database connections are busy.", POOL_FULL)
