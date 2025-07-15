@@ -15,6 +15,19 @@ Any user can create a course becoming a **Teacher**, invite students and their p
 
 Most existing LMSs either have limited functionality or have awkward website design and cause difficulties in everyday use. EdHub combines a self-contained and clear design, supporting all the necessary features but not bogging the user down with complex customizations.
 
+### Build With
+- FastAPI
+- React
+- PostgreSQL
+- NginX
+- Docker
+
+[![FastAPI][FastAPI]][FastAPI-url]
+[![React][React]][React-url]
+[![PostgreSQL][PostgreSQL]][PostgreSQL-url]
+[![NginX][NginX]][NginX-url]
+[![Docker][Docker]][Docker-url]
+
 ## Local Startup
 
 These instructions will help you to download a copy of the project and run it on your local machine. All of your organization's data will be stored on your computer and will be inaccessible to external users.
@@ -75,3 +88,14 @@ docker compose down -v && docker compose up --build
 [license-url]: https://github.com/IU-Capstone-Project-2025/edhub/blob/main/LICENSE
 [prod-shield]: https://img.shields.io/github/actions/workflow/status/IU-Capstone-Project-2025/edhub/deploy-prod.yml?style=for-the-badge
 [prod-url]: https://github.com/IU-Capstone-Project-2025/edhub/actions
+
+[FastAPI]: https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi
+[FastAPI-url]: https://fastapi.tiangolo.com/
+[React]: https://img.shields.io/badge/-ReactJs-61DAFB?logo=react&logoColor=white&style=for-the-badge
+[React-url]: https://react.dev/
+[PostgreSQL]: https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white
+[PostgreSQL-url]: https://www.postgresql.org/
+[NginX]: https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white&style=for-the-badge
+[NginX-url]: https://nginx.org/
+[Docker]: https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white
+[Docker-url]: https://www.docker.com/
