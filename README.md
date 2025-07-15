@@ -15,12 +15,7 @@ Any user can create a course becoming a **Teacher**, invite students and their p
 
 Most existing LMSs either have limited functionality or have awkward website design and cause difficulties in everyday use. EdHub combines a self-contained and clear design, supporting all the necessary features but not bogging the user down with complex customizations.
 
-### Build With
-- FastAPI
-- React
-- PostgreSQL
-- NginX
-- Docker
+### Build Withs
 
 [![FastAPI][FastAPI]][FastAPI-url]
 [![React][React]][React-url]
