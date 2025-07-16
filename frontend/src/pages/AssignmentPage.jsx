@@ -18,7 +18,32 @@ export default function AssignmentPage() {
   const [studentSubmissions, setStudentSubmissions] = useState([])
   const [currentStudentEmail, setCurrentStudentEmail] = useState(null)
   const [showAddGrade, setShowAddGrade] = useState(false)
+  const [selectedFile, setSelectedFile] = useState(null)
 
+  const onFileChange = (event) =>{
+    setSelectedFile(event.target.files[0])
+  }
+  const fileData = () => {
+    if (selectedFile){
+      return (
+				<div>
+					<h2>File Details:</h2>
+					<p>File Name: {selectedFile.name}</p>
+					<p>File Type: {selectedFile.type}</p>
+					<p>
+						Last Modified: {selectedFile.lastModifiedDate.toDateString()}
+					</p>
+				</div>
+			);
+    }else {
+			return (
+				<div>
+					<br />
+					<h4>Choose before Pressing the Upload button</h4>
+				</div>
+			);
+		}
+  }
 
 
   useEffect(() => {
@@ -100,7 +125,7 @@ export default function AssignmentPage() {
           msg === "Submission of this user is not found" ||
           (err.response && err.response.status === 404)
         ) {
-          setMySubmission(null); // No submission yet, not an error
+          setMySubmission(null)
         } else {
           alert("Ошибка при загрузке ответа студента: " + msg)
         }
@@ -169,10 +194,6 @@ export default function AssignmentPage() {
   }, [roleData, childrenEmail, id, post_id]);
   
   const handleSubmit = async () => {
-    // if (!studentEmail.trim()) {
-    //   alert("Student's Email is required")
-    //   return
-    // }
 
     try {
       const token = localStorage.getItem("access_token")
@@ -180,6 +201,15 @@ export default function AssignmentPage() {
         headers: {Authorization: `Bearer ${token}` },
         params:{course_id: id, assignment_id: post_id, comment: text}
       })
+      if (selectedFile) {
+      const formData = new FormData();
+      formData.append("file", selectedFile, selectedFile.name);
+
+      await axios.post("/api/create_submission_attachment", formData, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { course_id: id, assignment_id: post_id, student_email: ownEmail }
+      });
+    }
       setShowSubmissionForm(false)
       fetchMySubmission()
     } catch (err) {
@@ -215,12 +245,14 @@ export default function AssignmentPage() {
                 value={text} onChange={(e) => setText(e.target.value)}
                 rows="10" 
                 cols="30"/>
+              <input type="file" onChange={onFileChange}/>
               <button 
                 className="submit-btn"
                 onClick={handleSubmit} 
                 disabled={!text.trim()}
               > Submit
               </button>
+              {fileData()}
               </div>
             </div>
           )}
