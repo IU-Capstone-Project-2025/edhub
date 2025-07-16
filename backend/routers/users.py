@@ -11,8 +11,7 @@ from logic.users import (
     change_password as logic_change_password,
     remove_user as logic_remove_user,
     give_admin_permissions as logic_give_admin_permissions,
-    get_all_users as logic_get_all_users,
-    get_admins as logic_get_admins
+    get_all_users as logic_get_all_users
 )
 
 router = APIRouter()
@@ -110,12 +109,3 @@ async def get_all_users(user_email: str = Depends(get_current_user)):
     """
     with get_db() as (db_conn, db_cursor):
         return logic_get_all_users(db_cursor, user_email)
-
-
-@router.get("/get_admins", response_model=List[json_classes.User])
-async def get_admins(user_email: str = Depends(get_current_user)):
-    """
-    Get the list of platform administrators.
-    """
-    with get_db() as (db_conn, db_cursor):
-        return logic_get_admins(db_cursor)
