@@ -90,6 +90,8 @@
   font-size: 1.05em;
   background: #F7FCFF;
   margin-bottom: 5px;
+  box-sizing: border-box;
+  resize: none;
 }
 .submit-btn {
   background: #4CB050;
