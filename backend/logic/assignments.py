@@ -1,126 +1,59 @@
-from fastapi import HTTPException, UploadFile, Response
-from constants import TIME_FORMAT
 import constraints
-import repo.assignments as repo_ass
-import repo.files as repo_files
-import logic.logging as logger
-from logic.uploading import careful_upload
+import sql.assignments as sql_ass
+import sql.files as sql_files
+from sql.dto import AssignmentDTO, AttachmentInfoDTO
+from datetime import datetime
 
 
-def create_assignment(
-    db_conn,
-    db_cursor,
-    course_id: str,
-    title: str,
-    description: str,
-    user_email: str,
-):
-    # checking constraints
-    constraints.assert_teacher_access(db_cursor, user_email, course_id)
-
-    # create assignment
-    assignment_id = repo_ass.sql_insert_assignment(db_cursor, course_id, title, description, user_email)
-    db_conn.commit()
-
-    logger.log(db_conn, logger.TAG_ASSIGNMENT_ADD, f"Created assignment {assignment_id}")
-
-    return {"course_id": course_id, "assignment_id": assignment_id}
+def create_assignment(conn, course_id: str, title: str, description: str, author_email: str) -> int:
+    """
+    Returns the ID of the new assignment within the course.
+    """
+    constraints.assert_course_exists(conn, course_id)
+    assignment_id = sql_ass.insert_assignment(conn, course_id, title, description, author_email)
+    return assignment_id
 
 
-def remove_assignment(db_conn, db_cursor, course_id: str, assignment_id: str, user_email: str):
-    # checking constraints
-    constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
-    constraints.assert_teacher_access(db_cursor, user_email, course_id)
-
-    # remove assignment
-    repo_ass.sql_delete_assignment(db_cursor, course_id, assignment_id)
-    db_conn.commit()
-
-    logger.log(db_conn, logger.TAG_ASSIGNMENT_DEL, f"Removed assignment {assignment_id}")
-
-    return {"success": True}
+def remove_assignment(conn, course_id: str, assignment_id: str) -> None:
+    constraints.assert_assignment_exists(conn, course_id, assignment_id)
+    sql_ass.delete_assignment(conn, course_id, assignment_id)
 
 
-def get_assignment(db_cursor, course_id: str, assignment_id: str, user_email: str):
-
-    # checking constraints
-    constraints.assert_course_access(db_cursor, user_email, course_id)
-
-    # searching for assignments
-    assignment = repo_ass.sql_select_assignment(db_cursor, course_id, assignment_id)
-    if not assignment:
-        raise HTTPException(status_code=404, detail="Assignment not found")
-
-    res = {
-        "course_id": str(assignment[0]),
-        "assignment_id": assignment[1],
-        "creation_time": assignment[2].strftime(TIME_FORMAT),
-        "title": assignment[3],
-        "description": assignment[4],
-        "author": assignment[5],
-    }
-    return res
+def get_assignment(conn, course_id: str, assignment_id: str) -> AssignmentDTO:
+    constraints.assert_assignment_exists(conn, course_id, assignment_id)
+    assignment = sql_ass.select_assignment(conn, course_id, assignment_id)
+    return assignment
 
 
-async def create_assignment_attachment(db_conn, db_cursor, storage_db_conn, storage_db_cursor, course_id: str, assignment_id: str, file: UploadFile, user_email: str):
-    # checking constraints
-    constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
-    constraints.assert_teacher_access(db_cursor, user_email, course_id)
-
-    # read the file
-    contents = await careful_upload(file)
-
-    # save the file into database
-    attachment_metadata = repo_ass.sql_insert_assignment_attachment(db_cursor, storage_db_cursor, course_id, assignment_id, file.filename, contents)
-    db_conn.commit()
-    storage_db_conn.commit()
-
-    logger.log(db_conn, logger.TAG_ATTACHMENT_ADD_ASS, f"User {user_email} created an attachment {file.filename} for the assignment {assignment_id} in course {course_id}")
-    return {
-        "course_id": course_id,
-        "assignment_id": assignment_id,
-        'file_id': attachment_metadata[0],
-        'filename' : file.filename,
-        'upload_time' : attachment_metadata[1].strftime(TIME_FORMAT)
-    }
-
-
-def get_assignment_attachments(db_cursor, course_id: str, assignment_id: str, user_email: str):
-    # checking constraints
-    constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
-    constraints.assert_course_access(db_cursor, user_email, course_id)
-
-    # searching for assignment attachments
-    files = repo_ass.sql_select_assignment_attachments(db_cursor, course_id, assignment_id)
-
-    res = [{
-        "course_id": course_id,
-        "assignment_id": assignment_id,
-        "file_id": file[0],
-        "filename": file[1],
-        "upload_time": file[2].strftime(TIME_FORMAT)
-    } for file in files]
- 
-    return res
-
-
-def download_assignment_attachment(db_cursor, storage_db_cursor, course_id: str, assignment_id: str, file_id: str, user_email: str):
-    # checking constraints
-    constraints.assert_assignment_exists(db_cursor, course_id, assignment_id)
-    constraints.assert_course_access(db_cursor, user_email, course_id)
-
-    # searching for assignment attachment
-    file = repo_files.sql_download_attachment(storage_db_cursor, file_id)
-    if not file:
-        raise HTTPException(status_code=404, detail="Attachment not found")
-
-    return Response(
-        content=file[0],
-        media_type="application/octet-stream",
-        headers={"Content-Disposition": f'attachment; filename="{file[1]}"'}
+def create_assignment_attachment(
+    conn, storage_db_conn, course_id: str, assignment_id: str, filename: str, file_contents: bytes
+) -> tuple[str, datetime]:
+    """
+    Returns the pair `(fileID, uploadtime)`
+    """
+    constraints.assert_assignment_exists(conn, course_id, assignment_id)
+    attachment_metadata = sql_ass.insert_assignment_attachment(
+        conn, storage_db_conn, course_id, assignment_id, filename, file_contents
     )
+    return attachment_metadata
 
 
-def get_all_assignments(db_cursor, course_id: str, user_email: str) -> list[int]:
-    constraints.assert_course_access(db_cursor, user_email, course_id)
-    return repo_ass.sql_get_all_assignments(db_cursor, course_id)
+def get_assignment_attachments(conn, course_id: str, assignment_id: str) -> list[AttachmentInfoDTO]:
+    constraints.assert_assignment_exists(conn, course_id, assignment_id)
+    return sql_ass.select_assignment_attachments(conn, course_id, assignment_id)
+
+
+def download_assignment_attachment(
+    conn, storage_conn, course_id: str, assignment_id: str, file_id: str
+) -> tuple[AttachmentInfoDTO, bytes]:
+    """
+    Returns the content of the file along with its metadata
+    """
+    constraints.assert_assignment_attachment_exists(conn, course_id, assignment_id)
+    constraints.assert_file_exists(storage_conn, file_id)
+    metadata = sql_ass.select_single_assignment_attachment(conn, course_id, assignment_id, file_id)
+    content = sql_files.download_attachment(storage_conn, file_id)
+    return metadata, content
+
+
+get_all_assignments = sql_ass.get_all_assignments

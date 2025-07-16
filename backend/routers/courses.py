@@ -2,11 +2,16 @@ from typing import List
 from fastapi import APIRouter, Depends
 from fastapi import responses
 
-from auth import get_current_user, get_db
+from auth import get_current_user
 import json_classes
 import logic.courses
 import logic.students
 import logic.assignments
+import constraints
+import logic.logging as logger
+from constants import TIME_FORMAT
+
+import database
 
 router = APIRouter()
 
@@ -15,9 +20,11 @@ router = APIRouter()
 async def available_courses(user_email: str = Depends(get_current_user)):
     """
     Get the list of IDs of courses available for user (as a teacher, student, or parent).
+
+    Note that this endpoint ignores the user's admin status.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic.courses.available_courses(db_cursor, user_email)
+    with database.get_system_conn() as db_conn:
+        return [{"course_id": id} for id in logic.courses.available_courses(db_conn, user_email)]
 
 
 @router.get("/get_all_courses", response_model=List[json_classes.CourseId])
@@ -27,8 +34,9 @@ async def get_all_courses(user_email: str = Depends(get_current_user)):
 
     Admin role required.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic.courses.get_all_courses(db_cursor, user_email)
+    with database.get_system_conn() as db_conn:
+        constraints.assert_admin_access(db_conn, user_email)
+        return [{"course_id": id} for id in logic.courses.get_all_courses(db_conn)]
 
 
 @router.post("/create_course", response_model=json_classes.CourseId)
@@ -36,8 +44,10 @@ async def create_course(title: str, user_email: str = Depends(get_current_user))
     """
     Create the course with provided title and become a teacher in it.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic.courses.create_course(db_conn, db_cursor, title, user_email)
+    with database.get_system_conn() as db_conn:
+        course_id = logic.courses.create_course_with_teacher(db_conn, title, user_email)
+        logger.log(db_conn, logger.TAG_COURSE_ADD, f"User {user_email} created course {course_id}")
+    return {"course_id": course_id}
 
 
 # WARNING: update if new elements appear
@@ -50,8 +60,11 @@ async def remove_course(course_id: str, user_email: str = Depends(get_current_us
 
     Teacher role required.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic.courses.remove_course(db_conn, db_cursor, course_id, user_email)
+    with database.get_system_conn() as db_conn:
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
+        logic.courses.remove_course(db_conn, course_id)
+        logger.log(db_conn, logger.TAG_COURSE_DEL, f"User {user_email} deleted course {course_id}")
+        return json_classes.successful
 
 
 @router.get("/get_course_info", response_model=json_classes.Course)
@@ -59,8 +72,15 @@ async def get_course_info(course_id: str, user_email: str = Depends(get_current_
     """
     Get information about the course: course_id, title, creation date, and number of enrolled students.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic.courses.get_course_info(db_cursor, course_id, user_email)
+    with database.get_system_conn() as db_conn:
+        constraints.assert_course_access(db_conn, user_email, course_id)
+        info = logic.courses.get_course_info(db_conn, course_id)
+        return {
+            "course_id": info.course_id,
+            "title": info.name,
+            "creation_time": info.time_created.strftime(TIME_FORMAT),
+            "number_of_students": info.student_count
+        }
 
 
 @router.get("/get_course_feed", response_model=List[json_classes.CoursePost])
@@ -72,8 +92,19 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
 
     Returns the list of (course_id, post_id, type, timeadded, author) for each material.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic.courses.get_course_feed(db_cursor, course_id, user_email)
+    with database.get_system_conn() as db_conn:
+        constraints.assert_course_access(db_conn, user_email, course_id)
+        feed = logic.courses.get_course_feed(db_conn, course_id)
+        return [
+            {
+                "course_id": post.course_id,
+                "post_id": post.post_id,
+                "type": post.post_type,
+                "timeadded": post.timeadded.strftime(TIME_FORMAT),
+                "author": post.author_email
+            }
+            for post in feed
+        ]
 
 
 @router.get("/download_full_course_grade_table")
@@ -83,9 +114,11 @@ async def download_full_course_grade_table(course_id: str, user_email: str = Dep
 
     COLUMNS: student login, student display name, then assignment names
     """
-    with get_db() as (db_conn, db_cursor):
-        students = [i["email"] for i in logic.students.get_enrolled_students(db_cursor, course_id, user_email)]
-        gradables = logic.assignments.get_all_assignments(db_cursor, course_id, user_email)
-        csv_text = logic.courses.get_grade_table_csv(db_cursor, course_id, students, gradables, user_email)
-        return responses.PlainTextResponse(csv_text, media_type="text/csv",
-                                           headers={'Content-Disposition': 'filename=report.csv'})
+    with database.get_system_conn() as db_conn:
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
+        students = [i.email for i in logic.students.get_enrolled_students(db_conn, course_id)]
+        gradables = logic.assignments.get_all_assignments(db_conn, course_id)
+        csv_text = logic.courses.get_grade_table_csv(db_conn, course_id, students, gradables)
+        return responses.PlainTextResponse(
+            csv_text, media_type="text/csv", headers={"Content-Disposition": "filename=report.csv"}
+        )

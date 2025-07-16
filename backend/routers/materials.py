@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import Response, APIRouter, Depends, UploadFile, File
 from typing import List
+from constants import TIME_FORMAT
+import constraints
 
-from auth import get_current_user, get_db, get_storage_db
+from auth import get_current_user
 import json_classes
 from logic.materials import (
     create_material as logic_create_material,
@@ -9,8 +11,13 @@ from logic.materials import (
     get_material as logic_get_material,
     create_material_attachment as logic_create_material_attachment,
     get_material_attachments as logic_get_material_attachments,
-    download_material_attachment as logic_download_material_attachment
+    download_material_attachment as logic_download_material_attachment,
 )
+import logic.logging as logger
+from logic.uploading import careful_upload
+from sql.dto import AttachmentInfoDTO
+
+import database
 
 router = APIRouter()
 
@@ -29,8 +36,13 @@ async def create_material(
 
     Returns the (course_id, material_id) for the new material in case of success.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_create_material(db_conn, db_cursor, course_id, title, description, user_email)
+    with database.get_system_conn() as db_conn:
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
+        matid = logic_create_material(db_conn, course_id, title, description, user_email)
+        logger.log(
+            db_conn, logger.TAG_MATERIAL_ADD, f"User {user_email} created a material {matid} in {course_id}"
+        )
+    return {"material_id": matid, "course_id": course_id}
 
 
 @router.post("/remove_material", response_model=json_classes.Success)
@@ -40,8 +52,14 @@ async def remove_material(course_id: str, material_id: str, user_email: str = De
 
     Teacher role required.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_remove_material(db_conn, db_cursor, course_id, material_id, user_email)
+    with database.get_system_conn() as db_conn:
+        constraints.assert_material_exists(db_conn, course_id, material_id)
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
+        logic_remove_material(db_conn, course_id, material_id)
+        logger.log(
+            db_conn, logger.TAG_MATERIAL_DEL, f"User {user_email} removed a material {material_id} in {course_id}"
+        )
+        return json_classes.successful
 
 
 @router.get("/get_material", response_model=json_classes.Material)
@@ -55,8 +73,18 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
 
     The format of creation time is TIME_FORMAT.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_get_material(db_cursor, course_id, material_id, user_email)
+    with database.get_system_conn() as db_conn:
+        constraints.assert_course_access(db_conn, user_email, course_id)
+        constraints.assert_material_exists(db_conn, course_id, material_id)
+        mat = logic_get_material(db_conn, course_id, material_id)
+        return {
+            "course_id": mat.course_id,
+            "material_id": mat.material_id,
+            "creation_time": mat.timeadded.strftime(TIME_FORMAT),
+            "title": mat.name,
+            "description": mat.description,
+            "author": mat.author_email
+        }
 
 
 @router.post("/create_material_attachment", response_model=json_classes.MaterialAttachmentMetadata)
@@ -75,8 +103,26 @@ async def create_material_attachment(
 
     The format of upload_time is TIME_FORMAT.
     """
-    with get_db() as (db_conn, db_cursor), get_storage_db() as (storage_db_conn, storage_db_cursor):
-        return await logic_create_material_attachment(db_conn, db_cursor, storage_db_conn, storage_db_cursor, course_id, material_id, file, user_email)
+    with database.get_system_conn() as db_conn:
+        constraints.assert_material_exists(db_conn, course_id, material_id)
+        constraints.assert_teacher_or_admin_access(db_conn, user_email, course_id)
+    file_content = careful_upload(file)
+    with database.get_system_conn() as db_conn, database.get_storage_conn() as storage_db_conn:
+        att = logic_create_material_attachment(
+            db_conn, storage_db_conn, course_id, material_id, file.filename, file_content
+        )
+        logger.log(
+            db_conn,
+            logger.TAG_ATTACHMENT_ADD_MAT,
+            f"User {user_email} created an attachment {file.filename} for the material {material_id} in course {course_id}",
+        )
+    return {
+        "course_id": course_id,
+        "material_id": material_id,
+        "file_id": att[0],
+        "filename": file.filename,
+        "upload_time": att[1].strftime(TIME_FORMAT),
+    }
 
 
 @router.get("/get_material_attachments", response_model=List[json_classes.MaterialAttachmentMetadata])
@@ -88,14 +134,37 @@ async def get_material_attachments(course_id: str, material_id: str, user_email:
 
     The format of upload_time is TIME_FORMAT.
     """
-    with get_db() as (db_conn, db_cursor):
-        return logic_get_material_attachments(db_cursor, course_id, material_id, user_email)
+    with database.get_system_conn() as db_conn:
+        constraints.assert_material_exists(db_conn, course_id, material_id)
+        constraints.assert_course_access(db_conn, user_email, course_id)
+        atts: list[AttachmentInfoDTO]
+        atts = logic_get_material_attachments(db_conn, course_id, material_id)
+        return [
+            {
+                "course_id": course_id,
+                "material_id": material_id,
+                "file_id": att.fileid,
+                "filename": att.filename,
+                "upload_time": att.timeadded.strftime(TIME_FORMAT),
+            }
+            for att in atts
+        ]
 
 
 @router.get("/download_material_attachment")
-async def download_material_attachment(course_id: str, material_id: str, file_id: str, user_email: str = Depends(get_current_user)):
+async def download_material_attachment(
+    course_id: str, material_id: str, file_id: str, user_email: str = Depends(get_current_user)
+):
     """
     Download the course material attachment by provided course_id, material_id, file_id.
     """
-    with get_db() as (db_conn, db_cursor), get_storage_db() as (storage_db_conn, storage_db_cursor):
-        return logic_download_material_attachment(db_cursor, storage_db_cursor, course_id, material_id, file_id, user_email)
+    with database.get_system_conn() as db_conn, database.get_storage_conn() as storage_db_conn:
+        constraints.assert_course_access(db_conn, user_email, course_id)
+        metadata, content = logic_download_material_attachment(
+            db_conn, storage_db_conn, course_id, material_id, file_id
+        )
+    return Response(
+        content=content,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{metadata.filename}"'},
+    )
