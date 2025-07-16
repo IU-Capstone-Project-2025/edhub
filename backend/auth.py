@@ -12,7 +12,7 @@ from psycopg2.pool import ThreadedConnectionPool
 
 def mk_database(dbname, user, password, host, port):
     conn_pool = ThreadedConnectionPool(
-        minconn=2, maxconn=20, dbname=dbname, user=user, password=password, host=host, port=port
+        minconn=2, maxconn=100, dbname=dbname, user=user, password=password, host=host, port=port
     )
 
     @contextmanager
@@ -20,12 +20,12 @@ def mk_database(dbname, user, password, host, port):
         conn = None
         try:
             conn = conn_pool.getconn()
-            cursor = conn.cursor()
-            yield conn, cursor
+            with conn.cursor() as cursor:
+                yield conn, cursor
         except PoolError:
             raise HTTPException(status_code=503, detail="All database connections are busy")
         finally:
-            if conn:
+            if conn is not None:
                 conn.commit()
                 conn_pool.putconn(conn)
 
