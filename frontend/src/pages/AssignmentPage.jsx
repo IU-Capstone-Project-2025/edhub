@@ -1,4 +1,4 @@
-import React, {useEffect, useState } from "react"
+import React, {useEffect, useState ,useRef} from "react"
 import "../styles/AssignmentPage.css"
 import {useParams} from "react-router-dom"
 import axios from "axios"
@@ -19,12 +19,23 @@ export default function AssignmentPage() {
   const [currentStudentEmail, setCurrentStudentEmail] = useState(null)
   const [showAddGrade, setShowAddGrade] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
+  const fileInputRef = useRef(null);
 
   const onFileChange = (event) =>{
-    setSelectedFile(event.target.files[0])
+    if(event.target.files[0].size/1000000>5){
+        alert("Files should be smaller than 5 MB")
+        setSelectedFile(null)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+    }else{
+      setSelectedFile(event.target.files[0])
+    }
+    
   }
   const fileData = () => {
     if (selectedFile){
+      
       return (
 				<div>
 					<h2>File Details:</h2>
@@ -35,14 +46,7 @@ export default function AssignmentPage() {
 					</p>
 				</div>
 			);
-    }else {
-			return (
-				<div>
-					<br />
-					<h4>Choose before Pressing the Upload button</h4>
-				</div>
-			);
-		}
+    }
   }
 
 
@@ -245,7 +249,7 @@ export default function AssignmentPage() {
                 value={text} onChange={(e) => setText(e.target.value)}
                 rows="10" 
                 cols="30"/>
-              <input type="file" onChange={onFileChange}/>
+              <input type="file" onChange={onFileChange} ref={fileInputRef}/>
               <button 
                 className="submit-btn"
                 onClick={handleSubmit} 
