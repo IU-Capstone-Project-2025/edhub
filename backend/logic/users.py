@@ -146,8 +146,6 @@ def create_admin_account(db_conn, db_cursor):
     logger.log(db_conn, logger.TAG_USER_ADD, "Created new user: admin")
     logger.log(db_conn, logger.TAG_ADMIN_ADD, "Added admin privileges to user: admin")
 
-    return {"success": True}
-
 
 def give_admin_permissions(db_conn, db_cursor, object_email: str, subject_email: str):
 
