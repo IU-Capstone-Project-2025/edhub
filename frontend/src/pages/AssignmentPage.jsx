@@ -4,7 +4,6 @@ import {useParams} from "react-router-dom"
 import axios from "axios"
 import AddGrade from "../components/AddGrade"
 import PageMeta from "../components/PageMeta"
-import StudentAttachment from "../components/StudentAttachment"
 
 export default function AssignmentPage() {
   const { id, post_id } = useParams()
@@ -20,7 +19,6 @@ export default function AssignmentPage() {
   const [currentStudentEmail, setCurrentStudentEmail] = useState(null)
   const [showAddGrade, setShowAddGrade] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
-  const [studentFileAttachments, setStudentFileAttachments] = useState(null)
   const fileInputRef = useRef(null);
 
   const onFileChange = (event) =>{
@@ -152,15 +150,6 @@ export default function AssignmentPage() {
           params: { course_id: id, assignment_id: post_id  }
         })
         setStudentSubmissions(res.data)
-
-        for(let student of res.data){
-          const attachments = await axios.get("/api/get_submission_attachments", {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { course_id: id, assignment_id: post_id , student_email: student.student_email}
-          })
-          setStudentFileAttachments([...studentFileAttachments, attachments])
-        }
-        
       } catch (err) {
           alert("Ошибка при загрузке ответов студентов: " + (err.response?.data?.detail || err.message))
       }
@@ -315,9 +304,6 @@ export default function AssignmentPage() {
                     <div className="my-grade">
                       Grade: <b>{submission.grade}</b> {submission.gradedBy && `(by ${submission.gradedBy})`}
                     </div>
-                  )}
-                  {studentFileAttachments && studentFileAttachments.student_email === submission.student_email &&(
-                    <div>{}</div>
                   )}
                   <button 
                     className="grade-btn"

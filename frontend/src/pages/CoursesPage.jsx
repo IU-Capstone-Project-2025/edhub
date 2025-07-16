@@ -10,23 +10,12 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState([])
   const [showCreateCourseModal, setShowCreateCourseModal] = useState(false)
 
-  const is_admin = await.get("/api/is_admin",{
-    headers: {Authorization: `Bearer ${localStorage.getItem("access_token")}`}
-  })
-
   const fetchCourses = async () => {
     const token = localStorage.getItem("access_token")
     try {
-      if (is_admin){
-        const res = await axios.get("/api/get_all_courses", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-      }else{
-        const res = await axios.get("/api/available_courses", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
-      
+      const res = await axios.get("/api/available_courses", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const full = await Promise.all(
         res.data.map(async (c) => {
           const infoRes = await axios.get("/api/get_course_info", {

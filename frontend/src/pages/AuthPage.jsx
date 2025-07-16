@@ -27,7 +27,7 @@ export default function AuthPage() {
     return;
   }
 
-  if (!emailRegex.test(email) && email!= "admin") {
+  if (!emailRegex.test(email)) {
     setError("Please enter a valid email address.");
     return;
   }
