@@ -68,9 +68,7 @@ export default function LeaveCourse({ onClose, courseId , roleData, ownEmail}) {
             alert("Failed to fetch role data")
             break
         }
-        alert("You left the course successfully!")
-        setLoading(false)
-        onClose()
+        window.location.assign("../courses")
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail
