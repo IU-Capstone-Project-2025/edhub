@@ -6,7 +6,6 @@ import "../styles/AddStudent.css"
 
 export default function LeaveCourse({ onClose, courseId , roleData, ownEmail}) {
   const [loading, setLoading] = useState(false)
-  const [childrenArray, setChildrenArray] = useState([])
   
 
   const role = roleData.is_teacher
@@ -57,12 +56,13 @@ export default function LeaveCourse({ onClose, courseId , roleData, ownEmail}) {
                 headers: {Authorization: `Bearer ${token}` },
                 params:{course_id: courseId}
             })
-            setChildrenArray(res.data)
-            const student_email = res.data[0]?.email
-            await axios.post("/api/remove_parent", null, {
+            for (let child of res.data){
+              let student_email = child?.email
+              await axios.post("/api/remove_parent", null, {
                 headers: {Authorization: `Bearer ${token}` },
                 params:{parent_email: ownEmail, course_id: courseId, student_email}
             })
+            }
             break
           default:
             alert("Failed to fetch role data")
