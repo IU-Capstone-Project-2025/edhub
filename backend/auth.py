@@ -21,7 +21,7 @@ def get_db():
 
 @contextmanager
 def get_storage_db():
-    conn = psycopg2.connect(dbname="edhub_storage", user="postgres", password="12345678", host="storage_db", port="5432")
+    conn = psycopg2.connect(dbname="edhub_storage", user="postgres", password="12345678", host="filestorage_db", port="5432")
     cursor = conn.cursor()
     try:
         yield conn, cursor
