@@ -6,7 +6,6 @@ from auth import pwd_hasher, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 import repo.users as repo_users
 from regex import match, search
 import logic.logging as logger
-from secrets import token_hex
 
 
 def get_user_info(db_cursor, user_email: str):
@@ -140,16 +139,14 @@ def remove_user(db_conn, db_cursor, user_email: str):
 
 
 def create_admin_account(db_conn, db_cursor):
-    password = token_hex(32)
-    hashed_password = pwd_hasher.hash(password)
-    repo_users.sql_insert_user(db_cursor, 'admin', 'admin', hashed_password)
+    repo_users.sql_insert_user(db_cursor, 'admin', 'admin', pwd_hasher.hash('admin'))
     repo_users.sql_give_admin_permissions(db_cursor, 'admin')
     db_conn.commit()
 
     logger.log(db_conn, logger.TAG_USER_ADD, "Created new user: admin")
     logger.log(db_conn, logger.TAG_ADMIN_ADD, "Added admin privileges to user: admin")
 
-    return password
+    return {"success": True}
 
 
 def give_admin_permissions(db_conn, db_cursor, object_email: str, subject_email: str):
@@ -181,8 +178,5 @@ def get_all_users(db_cursor, user_email: str):
 async def create_admin_account_if_not_exists(db_conn, db_cursor):
     if repo_users.sql_admins_exist(db_cursor):
         return
-    password = create_admin_account(db_conn, db_cursor)
-    credentials = f"login: admin\npassword: {password}"
-    print(f"\nAdmin account created\n{credentials}\n")
-    with open("random-secrets/admin_credentials.txt", "w") as f:
-        print(credentials, file=f)
+    create_admin_account(db_conn, db_cursor)
+    print(f"\nAdmin account created\nlogin: admin\npassword: admin\n")
