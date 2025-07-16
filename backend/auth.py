@@ -4,30 +4,40 @@ from passlib.context import CryptContext
 from contextlib import contextmanager
 from secrets import token_hex
 from jose import jwt, JWTError
-import psycopg2
 from datetime import datetime
 
-
-@contextmanager
-def get_db():
-    conn = psycopg2.connect(dbname="edhub", user="postgres", password="12345678", host="system_db", port="5432")
-    cursor = conn.cursor()
-    try:
-        yield conn, cursor
-    finally:
-        cursor.close()
-        conn.close()
+from psycopg2.pool import PoolError
+from psycopg2.pool import ThreadedConnectionPool
 
 
-@contextmanager
-def get_storage_db():
-    conn = psycopg2.connect(dbname="edhub_storage", user="postgres", password="12345678", host="storage_db", port="5432")
-    cursor = conn.cursor()
-    try:
-        yield conn, cursor
-    finally:
-        cursor.close()
-        conn.close()
+def mk_database(dbname, user, password, host, port):
+    conn_pool = ThreadedConnectionPool(
+        minconn=2, maxconn=100, dbname=dbname, user=user, password=password, host=host, port=port
+    )
+
+    @contextmanager
+    def get_conn():
+        conn = None
+        try:
+            conn = conn_pool.getconn()
+            with conn.cursor() as cursor:
+                yield conn, cursor
+        except PoolError:
+            raise HTTPException(status_code=503, detail="All database connections are busy")
+        finally:
+            if conn is not None:
+                conn.commit()
+                conn_pool.putconn(conn)
+
+    return get_conn
+
+
+get_db = mk_database(dbname="edhub", user="postgres", password="12345678", host="system_db", port="5432")
+
+
+get_storage_db = mk_database(
+    dbname="edhub_storage", user="postgres", password="12345678", host="filestorage_db", port="5432"
+)
 
 
 router = APIRouter()
