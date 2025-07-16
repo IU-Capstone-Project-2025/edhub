@@ -30,7 +30,6 @@ export default function CourseCard({ course_id, title, date, students, user_role
         </div>
         <div className="course-card-content">
           <h3 className="course-title">{title}</h3>
-          <p><strong>Created:</strong> {date}</p>
           <p><strong>Students:</strong> {students}</p>
           <p><strong>Materials:</strong> {materialCount}</p>
         </div>

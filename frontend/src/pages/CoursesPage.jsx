@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import axios from "axios"
-
+import PageMeta from "../components/PageMeta"
 import CourseCard from "../components/CourseCard"
 import "./../styles/CoursesPage.css"
 import Header from "../components/Header"
@@ -31,6 +31,7 @@ export default function CoursesPage() {
           if (role.is_teacher) user_role = "teacher"
           else if (role.is_student) user_role = "student"
           else if (role.is_parent) user_role = "parent"
+          else if (role.is_admin) user_role = "admin"
           return {
             ...infoRes.data,
             user_role,
@@ -51,6 +52,7 @@ export default function CoursesPage() {
 
   return (
     <Header>
+      <PageMeta title="Courses" icon="/edHub_icon.svg" />
       <div className="courses-page">
         <div className="courses-header">
           <h1>My Courses</h1>

@@ -50,7 +50,7 @@ class Material(MaterialID):
 class MaterialAttachmentMetadata(BaseModel):
     course_id: str
     material_id: int
-    file_id: int
+    file_id: str
     filename: str
     upload_time: str
 
@@ -70,7 +70,7 @@ class Assignment(AssignmentID):
 class AssignmentAttachmentMetadata(BaseModel):
     course_id: str
     assignment_id: int
-    file_id: int
+    file_id: str
     filename: str
     upload_time: str
 
@@ -91,7 +91,7 @@ class SubmissionAttachmentMetadata(BaseModel):
     course_id: str
     assignment_id: int
     student_email: str
-    file_id: int
+    file_id: str
     filename: str
     upload_time: str
 

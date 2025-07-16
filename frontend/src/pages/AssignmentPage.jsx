@@ -1,8 +1,9 @@
-import React, {useEffect, useState } from "react"
+import React, {useEffect, useState ,useRef} from "react"
 import "../styles/AssignmentPage.css"
 import {useParams} from "react-router-dom"
 import axios from "axios"
 import AddGrade from "../components/AddGrade"
+import PageMeta from "../components/PageMeta"
 
 export default function AssignmentPage() {
   const { id, post_id } = useParams()
@@ -17,7 +18,36 @@ export default function AssignmentPage() {
   const [studentSubmissions, setStudentSubmissions] = useState([])
   const [currentStudentEmail, setCurrentStudentEmail] = useState(null)
   const [showAddGrade, setShowAddGrade] = useState(false)
+  const [selectedFile, setSelectedFile] = useState(null)
+  const fileInputRef = useRef(null);
 
+  const onFileChange = (event) =>{
+    if(event.target.files[0].size/1000000>5){
+        alert("Files should be smaller than 5 MB")
+        setSelectedFile(null)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+    }else{
+      setSelectedFile(event.target.files[0])
+    }
+    
+  }
+  const fileData = () => {
+    if (selectedFile){
+      
+      return (
+				<div>
+					<h2>File Details:</h2>
+					<p>File Name: {selectedFile.name}</p>
+					<p>File Type: {selectedFile.type}</p>
+					<p>
+						Last Modified: {selectedFile.lastModifiedDate.toDateString()}
+					</p>
+				</div>
+			);
+    }
+  }
 
 
   useEffect(() => {
@@ -99,7 +129,7 @@ export default function AssignmentPage() {
           msg === "Submission of this user is not found" ||
           (err.response && err.response.status === 404)
         ) {
-          setMySubmission(null); // No submission yet, not an error
+          setMySubmission(null)
         } else {
           alert("Ошибка при загрузке ответа студента: " + msg)
         }
@@ -126,7 +156,7 @@ export default function AssignmentPage() {
   }
 
   useEffect(() => {
-    if (roleData?.is_teacher) {
+    if (roleData?.is_teacher || roleData?.is_admin) {
       fetchStudentSubmissions();
     }
   }, [roleData, id, post_id]);
@@ -138,18 +168,29 @@ export default function AssignmentPage() {
   }, [mySubmission]);
   
   const fetchChildrenSubmission = async () => {
-      if (!childrenEmail[0]?.email) return
-      try {
-        const token = localStorage.getItem("access_token")
-        const res = await axios.get("/api/get_submission", {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { course_id: id, assignment_id: post_id , student_email: childrenEmail[0].email}
-        })
-        setChildrenSubmission(res.data)
-      } catch (err) {
-        alert("Ошибка при загрузке ответа ребёнка: " + (err.response?.data?.detail || err.message))
-      }
+  if (!childrenEmail) return;
+  try {
+    const token = localStorage.getItem("access_token");
+    const submissions = await Promise.all(
+      childrenEmail.map(async (child) => {
+        if (!child?.email) return null;
+        try {
+          const res = await axios.get("/api/get_submission", {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { course_id: id, assignment_id: post_id, student_email: child.email }
+          });
+          return res.data
+        } catch (err) {
+          return null;
+        }
+      })
+    );
+    setChildrenSubmission(submissions.filter(sub => sub));
+  } catch (err) {
+    alert("Ошибка при загрузке ответов детей: " + (err.response?.data?.detail || err.message));
   }
+}
+
   useEffect(() => {
     if (roleData?.is_parent && childrenEmail) {
       fetchChildrenSubmission();
@@ -157,10 +198,6 @@ export default function AssignmentPage() {
   }, [roleData, childrenEmail, id, post_id]);
   
   const handleSubmit = async () => {
-    // if (!studentEmail.trim()) {
-    //   alert("Student's Email is required")
-    //   return
-    // }
 
     try {
       const token = localStorage.getItem("access_token")
@@ -168,6 +205,15 @@ export default function AssignmentPage() {
         headers: {Authorization: `Bearer ${token}` },
         params:{course_id: id, assignment_id: post_id, comment: text}
       })
+      if (selectedFile) {
+      const formData = new FormData();
+      formData.append("file", selectedFile, selectedFile.name);
+
+      await axios.post("/api/create_submission_attachment", formData, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { course_id: id, assignment_id: post_id, student_email: ownEmail }
+      });
+    }
       setShowSubmissionForm(false)
       fetchMySubmission()
     } catch (err) {
@@ -180,6 +226,7 @@ export default function AssignmentPage() {
   if (!assignmentInfo) return <div>Loading assignment...</div>
   return (
     <div className="assignment-page">
+      <PageMeta title={assignmentInfo.title} icon="/edHub_icon.svg" />
       <a href="../">
         <button className="back-btn">← Back to course feed</button>
       </a>
@@ -202,12 +249,14 @@ export default function AssignmentPage() {
                 value={text} onChange={(e) => setText(e.target.value)}
                 rows="10" 
                 cols="30"/>
+              <input type="file" onChange={onFileChange} ref={fileInputRef}/>
               <button 
                 className="submit-btn"
                 onClick={handleSubmit} 
                 disabled={!text.trim()}
               > Submit
               </button>
+              {fileData()}
               </div>
             </div>
           )}
@@ -222,18 +271,25 @@ export default function AssignmentPage() {
               )}
             </div>
           )}
-          {roleData && roleData.is_parent && childrenSubmission && (
-            <div className="submitted-answer">
-              <div className="my-comment-title">Your child's {childrenSubmission.student_name} submission:</div>
-              <div className="my-comment">{childrenSubmission.comment}</div>
-              <div>Submitted:{childrenSubmission.submission_time}</div>
-              <div>Last modification time:{childrenSubmission.last_modification_time}</div>
-              {childrenSubmission.grade && (
-                <div className="my-grade">Grade: <b>{childrenSubmission.grade}</b> (by {childrenSubmission.gradedby_email})</div>
-              )}
+          {roleData && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length === 0 &&(
+            <div className="submitted-answer">Your children haven't submitted anything yet.</div>
+          )}
+          {roleData && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length > 0 && (
+            <div>
+              {childrenSubmission.map((child, idx) => (
+                <div key={idx} className="submitted-answer">
+                  <div className="my-comment-title">Your child's {child.student_name || child.student_email || "Child"} submission:</div>
+                  <div className="my-comment">{child.comment}</div>
+                  <div>Submitted: {child.submission_time}</div>
+                  <div>Last modification time: {child.last_modification_time}</div>
+                  {child.grade && (
+                    <div className="my-grade">Grade: <b>{child.grade}</b> (by {child.gradedby_email})</div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
-          {roleData && roleData.is_teacher && studentSubmissions && (
+          {roleData && (roleData.is_teacher || roleData.is_admin) && studentSubmissions && (
             <div className="submitted-answer">
               <div className="my-comment-title">Students' submissions:</div>
               {studentSubmissions.length === 0 && <div>No submissions yet.</div>}
