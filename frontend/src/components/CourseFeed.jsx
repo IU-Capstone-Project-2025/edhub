@@ -85,7 +85,6 @@ export default function CourseFeed() {
                 onClick={() => navigate(`/courses/${id}/materials/${mat.post_id}`)}
               >
                 <h3>{materialDetails[mat.post_id]?.title}</h3>
-                <p>Material ID: {materialDetails[mat.post_id]?.material_id}</p>
                 <p>Created: {materialDetails[mat.post_id]?.creation_time}</p>
               </div>
             ))}
@@ -102,7 +101,6 @@ export default function CourseFeed() {
                 onClick={() => navigate(`/courses/${id}/assignments/${ass.post_id}`)}
               >
                 <h3>{assignmentDetails[ass.post_id]?.title}</h3>
-                <p>Assignment ID: {assignmentDetails[ass.post_id]?.assignment_id}</p>
                 <p>Created: {assignmentDetails[ass.post_id]?.creation_time}</p>
               </div>
             ))}

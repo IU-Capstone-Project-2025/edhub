@@ -100,7 +100,6 @@ export default function SingleCourseFeed() {
                 }
               >
                 <h3>{detail?.title}</h3>
-                <p>Created: {detail?.creation_time}</p>
               </div>
             )
           })}
