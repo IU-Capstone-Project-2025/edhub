@@ -139,18 +139,29 @@ export default function AssignmentPage() {
   }, [mySubmission]);
   
   const fetchChildrenSubmission = async () => {
-      if (!childrenEmail[0]?.email) return
-      try {
-        const token = localStorage.getItem("access_token")
-        const res = await axios.get("/api/get_submission", {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { course_id: id, assignment_id: post_id , student_email: childrenEmail[0].email}
-        })
-        setChildrenSubmission(res.data)
-      } catch (err) {
-        alert("Ошибка при загрузке ответа ребёнка: " + (err.response?.data?.detail || err.message))
-      }
+  if (!childrenEmail) return;
+  try {
+    const token = localStorage.getItem("access_token");
+    const submissions = await Promise.all(
+      childrenEmail.map(async (child) => {
+        if (!child?.email) return null;
+        try {
+          const res = await axios.get("/api/get_submission", {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { course_id: id, assignment_id: post_id, student_email: child.email }
+          });
+          return res.data
+        } catch (err) {
+          return null;
+        }
+      })
+    );
+    setChildrenSubmission(submissions.filter(sub => sub));
+  } catch (err) {
+    alert("Ошибка при загрузке ответов детей: " + (err.response?.data?.detail || err.message));
   }
+}
+
   useEffect(() => {
     if (roleData?.is_parent && childrenEmail) {
       fetchChildrenSubmission();
@@ -224,15 +235,22 @@ export default function AssignmentPage() {
               )}
             </div>
           )}
-          {roleData && roleData.is_parent && childrenSubmission && (
-            <div className="submitted-answer">
-              <div className="my-comment-title">Your child's {childrenSubmission.student_name} submission:</div>
-              <div className="my-comment">{childrenSubmission.comment}</div>
-              <div>Submitted:{childrenSubmission.submission_time}</div>
-              <div>Last modification time:{childrenSubmission.last_modification_time}</div>
-              {childrenSubmission.grade && (
-                <div className="my-grade">Grade: <b>{childrenSubmission.grade}</b> (by {childrenSubmission.gradedby_email})</div>
-              )}
+          {roleData && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length === 0 &&(
+            <div className="submitted-answer">Your children haven't submitted anything yet.</div>
+          )}
+          {roleData && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length > 0 && (
+            <div>
+              {childrenSubmission.map((child, idx) => (
+                <div key={idx} className="submitted-answer">
+                  <div className="my-comment-title">Your child's {child.student_name || child.student_email || "Child"} submission:</div>
+                  <div className="my-comment">{child.comment}</div>
+                  <div>Submitted: {child.submission_time}</div>
+                  <div>Last modification time: {child.last_modification_time}</div>
+                  {child.grade && (
+                    <div className="my-grade">Grade: <b>{child.grade}</b> (by {child.gradedby_email})</div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
           {roleData && (roleData.is_teacher || roleData.is_admin) && studentSubmissions && (
