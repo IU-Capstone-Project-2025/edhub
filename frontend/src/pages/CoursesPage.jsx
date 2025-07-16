@@ -31,6 +31,7 @@ export default function CoursesPage() {
           if (role.is_teacher) user_role = "teacher"
           else if (role.is_student) user_role = "student"
           else if (role.is_parent) user_role = "parent"
+          else if (role.is_admin) user_role = "admin"
           return {
             ...infoRes.data,
             user_role,

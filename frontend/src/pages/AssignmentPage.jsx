@@ -127,7 +127,7 @@ export default function AssignmentPage() {
   }
 
   useEffect(() => {
-    if (roleData?.is_teacher) {
+    if (roleData?.is_teacher || roleData?.is_admin) {
       fetchStudentSubmissions();
     }
   }, [roleData, id, post_id]);
@@ -235,7 +235,7 @@ export default function AssignmentPage() {
               )}
             </div>
           )}
-          {roleData && roleData.is_teacher && studentSubmissions && (
+          {roleData && (roleData.is_teacher || roleData.is_admin) && studentSubmissions && (
             <div className="submitted-answer">
               <div className="my-comment-title">Students' submissions:</div>
               {studentSubmissions.length === 0 && <div>No submissions yet.</div>}

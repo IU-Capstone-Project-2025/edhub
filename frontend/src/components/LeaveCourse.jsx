@@ -15,6 +15,8 @@ export default function LeaveCourse({ onClose, courseId , roleData, ownEmail}) {
   ? "student"
   : roleData.is_parent
   ? "parent"
+  : roleData.is_admin
+  ? "admin"
   : "unknown";
   const handleSubmit = async () => {
     if (!ownEmail.trim()) {
@@ -27,6 +29,7 @@ export default function LeaveCourse({ onClose, courseId , roleData, ownEmail}) {
         const token = localStorage.getItem("access_token")
         switch (role) {
           case "teacher":
+          case "admin":
             const teachersRes = await axios.get("/api/get_course_teachers", {
                 headers: {Authorization: `Bearer ${token}` },
                 params:{course_id: courseId}
