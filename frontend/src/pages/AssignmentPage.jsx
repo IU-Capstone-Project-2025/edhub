@@ -3,6 +3,7 @@ import "../styles/AssignmentPage.css"
 import {useParams} from "react-router-dom"
 import axios from "axios"
 import AddGrade from "../components/AddGrade"
+import PageMeta from "../components/PageMeta"
 
 export default function AssignmentPage() {
   const { id, post_id } = useParams()
@@ -180,6 +181,7 @@ export default function AssignmentPage() {
   if (!assignmentInfo) return <div>Loading assignment...</div>
   return (
     <div className="assignment-page">
+      <PageMeta title={assignmentInfo.title} icon="/edHub_icon.svg" />
       <a href="../">
         <button className="back-btn">← Back to course feed</button>
       </a>

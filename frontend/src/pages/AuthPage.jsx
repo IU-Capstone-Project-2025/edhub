@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import "./../styles/AuthPage.css"
 import noavatar from "../components/edHub_icon.svg";
 import axios from "axios"
-
+import PageMeta from "../components/PageMeta";
 import { useNavigate } from "react-router-dom"
 
 export default function AuthPage() {
@@ -63,6 +63,7 @@ export default function AuthPage() {
 
   return (
     <div className="auth-page">
+      <PageMeta title="Authentication" icon="/edHub_icon.svg" />
       <div className="auth-gradient" />
 
       <div className="auth-content">
