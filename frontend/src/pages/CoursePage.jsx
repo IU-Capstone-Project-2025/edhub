@@ -78,7 +78,7 @@ export default function CoursePage() {
       <PageMeta title={courseInfo.title} icon="/edHub_icon.svg" />
       <div className="course-page">
         <h1>{courseInfo.title}</h1>
-        <p><strong>Created:</strong> {new Date(courseInfo.creation_date).toLocaleDateString()}</p>
+        <p><strong>Created:</strong> {new Date(courseInfo.creation_time).toLocaleDateString()}</p>
         <p>Students enrolled: {courseInfo.number_of_students}</p>
         {roleData && (roleData.is_teacher || roleData.is_admin) && (
           <div className="actions">
