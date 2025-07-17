@@ -1,0 +1,20 @@
+.course-tabs {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  background: #ccc;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tab-btn.active {
+  background: var(--green-main);
+  color: white;
+}
