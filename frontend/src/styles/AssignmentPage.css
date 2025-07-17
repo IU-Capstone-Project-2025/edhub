@@ -1,6 +1,6 @@
 .assignment-page {
   min-height: 100vh;
-  padding: 40px;
+  padding: 20px 40px 40px 40px;
   background: #F7FAFC;
   font-family: 'Inter', Arial, sans-serif;
 }
@@ -21,9 +21,10 @@
   box-shadow: 0 6px 32px #3339400a;
   overflow: hidden;
   min-height: 420px;
+  margin-top: 0;
 }
 .assignment-left, .assignment-right {
-  padding: 40px 32px;
+  padding: 28px 32px;
   flex: 1;
   min-width: 320px;
 }
@@ -55,19 +56,14 @@
   gap: 12px;
 }
 .submission-card {
-  background: #F1FAFE;
-  border-radius: 12px;
-  padding: 14px 18px;
-  box-shadow: 0 2px 10px #4C97B022;
-  cursor: pointer;
-  transition: box-shadow 0.12s;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px 18px 10px 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 10px #4CB05011;
+  display: block;
 }
-.submission-card:hover {
-  box-shadow: 0 4px 24px #4C97B044;
-}
+
 .submission-status {
   font-size: 0.98em;
   color: #999;
@@ -110,9 +106,12 @@
   cursor: not-allowed;
 }
 .submitted-answer {
-  background: #F1FAFE;
-  border-radius: 12px;
-  padding: 18px 16px;
+  background: #FCFFFC;
+  border-radius: 14px;
+  padding: 18px 18px 14px 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 12px #4CB05011;
+  border: 1px solid #F1FAFE;
 }
 .my-comment-title {
   font-weight: 500;
@@ -124,8 +123,36 @@
 }
 .my-grade {
   font-size: 1.07em;
-  color: #00a25d;
+  color: #4CB050;
   font-weight: 600;
+  margin-top: 6px;
+}
+.grade-by {
+  color: #888;
+  font-size: 0.97em;
+  font-weight: 400;
+}
+/* Новые стили для эстетики и воздушности */
+.assignment-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #222;
+  letter-spacing: 0.01em;
+}
+.assignment-desc {
+  font-size: 1.18rem;
+  color: #222;
+  font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+  font-weight: 400;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+.assignment-date {
+  font-size: 0.98rem;
+  color: #888;
+  margin-bottom: 6px;
+  margin-top: 2px;
 }
 .popup-bg {
   position: fixed;

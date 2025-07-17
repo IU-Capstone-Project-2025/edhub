@@ -12,94 +12,173 @@ import AddTeacher from "../components/AddTeacher"
 import AddParent from "../components/AddParent"
 import LeaveCourse from "../components/LeaveCourse"
 import SingleCourseFeed from "../components/SingleCourseFeed"
+import CourseTabs from "../components/CoursesTabs"
+
 
 export default function CoursePage() {
-  const { id } = useParams()
-  const [courseInfo, setCourseInfo] = useState(null)
-  const [showMaterialModal, setShowMaterialModal] = useState(false)
-  const [showAddAssignment, setShowAddAssignment] = useState(false)
-  const [showAddStudent, setShowAddStudent] = useState(false)
-  const [showAddTeacher, setShowAddTeacher] = useState(false)
-  const [showAddParent, setShowAddParent] = useState(false)
-  const [roleData, setRoleData] = useState()
-  const [ownEmail, setOwnEmail] = useState("")
-  const [showLeaveCourse, setShowLeaveCourse] = useState()
-  const [singleColumnSwitch, setSingleColumnSwitch] = useState(false)
-
-  
+  const { id } = useParams();
+  const [courseInfo, setCourseInfo] = useState(null);
+  const [showMaterialModal, setShowMaterialModal] = useState(false);
+  const [showAddAssignment, setShowAddAssignment] = useState(false);
+  const [showAddStudent, setShowAddStudent] = useState(false);
+  const [showAddTeacher, setShowAddTeacher] = useState(false);
+  const [showAddParent, setShowAddParent] = useState(false);
+  const [roleData, setRoleData] = useState();
+  const [ownEmail, setOwnEmail] = useState("");
+  const [showLeaveCourse, setShowLeaveCourse] = useState();
+  const [singleColumnSwitch, setSingleColumnSwitch] = useState(false);
+  const [activeTab, setActiveTab] = useState("course");
+  const [teachers, setTeachers] = useState([]);
+  const [loadingTeachers, setLoadingTeachers] = useState(false);
 
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const token = localStorage.getItem("access_token")
+        const token = localStorage.getItem("access_token");
         const res = await axios.get("/api/get_course_info", {
           headers: { Authorization: `Bearer ${token}` },
           params: { course_id: id },
-        })
-        setCourseInfo(res.data)
+        });
+        setCourseInfo(res.data);
       } catch (err) {
-        alert("Ошибка при загрузке курса: " + (err.response?.data?.detail || err.message))
+        alert("Error loading course: " + (err.response?.data?.detail || err.message));
       }
-    }
-    fetchCourse()
+    };
+    fetchCourse();
 
     const fetchRoleData = async () => {
       try {
-        const token = localStorage.getItem("access_token")
+        const token = localStorage.getItem("access_token");
         const res = await axios.get("/api/get_user_role", {
           headers: { Authorization: `Bearer ${token}` },
           params: { course_id: id },
-        })
-        setRoleData(res.data)
+        });
+        setRoleData(res.data);
       } catch (err) {
-        alert("Error while user downloading: " + (err.response?.data?.detail || err.message))
+        alert("Error loading user role: " + (err.response?.data?.detail || err.message));
       }
-    }
-    fetchRoleData()
+    };
+    fetchRoleData();
 
     const fetchEmail = async () => {
       try {
-        const token = localStorage.getItem("access_token")
+        const token = localStorage.getItem("access_token");
         const res = await axios.get("/api/get_user_info", {
           headers: { Authorization: `Bearer ${token}` },
-        })
-        setOwnEmail(res.data.email)
+        });
+        setOwnEmail(res.data.email);
       } catch (err) {
-        alert("Error while email downloading: " + (err.response?.data?.detail || err.message))
+        alert("Error loading email: " + (err.response?.data?.detail || err.message));
       }
-    }
-    fetchEmail()
-  }, [id])
+    };
+    fetchEmail();
+  }, [id]);
 
-  if (!courseInfo) return <div>Loading course...</div>
+  useEffect(() => {
+    if (activeTab === "participants") {
+      setLoadingTeachers(true);
+      const fetchTeachers = async () => {
+        try {
+          const token = localStorage.getItem("access_token");
+          const res = await axios.get("/api/get_course_teachers", {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { course_id: id },
+          });
+          setTeachers(res.data);
+        } catch (err) {
+          alert("Error loading teachers: " + (err.response?.data?.detail || err.message));
+        } finally {
+          setLoadingTeachers(false);
+        }
+      };
+      fetchTeachers();
+    }
+  }, [activeTab, id]);
+
+  const handleRemoveTeacher = async (teacherEmail) => {
+    if (!window.confirm("Are you sure you want to remove this teacher?")) return;
+    try {
+      const token = localStorage.getItem("access_token");
+      await axios.post("/api/remove_teacher", null, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { course_id: id, teacher_email: teacherEmail },
+      });
+      setTeachers((prev) => prev.filter((t) => t.email !== teacherEmail));
+    } catch (err) {
+      alert("Error removing teacher: " + (err.response?.data?.detail || err.message));
+    }
+  };
+
+  if (!courseInfo) return <div>Loading course...</div>;
 
   return (
     <Header>
       <PageMeta title={courseInfo.title} icon="/edHub_icon.svg" />
       <div className="course-page">
-        <h1>{courseInfo.title}</h1>
-        <p><strong>Created:</strong> {new Date(courseInfo.creation_time).toLocaleDateString()}</p>
-        <p>Students enrolled: {courseInfo.number_of_students}</p>
-        {roleData && (roleData.is_teacher || roleData.is_admin) && (
-          <div className="actions">
-            <button onClick={() => setShowMaterialModal(true)}>+ Add Material</button>
-            <button onClick={() => setShowAddAssignment(true)}>+ Add Assignment</button>
-            <button onClick={() => setShowAddStudent(true)}>+ Add Student</button>
-            <button onClick={() => setShowAddTeacher(true)}>+ Add Teacher</button>
-            <button onClick={() => setShowAddParent(true)}>+ Add Parent</button>
-            <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
-            <button className="switch-btn" onClick={()=>{setSingleColumnSwitch(!singleColumnSwitch)}}>Switch</button>
+        <div className="course-page-header">
+          <h1 className="course-title">{courseInfo.title}</h1>
+          <CourseTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            availableTabs={["course", "participants", "grades"]}
+          />
+        </div>
+        {activeTab === "course" && (
+          <>
+            <p><strong>Created:</strong> {new Date(courseInfo.creation_time).toLocaleDateString()}</p>
+            <p>Students enrolled: {courseInfo.number_of_students}</p>
+            {roleData && (roleData.is_teacher || roleData.is_admin) && (
+              <div className="actions">
+                <button onClick={() => setShowMaterialModal(true)}>+ Add Material</button>
+                <button onClick={() => setShowAddAssignment(true)}>+ Add Assignment</button>
+                <button onClick={() => setShowAddStudent(true)}>+ Add Student</button>
+                <button onClick={() => setShowAddTeacher(true)}>+ Add Teacher</button>
+                <button onClick={() => setShowAddParent(true)}>+ Add Parent</button>
+                <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
+                <button className="switch-btn" onClick={()=>{setSingleColumnSwitch(!singleColumnSwitch)}}>Switch</button>
+              </div>
+            )}
+            {roleData && (roleData.is_student|| roleData.is_parent ) && (
+              <div className="actions">
+                <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
+                <button className="switch-btn" onClick={()=>{setSingleColumnSwitch(!singleColumnSwitch)}}>Switch</button>
+              </div>
+            )}
+            {!singleColumnSwitch&&(<CourseFeed />)}
+            {singleColumnSwitch&&(<SingleCourseFeed />)}
+          </>
+        )}
+        {activeTab === "participants" && (
+          <div className="participants-list">
+            <h2>Teachers</h2>
+            {loadingTeachers ? (
+              <div>Loading teachers...</div>
+            ) : (
+              <ul>
+                {teachers.map((teacher) => (
+                  <li key={teacher.email} className="teacher-item">
+                    <span>{teacher.name} ({teacher.email})</span>
+                    {roleData && roleData.is_teacher && teacher.email !== ownEmail && (
+                      <button
+                        className="remove-teacher-btn"
+                        title="Remove teacher"
+                        onClick={() => handleRemoveTeacher(teacher.email)}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
-        {roleData && (roleData.is_student|| roleData.is_parent ) && (
-          <div className="actions">
-            <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
-            <button className="switch-btn" onClick={()=>{setSingleColumnSwitch(!singleColumnSwitch)}}>Switch</button>
+        {activeTab === "grades" && (
+          <div className="grades-placeholder">
+            <h2>Grades</h2>
+            <p>Grades view coming soon...</p>
           </div>
         )}
-        {!singleColumnSwitch&&(<CourseFeed />)}
-        {singleColumnSwitch&&(<SingleCourseFeed />)}
-
       </div>
 
       {showMaterialModal && (
@@ -142,9 +221,6 @@ export default function CoursePage() {
           ownEmail={ownEmail}
         />
       )}
-      
     </Header>
-    
-  )
-  
+  );
 }
