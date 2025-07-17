@@ -1,9 +1,19 @@
 import React, {useEffect, useState } from "react"
 import "../styles/AssignmentPage.css"
-import {useParams} from "react-router-dom"
+import {useParams, useNavigate} from "react-router-dom"
 import axios from "axios"
 import AddGrade from "../components/AddGrade"
 import PageMeta from "../components/PageMeta"
+
+function formatText(text) {
+  if (!text) return "";
+  let html = text
+    .replace(/\n/g, "<br>")
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // bold: **text**
+    .replace(/__(.*?)__/g, '<u>$1</u>') // underline: __text__
+    .replace(/\*(.*?)\*/g, '<i>$1</i>'); // italic: *text*
+  return html;
+}
 
 export default function AssignmentPage() {
   const { id, post_id } = useParams()
@@ -17,6 +27,7 @@ export default function AssignmentPage() {
   const [childrenSubmission, setChildrenSubmission] = useState(null)
   const [studentSubmissions, setStudentSubmissions] = useState([])
   const [currentStudentEmail, setCurrentStudentEmail] = useState(null)
+  const navigate = useNavigate();
   const [showAddGrade, setShowAddGrade] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
 
@@ -57,7 +68,7 @@ export default function AssignmentPage() {
         setAssignmentInfo(res.data)
         
       }catch(err){
-        alert("Ошибка при загрузке курса: " + (err.response?.data?.detail || err.message))
+        alert("Error while course downloading: " + (err.response?.data?.detail || err.message))
       }
     }
     fetchAssignmentInfo()
@@ -71,7 +82,7 @@ export default function AssignmentPage() {
         })
         setRoleData(res.data)
       }catch(err){
-        alert("Ошибка при загрузке роли пользователя: " + (err.response?.data?.detail || err.message))
+        alert("Error while user downloading: " + (err.response?.data?.detail || err.message))
       }
     }
     fetchRoleData()
@@ -84,7 +95,7 @@ export default function AssignmentPage() {
         })
         setOwnEmail(res.data.email)
       } catch (err) {
-        alert("Ошибка при загрузке email'а пользователя: " + (err.response?.data?.detail || err.message))
+        alert("Error while user' email downloading: " + (err.response?.data?.detail || err.message))
       }
     }
     fetchEmail()
@@ -103,7 +114,7 @@ export default function AssignmentPage() {
         })
         setChildrenEmail(res.data)
       } catch (err) {
-        alert("Ошибка при загрузке email'а ребёнка: " + (err.response?.data?.detail || err.message))
+        alert("Error while children' mail downloading: " + (err.response?.data?.detail || err.message))
       }
     }
     fetchChildrenEmail()
@@ -127,7 +138,7 @@ export default function AssignmentPage() {
         ) {
           setMySubmission(null)
         } else {
-          alert("Ошибка при загрузке ответа студента: " + msg)
+          alert("Error while student' task downloading: " + msg)
         }
       }
   }
@@ -147,7 +158,7 @@ export default function AssignmentPage() {
         })
         setStudentSubmissions(res.data)
       } catch (err) {
-          alert("Ошибка при загрузке ответов студентов: " + (err.response?.data?.detail || err.message))
+          alert("Error while stunents' answers downloading: " + (err.response?.data?.detail || err.message))
       }
   }
 
@@ -230,7 +241,7 @@ export default function AssignmentPage() {
         <div className="assignment-left">
           <div className="assignment-date">{assignmentInfo.creation_time}</div>
           <h1 className="assignment-title">{assignmentInfo.title}</h1>
-          <p className="assignment-desc">{assignmentInfo.description}</p>
+          <p className="assignment-desc" dangerouslySetInnerHTML={{__html: formatText(assignmentInfo.description)}} />
         </div>
         <div className="assignment-right">
           {roleData && roleData.is_student && showSubmissionForm && !mySubmission &&(
@@ -256,7 +267,7 @@ export default function AssignmentPage() {
           {roleData && roleData.is_student && !showSubmissionForm && mySubmission && (
             <div className="submitted-answer">
               <div className="my-comment-title">Your answer:</div>
-              <div className="my-comment assignment-desc">{mySubmission.comment}</div>
+              <div className="my-comment assignment-desc" dangerouslySetInnerHTML={{__html: formatText(mySubmission.comment)}} />
               <div className="assignment-date">{mySubmission.submission_time}</div>
               {mySubmission.grade && (
                 <div className="my-grade">Оценка: <b>{mySubmission.grade}</b> <span className="grade-by">({mySubmission.gradedby_email})</span></div>
@@ -271,10 +282,10 @@ export default function AssignmentPage() {
               {childrenSubmission.map((child, idx) => (
                 <div key={idx} className="submitted-answer">
                   <div className="my-comment-title">Ответ ребёнка: {child.student_name || child.student_email || "Child"}</div>
-                  <div className="my-comment assignment-desc">{child.comment}</div>
+                  <div className="my-comment assignment-desc" dangerouslySetInnerHTML={{__html: formatText(child.comment)}} />
                   <div className="assignment-date">{child.submission_time}</div>
                   {child.grade && (
-                    <div className="my-grade">Оценка: <b>{child.grade}</b> <span className="grade-by">({child.gradedby_email})</span></div>
+              <div className="my-grade">Grade: <b>{child.grade}</b> <span className="grade-by">({child.gradedby_email})</span></div>
                   )}
                 </div>
               ))}
@@ -282,26 +293,32 @@ export default function AssignmentPage() {
           )}
           {roleData && (roleData.is_teacher || roleData.is_admin) && studentSubmissions && (
             <div className="teacher-submissions">
-              <div className="my-comment-title">Ответы учеников:</div>
-              {studentSubmissions.length === 0 && <div className="empty">Пока нет ответов.</div>}
+              <div className="my-comment-title" style={{marginBottom: 24}}>Student answers:</div>
+              {studentSubmissions.length === 0 && <div className="empty">No answers yet.</div>}
               <div className="teacher-submissions-list">
                 {studentSubmissions.map((submission, idx) => (
-                  <div key={idx} className="student-submission-block">
+                  <div
+                    key={idx}
+                    className="student-submission-block clickable-submission"
+                    onClick={() => navigate(`/courses/${id}/assignments/${post_id}/submission/${submission.student_email}`)}
+                    style={{cursor: "pointer"}}
+                  >
                     <div className="my-comment assignment-desc">
-                      <b>{submission.student_name || submission.student_email || "Ученик"}:</b> {submission.comment}
+                      <b>{submission.student_name || submission.student_email || "Student"}:</b> <span dangerouslySetInnerHTML={{__html: formatText(submission.comment)}} />
                     </div>
                     <div className="assignment-date">{submission.submission_time}</div>
                     {submission.grade && (
                       <div className="my-grade">
-                        Оценка: <b>{submission.grade}</b> {submission.gradedBy && <span className="grade-by">({submission.gradedBy})</span>}
+                        Grade: <b>{submission.grade}</b> {submission.gradedBy && <span className="grade-by">({submission.gradedBy})</span>}
                       </div>
                     )}
                     <button 
                       className="grade-btn"
-                      onClick={() => {
+                      onClick={e => {
+                        e.stopPropagation();
                         setCurrentStudentEmail(submission.student_email)
                         setShowAddGrade(true)
-                      }}>Оценить</button>
+                      }}>Grade</button>
                   </div>
                 ))}
               </div>
@@ -312,7 +329,10 @@ export default function AssignmentPage() {
       </div>
       {showAddGrade && (
         <AddGrade
-          onClose={() => setShowAddGrade(false)}
+          onClose={() => {
+              setShowAddGrade(false);
+              fetchStudentSubmissions();
+            }}          
           courseId={id}
           assignmentId={post_id}
           studentEmail={currentStudentEmail}

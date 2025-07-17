@@ -19,16 +19,23 @@
   background: #fff;
   border-radius: 24px;
   box-shadow: 0 6px 32px #3339400a;
-  overflow: hidden;
   min-height: 420px;
+  height: 70vh;
 }
 .assignment-left, .assignment-right {
   padding: 40px 32px;
   flex: 1;
   min-width: 320px;
+  height: 100%;
 }
 .assignment-left {
   border-right: 1px solid #EDF2F7;
+  position: sticky;
+  left: 0;
+  top: 0;
+  align-self: flex-start;
+  z-index: 2;
+  background: #fff;
 }
 .assignment-left h1 {
   font-size: 2.1rem;
@@ -43,6 +50,8 @@
 .assignment-right {
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  height: 100%;
 }
 .assignment-right h2 {
   margin: 0 0 18px 0;
