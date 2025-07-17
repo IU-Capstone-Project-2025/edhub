@@ -58,6 +58,38 @@
   font-size: 1.25rem;
   color: #4CB050;
 }
+/* Outlined button styles for Add, Leave, Switch */
+.outlined-btn {
+  background: #fff;
+  border: 2px solid #43c463;
+  color: #43c463;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-size: 1.07em;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.outlined-btn:hover {
+  border-color: #2d995b;
+  color: #2d995b;
+}
+.outlined-btn.red {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+.outlined-btn.red:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+}
+.outlined-btn.blue {
+  border-color: #3498db;
+  color: #3498db;
+}
+.outlined-btn.blue:hover {
+  border-color: #217dbb;
+  color: #217dbb;
+}
 .submission-list {
   display: flex;
   flex-direction: column;

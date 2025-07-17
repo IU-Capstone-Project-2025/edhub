@@ -59,7 +59,7 @@ await axios.post("/api/create_material", form, {
         />
         <div className="modal-actions">
           <button className="cancel-btn" onClick={onClose} disabled={loading}>Cancel</button>
-          <button onClick={handleSubmit} disabled={loading}>Add</button>
+          <button className="outlined-btn" onClick={handleSubmit} disabled={loading}>Add</button>
         </div>
       </div>
     </div>

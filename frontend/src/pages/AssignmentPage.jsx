@@ -241,7 +241,31 @@ export default function AssignmentPage() {
         <div className="assignment-left">
           <div className="assignment-date">{assignmentInfo.creation_time}</div>
           <h1 className="assignment-title">{assignmentInfo.title}</h1>
+
+{roleData && (roleData.is_teacher || roleData.is_admin) && (
+  <div
+    className="remove-assignment-text"
+    onClick={async () => {
+      if (window.confirm("Are you sure you want to remove this assignment? This action cannot be undone.")) {
+        try {
+          const token = localStorage.getItem("access_token")
+          await axios.post("/api/remove_assignment", null, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { course_id: id, assignment_id: post_id }
+          })
+          window.location.assign("../")
+        } catch (err) {
+          alert("Ошибка при удалении задания: " + (err.response?.data?.detail || err.message))
+        }
+      }
+    }}
+  >
+    Delete assignment
+  </div>
+)}
+
           <p className="assignment-desc" dangerouslySetInnerHTML={{__html: formatText(assignmentInfo.description)}} />
+    
         </div>
         <div className="assignment-right">
           {roleData && roleData.is_student && showSubmissionForm && !mySubmission &&(

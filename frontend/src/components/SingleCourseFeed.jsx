@@ -98,9 +98,20 @@ export default function SingleCourseFeed() {
                       : `/courses/${id}/assignments/${post.post_id}`
                   )
                 }
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
               >
-                <h3>{detail?.title}</h3>
+                <div className="vertical-card-header">
+                  <h3>{detail?.title}</h3>
+                </div>
+                <div style={{ minWidth: 110, textAlign: "right" }}>
+                  {post.type === "mat" ? (
+                    <span className="material-label" style={{ color: "#43c463", fontWeight: 700, fontSize: "1.08em" }}>Material</span>
+                  ) : (
+                    <span className="assignment-label" style={{ color: "#3498db", fontWeight: 700, fontSize: "1.08em" }}>Assignment</span>
+                  )}
+                </div>
               </div>
+
             )
           })}
         </div>

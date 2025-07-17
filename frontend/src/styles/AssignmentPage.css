@@ -166,6 +166,38 @@
   margin-bottom: 6px;
   margin-top: 2px;
 }
+/* Outlined button styles for Add, Leave, Switch */
+.outlined-btn {
+  background: #fff;
+  border: 2px solid #43c463;
+  color: #43c463;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-size: 1.07em;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.outlined-btn:hover {
+  border-color: #2d995b;
+  color: #2d995b;
+}
+.outlined-btn.red {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+.outlined-btn.red:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+}
+.outlined-btn.blue {
+  border-color: #3498db;
+  color: #3498db;
+}
+.outlined-btn.blue:hover {
+  border-color: #217dbb;
+  color: #217dbb;
+}
 .popup-bg {
   position: fixed;
   left: 0; top: 0; width: 100vw; height: 100vh;
@@ -307,5 +339,17 @@
   to {
     opacity: 1;
   }
+}
+
+.remove-assignment-text {
+  color: #e74c3c;
+  cursor: pointer;
+  margin-top: -10px;
+  margin-bottom: 16px;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+.remove-assignment-text:hover {
+  text-decoration: underline;
 }
 

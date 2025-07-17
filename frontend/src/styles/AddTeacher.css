@@ -40,6 +40,22 @@
   justify-content: space-between;
 }
 
+.outlined-btn {
+  background: #fff;
+  border: 2px solid #43c463;
+  color: #43c463;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-size: 1.07em;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.outlined-btn:hover {
+  border-color: #2d995b;
+  color: #2d995b;
+}
+
 .modal-actions button {
   padding: 10px 20px;
   font-weight: bold;
