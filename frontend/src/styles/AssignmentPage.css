@@ -1,3 +1,15 @@
+.clickable-submission {
+  transition: box-shadow 0.2s, background 0.2s;
+  box-shadow: 0 2px 8px #33394014;
+  margin-bottom: 18px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+.clickable-submission:hover {
+  background: #e6f7ee;
+  box-shadow: 0 4px 16px #4cb05022;
+  cursor: pointer;
+}
 .assignment-page {
   min-height: 100vh;
   padding: 20px 40px 40px 40px;
@@ -90,7 +102,7 @@
   resize: none;
 }
 .submit-btn {
-  background: #4CB050;
+  background: #43c463;
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -101,7 +113,7 @@
   transition: background 0.1s;
 }
 .submit-btn:disabled {
-  background: #B1E4F5;
+  background: #a6e6b7;
   color: #fff;
   cursor: not-allowed;
 }
@@ -201,7 +213,7 @@
   font-size: 1em;
 }
 .grade-btn {
-  background: #4C97B0;
+  background: #43c463;
   color: #fff;
   border: none;
   border-radius: 7px;
@@ -225,3 +237,75 @@
   font-weight: 500;
   align-self: flex-end;
 }
+
+.grade-block {
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 14px;
+  background: #f6f8fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.grade-block-title {
+  font-weight: bold;
+  margin-bottom: 16px;
+  font-size: 1.1em;
+  color: #333940;
+}
+
+.grade-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.grade-form input,
+.grade-form textarea {
+  font-size: 1.05em;
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: 1.5px solid #43c463;
+  outline: none;
+  background: #fff;
+  color: #222;
+  box-shadow: 0 1px 4px rgba(67, 196, 99, 0.07);
+  font-weight: 400;
+  resize: vertical;
+}
+
+.grade-form input {
+  min-width: 100px;
+  font-weight: 500;
+}
+
+.grade-form textarea {
+  min-height: 80px;
+}
+
+.grade-success {
+  color: #43c463;
+  font-weight: 500;
+  margin-top: 10px;
+}
+
+.submit-success {
+  background: #43c463;
+  border: 2px solid #2d995b;
+  color: #fff;
+}
+
+.grade-success {
+  color: #43c463;
+  font-weight: 500;
+  margin-top: 10px;
+  opacity: 0;
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+

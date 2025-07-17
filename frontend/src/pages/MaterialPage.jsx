@@ -4,6 +4,16 @@ import {useParams} from "react-router-dom"
 import axios from "axios"
 import PageMeta from "../components/PageMeta"
 
+function formatText(text) {
+  if (!text) return "";
+  let html = text
+    .replace(/\n/g, "<br>")
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // bold: **text**
+    .replace(/__(.*?)__/g, '<u>$1</u>') // underline: __text__
+    .replace(/\*(.*?)\*/g, '<i>$1</i>'); // italic: *text*
+  return html;
+}
+
 export default function MaterialPage() {
   const { post_id , id: course_id} = useParams()
   const [material,setMaterial] = useState()
@@ -41,10 +51,9 @@ if (!material) {
       </a>
       <div className="assignment-main">
         <div className="assignment-left">
-          <h1>{material.title}</h1>
-          <p>{material.description}</p>
-          <p>Material ID : {material.material_id}</p>
-          <p>Created : {material.creation_time}</p>
+          <div className="assignment-date">{material.creation_time}</div>
+          <h1 className="assignment-title">{material.title}</h1>
+          <p className="assignment-desc" dangerouslySetInnerHTML={{__html: formatText(material.description)}} />
         </div>
       </div>
 

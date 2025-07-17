@@ -6,6 +6,7 @@ import CoursesPage from "./pages/CoursesPage";
 import CoursePage from "./pages/CoursePage";
 import AssignmentPage from "./pages/AssignmentPage";
 import MaterialPage from "./pages/MaterialPage";
+import SubmissionDetailPage from "./pages/SubmissionDetailPage";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/courses/:id" element={<CoursePage />} />
         <Route path="/courses/:id/materials/:post_id" element={<MaterialPage />} />
         <Route path="/courses/:id/assignments/:post_id" element={<AssignmentPage />} />
+        <Route path="/courses/:id/assignments/:post_id/submission/:student_email" element={<SubmissionDetailPage />} />
       </Routes>
     </Router>
   );
