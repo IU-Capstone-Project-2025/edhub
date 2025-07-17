@@ -52,3 +52,26 @@
   box-shadow: 0 4px 16px #b1e4f577;
   background: #ece6fd;
 }
+
+.vertical-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.post-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.material-tag {
+  background-color: #4C97B0;
+}
+
+.assignment-tag {
+  background-color: #4CB050;
+}
