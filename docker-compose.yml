@@ -30,11 +30,19 @@ services:
     volumes:
       - ./random-secrets:/app/random-secrets
 
+  # frontend:
+  #   build: ./frontend
+  #   restart: always
+  #   depends_on:
+  #     - backend
+
   frontend:
     build: ./frontend
     restart: always
     depends_on:
       - backend
+    ports:
+      - 3000:3000
 
   nginx:
     build: ./nginx

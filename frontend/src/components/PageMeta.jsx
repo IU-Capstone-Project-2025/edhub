@@ -3,7 +3,7 @@ import { useEffect } from "react";
 export default function PageMeta({ title, icon }) {
   useEffect(() => {
     if (!title) {
-        document.title = EdHub
+        document.title = "EdHub"
     }else{
         document.title = title
     }

@@ -26,23 +26,23 @@ export default function AssignmentPage() {
   const fileData = () => {
     if (selectedFile){
       return (
-				<div>
-					<h2>File Details:</h2>
-					<p>File Name: {selectedFile.name}</p>
-					<p>File Type: {selectedFile.type}</p>
-					<p>
-						Last Modified: {selectedFile.lastModifiedDate.toDateString()}
-					</p>
-				</div>
-			);
+        <div>
+          <h2>File Details:</h2>
+          <p>File Name: {selectedFile.name}</p>
+          <p>File Type: {selectedFile.type}</p>
+          <p>
+            Last Modified: {selectedFile.lastModifiedDate.toDateString()}
+          </p>
+        </div>
+      );
     }else {
-			return (
-				<div>
-					<br />
-					<h4>Choose before Pressing the Upload button</h4>
-				</div>
-			);
-		}
+      return (
+        <div>
+          <br />
+          <h4>Choose before Pressing the Upload button</h4>
+        </div>
+      );
+    }
   }
 
 
@@ -228,12 +228,9 @@ export default function AssignmentPage() {
       </a>
       <div className="assignment-main">
         <div className="assignment-left">
-          <h1>{assignmentInfo.title}</h1>
-          <p>{assignmentInfo.description}</p>
-          <p>Assignment ID : {assignmentInfo.assignment_id}</p>
-          <p>Created : {assignmentInfo.creation_time}</p>
-          <p>Current Email: {ownEmail}</p>
-          <p>author : {assignmentInfo.author}</p>
+          <div className="assignment-date">{assignmentInfo.creation_time}</div>
+          <h1 className="assignment-title">{assignmentInfo.title}</h1>
+          <p className="assignment-desc">{assignmentInfo.description}</p>
         </div>
         <div className="assignment-right">
           {roleData && roleData.is_student && showSubmissionForm && !mySubmission &&(
@@ -258,12 +255,11 @@ export default function AssignmentPage() {
           )}
           {roleData && roleData.is_student && !showSubmissionForm && mySubmission && (
             <div className="submitted-answer">
-              <div className="my-comment-title">Your submission:</div>
-              <div className="my-comment">{mySubmission.comment}</div>
-              <div>Submitted:{mySubmission.submission_time}</div>
-              <div>Last modification time:{mySubmission.last_modification_time}</div>
+              <div className="my-comment-title">Your answer:</div>
+              <div className="my-comment assignment-desc">{mySubmission.comment}</div>
+              <div className="assignment-date">{mySubmission.submission_time}</div>
               {mySubmission.grade && (
-                <div className="my-grade">Grade: <b>{mySubmission.grade}</b> (by {mySubmission.gradedby_email})</div>
+                <div className="my-grade">Оценка: <b>{mySubmission.grade}</b> <span className="grade-by">({mySubmission.gradedby_email})</span></div>
               )}
             </div>
           )}
@@ -271,47 +267,46 @@ export default function AssignmentPage() {
             <div className="submitted-answer">Your children haven't submitted anything yet.</div>
           )}
           {roleData && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length > 0 && (
-            <div>
+            <div className="parent-submissions">
               {childrenSubmission.map((child, idx) => (
                 <div key={idx} className="submitted-answer">
-                  <div className="my-comment-title">Your child's {child.student_name || child.student_email || "Child"} submission:</div>
-                  <div className="my-comment">{child.comment}</div>
-                  <div>Submitted: {child.submission_time}</div>
-                  <div>Last modification time: {child.last_modification_time}</div>
+                  <div className="my-comment-title">Ответ ребёнка: {child.student_name || child.student_email || "Child"}</div>
+                  <div className="my-comment assignment-desc">{child.comment}</div>
+                  <div className="assignment-date">{child.submission_time}</div>
                   {child.grade && (
-                    <div className="my-grade">Grade: <b>{child.grade}</b> (by {child.gradedby_email})</div>
+                    <div className="my-grade">Оценка: <b>{child.grade}</b> <span className="grade-by">({child.gradedby_email})</span></div>
                   )}
                 </div>
               ))}
             </div>
           )}
           {roleData && (roleData.is_teacher || roleData.is_admin) && studentSubmissions && (
-            <div className="submitted-answer">
-              <div className="my-comment-title">Students' submissions:</div>
-              {studentSubmissions.length === 0 && <div>No submissions yet.</div>}
-              {studentSubmissions.map((submission, idx) => (
-                <div key={idx} className="student-submission-block">
-                  <div className="my-comment">
-                    <b>{submission.student_name || submission.student_email || "Student"}:</b> {submission.comment}
-                  </div>
-                  <div>Submitted:{submission.submission_time}</div>
-                  <div>Last modification time:{submission.last_modification_time}</div>
-                  {submission.grade && (
-                    <div className="my-grade">
-                      Grade: <b>{submission.grade}</b> {submission.gradedBy && `(by ${submission.gradedBy})`}
+            <div className="teacher-submissions">
+              <div className="my-comment-title">Ответы учеников:</div>
+              {studentSubmissions.length === 0 && <div className="empty">Пока нет ответов.</div>}
+              <div className="teacher-submissions-list">
+                {studentSubmissions.map((submission, idx) => (
+                  <div key={idx} className="student-submission-block">
+                    <div className="my-comment assignment-desc">
+                      <b>{submission.student_name || submission.student_email || "Ученик"}:</b> {submission.comment}
                     </div>
-                  )}
-                  <button 
-                    className="grade-btn"
-                    onClick={() => {
-                      setCurrentStudentEmail(submission.student_email)
-                      setShowAddGrade(true)
-                    }}>Rate</button>
-                  <hr />
-                </div>
-              ))}
+                    <div className="assignment-date">{submission.submission_time}</div>
+                    {submission.grade && (
+                      <div className="my-grade">
+                        Оценка: <b>{submission.grade}</b> {submission.gradedBy && <span className="grade-by">({submission.gradedBy})</span>}
+                      </div>
+                    )}
+                    <button 
+                      className="grade-btn"
+                      onClick={() => {
+                        setCurrentStudentEmail(submission.student_email)
+                        setShowAddGrade(true)
+                      }}>Оценить</button>
+                  </div>
+                ))}
+              </div>
             </div>
-)}        
+          )}
             
         </div>
       </div>

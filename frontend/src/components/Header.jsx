@@ -86,11 +86,10 @@ export default function Header({ children }) {
             onCourseCreated={fetchCourses}
           />
         )}
-        <div className="logout-btn-div">
-          <button className="logout-btn" onClick={logout}>Log out</button>
-        </div>
-      </aside>
-
+      <div className="logout-btn-bottom">
+        <button className="logout-btn" onClick={logout}>Log out</button>
+      </div>
+    </aside>
       <main className="main-content">
         <div className="breadcrumbs">
           {pathParts.map((segment, idx) => {
