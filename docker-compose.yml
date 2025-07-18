@@ -28,19 +28,11 @@ services:
       - system_db
       - filestorage_db
 
-  # frontend:
-  #   build: ./frontend
-  #   restart: always
-  #   depends_on:
-  #     - backend
-
   frontend:
     build: ./frontend
     restart: always
     depends_on:
       - backend
-    ports:
-      - 3000:3000
 
   nginx:
     build: ./nginx
