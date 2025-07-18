@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef } from "react"
+import React, {useEffect, useState, useRef} from "react"
 import "../styles/AssignmentPage.css"
 import {useParams, useNavigate} from "react-router-dom"
 import axios from "axios"
@@ -42,9 +42,11 @@ export default function AssignmentPage() {
     }else{
       setSelectedFile(event.target.files[0])
     }
+    
   }
   const fileData = () => {
     if (selectedFile){
+      
       return (
         <div>
           <h2>File Details:</h2>
