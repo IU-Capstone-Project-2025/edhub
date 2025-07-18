@@ -199,8 +199,9 @@ export default function SubmissionDetailPage() {
               >
                 {file.filename}
               </button>
-              <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                Uploaded at: {new Date(file.upload_time).toLocaleString()}
+              <div className="assignment-date">
+                <span style={{ fontWeight: 'bold', marginRight: 8 }}>Uploaded at:</span>
+                {file.upload_time}
               </div>
             </div>
           ))
