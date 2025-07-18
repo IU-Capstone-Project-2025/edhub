@@ -13,6 +13,8 @@ import AddParent from "../components/AddParent"
 import LeaveCourse from "../components/LeaveCourse"
 import SingleCourseFeed from "../components/SingleCourseFeed"
 import CourseTabs from "../components/CoursesTabs"
+import "../styles/UnifiedButtons.css"
+
 
 
 export default function CoursePage() {
@@ -128,14 +130,28 @@ export default function CoursePage() {
             <p><strong>Created:</strong> {new Date(courseInfo.creation_time).toLocaleDateString()}</p>
             <p>Students enrolled: {courseInfo.number_of_students}</p>
             {roleData && (roleData.is_teacher || roleData.is_admin) && (
-              <div className="actions">
-                <button onClick={() => setShowMaterialModal(true)}>+ Add Material</button>
-                <button onClick={() => setShowAddAssignment(true)}>+ Add Assignment</button>
-                <button onClick={() => setShowAddStudent(true)}>+ Add Student</button>
-                <button onClick={() => setShowAddTeacher(true)}>+ Add Teacher</button>
-                <button onClick={() => setShowAddParent(true)}>+ Add Parent</button>
-                <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
-                <button className="switch-btn" onClick={()=>{setSingleColumnSwitch(!singleColumnSwitch)}}>Switch</button>
+              <div className="actions-flex">
+                <div className="combo-button green" onClick={() => setShowMaterialModal(true)}>
+                  + Add <span className="divider">Material</span><span className="divider-separator">|</span><span className="divider" onClick={(e) => {
+                    e.stopPropagation()
+                    setShowAddAssignment(true)
+                  }}>Assignment</span>
+                </div>
+
+                <div className="combo-button green" onClick={() => setShowAddStudent(true)}>
+                  + Add <span className="divider">Student</span><span className="divider-separator">|</span>
+                  <span className="divider" onClick={(e) => {
+                    e.stopPropagation()
+                    setShowAddTeacher(true)
+                  }}>Teacher</span><span className="divider-separator">|</span>
+                  <span className="divider" onClick={(e) => {
+                    e.stopPropagation()
+                    setShowAddParent(true)
+                  }}>Parent</span>
+                </div>
+
+                <button className="outlined-btn red" onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
+                <button className="outlined-btn blue" onClick={() => setSingleColumnSwitch(!singleColumnSwitch)}>Switch</button>
               </div>
             )}
             {roleData && (roleData.is_student|| roleData.is_parent ) && (

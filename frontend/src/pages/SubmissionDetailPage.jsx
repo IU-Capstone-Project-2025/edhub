@@ -22,6 +22,7 @@ export default function SubmissionDetailPage() {
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [attachments, setAttachments] = useState([]);
 
   const fetchSubmission = async () => {
     try {
@@ -72,6 +73,41 @@ export default function SubmissionDetailPage() {
     }
   };
 
+  const fetchSubmissionAttachments = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await axios.get("/api/get_submission_attachments", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { course_id: id, assignment_id: post_id, student_email },
+      });
+      setAttachments(res.data || []);
+    } catch (err) {
+      alert("Error fetching attachments: " + (err.response?.data?.detail || err.message));
+      setAttachments([]);
+    }
+  }
+  useEffect(() => {
+    if (submission) {
+      fetchSubmissionAttachments();
+    }
+  }, [submission]);
+
+  // Currently only display downloaded text in alert due to API limitations
+  // Currently only get ERROR 500, seems like backend isn't ready yet
+  const downloadAttachment = async (file_id) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await axios.get("/api/download_submission_attachment", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { course_id: id, assignment_id: post_id, student_email, file_id },
+      });
+      alert(res?.data)
+    } catch (err) {
+      alert("Error downloading attachments: " + (err.response?.data?.detail || err.message));
+
+    }
+  }
+  
   if (submission === null) {
     return (
       <div className="assignment-page">
@@ -149,6 +185,27 @@ export default function SubmissionDetailPage() {
       <div className="my-comment assignment-desc">
         <span style={{ fontWeight: 'bold', marginRight: 8 }}>Submission text:</span><br />
         <span dangerouslySetInnerHTML={{ __html: formatText(submission.comment) }} />
+      </div>
+      <div className="my-comment assignment-desc">
+        <span style={{ fontWeight: 'bold', marginRight: 8 }}>Attachments</span><br />
+        {attachments.length === 0 ? (
+          <span> No attachments </span>
+        ):(
+          attachments.map((file, index) => (
+            <div key={index} style={{ marginBottom: '8px' }}>
+              <button
+                onClick={() => downloadAttachment(file.file_id)}
+                className="link-style-button"
+              >
+                {file.filename}
+              </button>
+              <div className="assignment-date">
+                <span style={{ fontWeight: 'bold', marginRight: 8 }}>Uploaded at:</span>
+                {file.upload_time}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   </div>

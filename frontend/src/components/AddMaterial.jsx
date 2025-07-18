@@ -34,7 +34,7 @@ await axios.post("/api/create_material", form, {
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail
-      alert("Ошибка при добавлении материала: " + (
+      alert("Error adding material: " + (
         typeof errorData === "string"
           ? errorData
           : JSON.stringify(errorData || err.message)

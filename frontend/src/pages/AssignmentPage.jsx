@@ -1,4 +1,4 @@
-import React, {useEffect, useState } from "react"
+import React, {useEffect, useState, useRef} from "react"
 import "../styles/AssignmentPage.css"
 import {useParams, useNavigate} from "react-router-dom"
 import axios from "axios"
@@ -30,12 +30,23 @@ export default function AssignmentPage() {
   const navigate = useNavigate();
   const [showAddGrade, setShowAddGrade] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
+  const fileInputRef = useRef(null);
 
   const onFileChange = (event) =>{
-    setSelectedFile(event.target.files[0])
+    if(event.target.files[0]?.size/1000000>5){
+        alert("Files should be smaller than 5 MB")
+        setSelectedFile(null)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+    }else{
+      setSelectedFile(event.target.files[0])
+    }
+    
   }
   const fileData = () => {
     if (selectedFile){
+      
       return (
         <div>
           <h2>File Details:</h2>
@@ -44,13 +55,6 @@ export default function AssignmentPage() {
           <p>
             Last Modified: {selectedFile.lastModifiedDate.toDateString()}
           </p>
-        </div>
-      );
-    }else {
-      return (
-        <div>
-          <br />
-          <h4>Choose before Pressing the Upload button</h4>
         </div>
       );
     }
@@ -194,7 +198,7 @@ export default function AssignmentPage() {
     );
     setChildrenSubmission(submissions.filter(sub => sub));
   } catch (err) {
-    alert("Ошибка при загрузке ответов детей: " + (err.response?.data?.detail || err.message));
+    alert("Error loading student answers: " + (err.response?.data?.detail || err.message));
   }
 }
 
@@ -224,7 +228,7 @@ export default function AssignmentPage() {
       setShowSubmissionForm(false)
       fetchMySubmission()
     } catch (err) {
-      alert("Ошибка при отправке ответа: " + (err.response?.data?.detail || err.message))
+      alert("Error submitting answer: " + (err.response?.data?.detail || err.message))
     }
     
   }
@@ -255,7 +259,7 @@ export default function AssignmentPage() {
           })
           window.location.assign("../")
         } catch (err) {
-          alert("Ошибка при удалении задания: " + (err.response?.data?.detail || err.message))
+          alert("Error deleting assignment: " + (err.response?.data?.detail || err.message))
         }
       }
     }}
@@ -277,7 +281,15 @@ export default function AssignmentPage() {
                 value={text} onChange={(e) => setText(e.target.value)}
                 rows="10" 
                 cols="30"/>
-              <input type="file" onChange={onFileChange}/>
+              <label htmlFor="file-upload" className="file-input">
+                Choose File
+              </label>
+              <input
+                id="file-upload"
+                type="file"
+                style={{ display: 'none' }}
+                onChange={onFileChange}
+              />
               <button 
                 className="submit-btn"
                 onClick={handleSubmit} 

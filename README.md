@@ -15,7 +15,7 @@ Any user can create a course becoming a **Teacher**, invite students and their p
 
 Most existing LMSs either have limited functionality or have awkward website design and cause difficulties in everyday use. EdHub combines a self-contained and clear design, supporting all the necessary features but not bogging the user down with complex customizations.
 
-### Build With
+### Built With
 
 [![FastAPI][FastAPI]][FastAPI-url]
 [![React][React]][React-url]
@@ -55,7 +55,7 @@ Now you can go to http://localhost/ to access the application.
 
 ### API Endpoints
 
-You can access the web version of API documentation at http://localhost/api/docs/.
+You can access the web version of API documentation at https://edhub.space/api/docs.
 
 ### Maintenance Commands
 ```bash

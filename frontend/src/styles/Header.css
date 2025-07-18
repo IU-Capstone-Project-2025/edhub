@@ -67,9 +67,11 @@
 }
 
 .breadcrumbs {
-  font-size: 14px;
-  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: bold;
   color: #888;
+  margin-top: 0.5rem;
+  margin-bottom: 24px;
 }
 
 .content-wrapper {
@@ -100,22 +102,23 @@
 
 
 .logout-btn {
-  padding: 8px 24px;
-  font-weight: 500;
-  border: 2px solid #4cb050;
-  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 8px;
   cursor: pointer;
-  background: transparent;
+  background: white;
+  border: 2px solid #4cb050;
   color: #4cb050;
-  transition: border-color 0.3s, color 0.3s;
-  opacity: 0.7;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-.logout-btn:hover {
-  opacity: 1;
-  border-color: #388e3c;
-  color: #388e3c;
+.logout-btn:active {
+  background-color: #eaf8ec;
+  color: #3a8f42;
+  border-color: #3a8f42;
 }
+
 
 .logout-btn-bottom {
   position: absolute;

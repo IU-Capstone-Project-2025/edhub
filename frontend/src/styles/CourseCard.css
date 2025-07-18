@@ -46,12 +46,13 @@
 }
 
 .course-title {
-  font-family: 'Fredoka', sans-serif;
-  font-size: 10px;
-  color: #333940;
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #111;
   margin-bottom: 14px;
   margin-top: 2px;
   line-height: 1.3;
+  font-family: inherit;
 }
 
 

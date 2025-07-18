@@ -30,7 +30,7 @@ await axios.post("/api/invite_student", form, {
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail
-      alert("Ошибка при добавлении студента: " + (
+      alert("Error adding student: " + (
         typeof errorData === "string"
           ? errorData
           : JSON.stringify(errorData || err.message)

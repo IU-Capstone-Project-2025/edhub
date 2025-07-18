@@ -127,9 +127,8 @@ curl -s --fail -X GET "$API_URL/download_full_course_grade_table?course_id=$COUR
 echo
 
 echo "== Admin login =="
-ADMIN_PASSWORD=$(cat ./random-secrets/admin_credentials.txt | tail -n 1 | sed 's/password: //')
 TOKEN=$(curl -s --fail -X POST $API_URL/login -H "Content-Type: application/json" \
-    -d "{\"email\":\"admin\",\"password\":\"$ADMIN_PASSWORD\"}" | extract_token)
+    -d "{\"email\":\"admin\",\"password\":\"admin\"}" | extract_token)
 echo
 
 echo "== Admin creating material =="

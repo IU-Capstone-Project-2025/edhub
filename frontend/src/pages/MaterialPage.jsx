@@ -46,7 +46,7 @@ export default function MaterialPage() {
         setMaterial(res.data)
       }catch (err) {
         console.log("Material fetch error:", err.response?.data);
-        alert("Ошибка при загрузке задания: " + (
+        alert("Error loading assignment: " + (
           typeof err.response?.data?.detail === "string"
             ? err.response.data.detail
             : JSON.stringify(err.response?.data?.detail || err.message)
@@ -83,7 +83,7 @@ if (!material) {
                             })
                             window.location.assign("../")
                           } catch (err) {
-                            alert("Ошибка при удалении материала: " + (err.response?.data?.detail || err.message))
+                            alert("Error deleting material: " + (err.response?.data?.detail || err.message))
                           }
                         }
                       }}

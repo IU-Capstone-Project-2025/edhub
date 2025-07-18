@@ -1,5 +1,5 @@
 .course-page {
-  padding: 40px;
+  padding: 20px;
   max-width: 1000px;
   margin: 0 auto;
 }
@@ -46,28 +46,6 @@
   background-color: #3fa046;
 }
 
-/* CourseTabs styles */
-.course-tabs {
-  position: static;
-  display: flex;
-  gap: 10px;
-  margin-left: auto;
-}
-.course-tab-button {
-  background: #e6ece8;
-  color: #7bb17a;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 24px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.18s, color 0.18s;
-}
-.course-tab-button.active {
-  background: #8fc98b;
-  color: #fff;
-}
 
 .course-page-header {
   display: flex;
@@ -75,15 +53,17 @@
   justify-content: flex-start;
   position: relative;
   min-height: 80px;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
+  padding-right: 20px;
 }
 .course-title {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #333;
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #111;
   margin-bottom: 0;
   margin-top: 0;
   margin-right: 32px;
+  font-family: inherit;
 }
 
 .participants-list {

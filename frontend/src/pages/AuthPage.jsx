@@ -26,6 +26,10 @@ export default function AuthPage() {
     setError("Please fill in all required fields.");
     return;
   }
+  if (!isLogin && name.trim().length < 2) {
+    setError("Full Name must be at least 2 characters.");
+    return;
+  }
 
   if (!emailRegex.test(email)) {
     setError("Please enter a valid email address.");
@@ -97,8 +101,6 @@ export default function AuthPage() {
                 placeholder="Full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                pattern="^[A-Za-zА-Яа-яёЁ\s]{2,}$"
-                title="Please enter your full name (at least 2 letters)."
                 required
               />
             )}
@@ -120,7 +122,7 @@ export default function AuthPage() {
 
           <div className="form-toggle">
             <span onClick={() => setIsLogin(!isLogin)}>
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in"}
+              {isLogin ? "Create an account" : "Already have an account?"}
             </span>
           </div>
         </div>

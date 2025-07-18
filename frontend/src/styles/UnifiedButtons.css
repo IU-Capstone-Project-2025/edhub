@@ -1,0 +1,83 @@
+.actions-flex {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+
+.combo-button {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.combo-button.green {
+  background-color: rgb(143, 201, 139);
+  color: white;
+}
+
+.combo-button.green:hover {
+  background-color: rgb(123, 181, 119);
+}
+
+.divider {
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+.divider-separator {
+  padding: 0 8px;
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+.outlined-btn {
+  padding: 8px 18px;
+  font-size: 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  background: white;
+  border: 2px solid #ccc;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.outlined-btn.red {
+  border-color: #f3b5ae;
+  color: #e76e64;
+}
+.outlined-btn.red:active {
+  background: #fbe8e6;
+  color: #d3433b;
+  border-color: #e76e64;
+}
+
+.outlined-btn.blue {
+  border-color: #b1e4f5;
+  color: #4c97b0;
+  background: white;
+}
+.outlined-btn.blue:active {
+  background: #e2f7ff;
+  color: #3a7d94;
+  border-color: #4c97b0;
+}
+
+.combo-button,
+.outlined-btn {
+  height: 42px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  line-height: 1;
+}

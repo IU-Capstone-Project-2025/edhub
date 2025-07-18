@@ -102,20 +102,26 @@
   resize: none;
 }
 .submit-btn {
-  background: #43c463;
-  color: #fff;
+  padding: 10px 20px;
+  font-weight: bold;
   border: none;
-  border-radius: 10px;
-  padding: 11px 0;
-  font-size: 1.07em;
+  border-radius: 6px;
   cursor: pointer;
-  font-weight: 600;
-  transition: background 0.1s;
+  background-color: #4cb050;
+  color: white;
+  transition: background-color 0.3s ease;
 }
 .submit-btn:disabled {
   background: #a6e6b7;
   color: #fff;
   cursor: not-allowed;
+  padding: 10px 20px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+}
+.submit-btn:hover {
+  opacity: 0.9;
 }
 .submitted-answer {
   background: #FCFFFC;
@@ -353,3 +359,27 @@
   text-decoration: underline;
 }
 
+.file-input {
+  margin-top: 12px;
+  font-size: 1em;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #B1E4F5;
+  background: #F7FCFF;
+  color: #333940;
+}
+
+.link-style-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: #007bff; 
+  text-decoration: underline;
+  font: inherit;
+  cursor: pointer;
+}
+
+.link-style-button:hover {
+  color: #0056b3; 
+}
