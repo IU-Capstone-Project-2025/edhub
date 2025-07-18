@@ -33,7 +33,7 @@ export default function AssignmentPage() {
   const fileInputRef = useRef(null);
 
   const onFileChange = (event) =>{
-    if(event.target.files[0].size/1000000>5){
+    if(event.target.files[0]?.size/1000000>5){
         alert("Files should be smaller than 5 MB")
         setSelectedFile(null)
         if (fileInputRef.current) {
@@ -279,7 +279,15 @@ export default function AssignmentPage() {
                 value={text} onChange={(e) => setText(e.target.value)}
                 rows="10" 
                 cols="30"/>
-              <input type="file" onChange={onFileChange} ref={fileInputRef}/>
+              <label htmlFor="file-upload" className="file-input">
+                Choose File
+              </label>
+              <input
+                id="file-upload"
+                type="file"
+                style={{ display: 'none' }}
+                onChange={onFileChange}
+              />
               <button 
                 className="submit-btn"
                 onClick={handleSubmit} 
