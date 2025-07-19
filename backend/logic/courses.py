@@ -19,7 +19,7 @@ def available_courses(db_cursor, user_email: str):
 
 def get_all_courses(db_cursor, user_email: str):
     constraints.assert_admin_access(db_cursor, user_email)
-    courses = repo_courses.sql_select_all_courses(db_cursor)
+    courses = repo.courses.sql_select_all_courses(db_cursor)
     result = [{"course_id": crs[0]} for crs in courses]
     return result
 
