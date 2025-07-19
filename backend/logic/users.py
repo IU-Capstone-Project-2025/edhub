@@ -172,6 +172,12 @@ def get_all_users(db_cursor, user_email: str):
     return res
 
 
+def get_admins(db_cursor):
+    users = repo_users.sql_select_admins(db_cursor)
+    res = [{"email": u[0], "name": u[1]} for u in users]
+    return res
+
+
 # create an initial admin account
 async def create_admin_account_if_not_exists(db_conn, db_cursor):
     if repo_users.sql_admins_exist(db_cursor):

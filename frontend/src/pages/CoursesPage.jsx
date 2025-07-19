@@ -13,9 +13,29 @@ export default function CoursesPage() {
   const fetchCourses = async () => {
     const token = localStorage.getItem("access_token")
     try {
-      const res = await axios.get("/api/available_courses", {
+      const admins = await axios.get("/api/get_admins", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      const user = await axios.get("/api/get_user_info", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // if (admins.data.includes(user.data)) {
+      //   const res = await axios.get("/api/available_courses", {
+      //     headers: { Authorization: `Bearer ${token}` },
+      //   });
+      // }else{
+      //   const res = await axios.get("/api/available_courses", {
+      //     headers: { Authorization: `Bearer ${token}` },
+      //   });
+      // }
+      const isAdmin = admins.data.some(admin => admin.email === user.data.email);
+      const res = isAdmin
+      ? await axios.get("/api/get_all_courses", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      : await axios.get("/api/available_courses", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       const full = await Promise.all(
         res.data.map(async (c) => {
           const infoRes = await axios.get("/api/get_course_info", {
@@ -28,10 +48,10 @@ export default function CoursesPage() {
           });
           const role = roleRes.data
           let user_role = "unknown"
-          if (role.is_teacher) user_role = "teacher"
+          if (role.is_admin) user_role = "admin"
           else if (role.is_student) user_role = "student"
           else if (role.is_parent) user_role = "parent"
-          else if (role.is_admin) user_role = "admin"
+          else if (role.is_teacher) user_role = "teacher"
           return {
             ...infoRes.data,
             user_role,
