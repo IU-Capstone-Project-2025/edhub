@@ -91,7 +91,7 @@ async def download_full_course_grade_table(course_id: str, user_email: str = Dep
                                            headers={'Content-Disposition': 'filename=report.csv'})
 
 
-@router.get("/download_full_course_grade_table", response_model=json_classes.GradeTable)
+@router.get("/get_full_course_grade_table_json", response_model=json_classes.GradeTable)
 async def get_full_course_grade_table_json(course_id: str, user_email: str = Depends(get_current_user)):
     """
     Download a CSV file (comma-separated, CRLF newlines) with all grades of all students.
