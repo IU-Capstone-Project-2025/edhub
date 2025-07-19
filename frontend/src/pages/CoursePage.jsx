@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom"
 import { useEffect, useState } from "react"
 import axios from "axios"
-
+import PageMeta from "../components/PageMeta"
 import "../styles/CoursePage.css"
 import Header from "../components/Header"
 import CourseFeed from "../components/CourseFeed"
@@ -75,11 +75,12 @@ export default function CoursePage() {
 
   return (
     <Header>
+      <PageMeta title={courseInfo.title} icon="/edHub_icon.svg" />
       <div className="course-page">
         <h1>{courseInfo.title}</h1>
-        <p><strong>Created:</strong> {new Date(courseInfo.creation_date).toLocaleDateString()}</p>
+        <p><strong>Created:</strong> {new Date(courseInfo.creation_time).toLocaleDateString()}</p>
         <p>Students enrolled: {courseInfo.number_of_students}</p>
-        {roleData && roleData.is_teacher && (
+        {roleData && (roleData.is_teacher || roleData.is_admin) && (
           <div className="actions">
             <button onClick={() => setShowMaterialModal(true)}>+ Add Material</button>
             <button onClick={() => setShowAddAssignment(true)}>+ Add Assignment</button>

@@ -12,13 +12,14 @@
 }
 
 .create-course-page input {
-  width: 100%;
-  padding: 12px;
+  padding: 12px 0px 12px 20px;
   font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 8px;
   margin-bottom: 16px;
   background-color: #f9f9f9;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .create-course-page button {

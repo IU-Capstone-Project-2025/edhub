@@ -6,7 +6,6 @@ import "../styles/AddStudent.css"
 
 export default function LeaveCourse({ onClose, courseId , roleData, ownEmail}) {
   const [loading, setLoading] = useState(false)
-  const [childrenArray, setChildrenArray] = useState([])
   
 
   const role = roleData.is_teacher
@@ -15,6 +14,8 @@ export default function LeaveCourse({ onClose, courseId , roleData, ownEmail}) {
   ? "student"
   : roleData.is_parent
   ? "parent"
+  : roleData.is_admin
+  ? "admin"
   : "unknown";
   const handleSubmit = async () => {
     if (!ownEmail.trim()) {
@@ -27,6 +28,7 @@ export default function LeaveCourse({ onClose, courseId , roleData, ownEmail}) {
         const token = localStorage.getItem("access_token")
         switch (role) {
           case "teacher":
+          case "admin":
             const teachersRes = await axios.get("/api/get_course_teachers", {
                 headers: {Authorization: `Bearer ${token}` },
                 params:{course_id: courseId}
@@ -54,20 +56,19 @@ export default function LeaveCourse({ onClose, courseId , roleData, ownEmail}) {
                 headers: {Authorization: `Bearer ${token}` },
                 params:{course_id: courseId}
             })
-            setChildrenArray(res.data)
-            const student_email = res.data[0]?.email
-            await axios.post("/api/remove_parent", null, {
+            for (let child of res.data){
+              let student_email = child?.email
+              await axios.post("/api/remove_parent", null, {
                 headers: {Authorization: `Bearer ${token}` },
                 params:{parent_email: ownEmail, course_id: courseId, student_email}
             })
+            }
             break
           default:
             alert("Failed to fetch role data")
             break
         }
-        alert("You left the course successfully!")
-        setLoading(false)
-        onClose()
+        window.location.assign("../courses")
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail

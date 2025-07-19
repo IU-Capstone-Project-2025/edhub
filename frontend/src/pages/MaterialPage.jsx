@@ -2,13 +2,9 @@ import React, { useEffect, useState } from "react"
 import "../styles/MaterialPage.css"
 import {useParams} from "react-router-dom"
 import axios from "axios"
+import PageMeta from "../components/PageMeta"
 
-export default function MaterialPage({
-  role = "teacher", // "teacher" | "student" | "parent"
-  submissions = [], // [{ studentName, comment, grade, gradedBy }]
-  mySubmission = null, // { comment, grade, gradedBy }
-  onBack,
-}) {
+export default function MaterialPage() {
   const { post_id , id: course_id} = useParams()
   const [material,setMaterial] = useState()
 
@@ -39,6 +35,7 @@ if (!material) {
 
   return (
     <div className="assignment-page">
+      <PageMeta title={material.title} icon="/edHub_icon.svg" />
       <a href="../">
         <button className="back-btn">← Back to course feed</button>
       </a>

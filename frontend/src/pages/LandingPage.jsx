@@ -1,10 +1,13 @@
 import React from "react";
 import "../styles/LandingPage.css";
 import { ReactComponent as NoAvatarLogo } from "../components/edHub_icon.svg"; 
+import PageMeta from "../components/PageMeta";
+import AuthPage from "./AuthPage";
 
 export default function LandingPage() {
   return (
     <div className="landing-root">
+      <PageMeta title="EdHub" icon="/edHub_icon.svg" />
       <header className="landing-header">
         <img className="landing-header-logo" />
         <nav className="landing-nav">
