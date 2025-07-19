@@ -8,14 +8,14 @@ export default function LeaveCourse({ onClose, courseId , roleData, ownEmail}) {
   const [loading, setLoading] = useState(false)
   
 
-  const role = roleData.is_teacher
-  ? "teacher"
+  const role = roleData.is_admin
+  ? "admin"
   : roleData.is_student
   ? "student"
   : roleData.is_parent
   ? "parent"
-  : roleData.is_admin
-  ? "admin"
+  : roleData.is_teacher
+  ? "teacher"
   : "unknown";
   const handleSubmit = async () => {
     if (!ownEmail.trim()) {

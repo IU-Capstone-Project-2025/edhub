@@ -3,33 +3,45 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import Header from "../components/Header"
 import PageMeta from "../components/PageMeta"
+import CourseTabs from "../components/CoursesTabs"
+import "../styles/LandingPage.css"
 import "../styles/ParticipantsPage.css"
 
 export default function ParticipantsPage() {
-  const { course_id } = useParams()
-  const [teachers, setTeachers] = useState([])
+  const { id: course_id } = useParams()
   const [students, setStudents] = useState([])
   const [parentsMap, setParentsMap] = useState({})
   const [role, setRole] = useState(null)
   const [loading, setLoading] = useState(true)
-
+  const [courseInfo, setCourseInfo] = useState(null)
   const isPrivileged = role?.is_teacher || role?.is_admin
+  const [deletedStudents, setDeletedStudents] = useState([])
 
   useEffect(() => {
     const fetchAll = async () => {
       const token = localStorage.getItem("access_token")
       const headers = { Authorization: `Bearer ${token}` }
       try {
-        const [tRes, sRes, rRes, pRes] = await Promise.all([
-          axios.get("/api/get_course_teachers", { headers, params: { course_id } }),
+        // Получаем инфо о курсе, студентов и роль
+        const [cRes, sRes, rRes] = await Promise.all([
+          axios.get("/api/get_course_info", { headers, params: { course_id } }),
           axios.get("/api/get_enrolled_students", { headers, params: { course_id } }),
           axios.get("/api/get_user_role", { headers, params: { course_id } }),
-          axios.get("/api/get_students_parents", { headers, params: { course_id } }),
         ])
-        setTeachers(tRes.data)
+        setCourseInfo(cRes.data)
         setStudents(sRes.data)
         setRole(rRes.data)
-        setParentsMap(pRes.data) // { student_email: [{email, name}] }
+
+        const parentsMapResult = {}
+        await Promise.all(sRes.data.map(async (student) => {
+          try {
+            const pres = await axios.get("/api/get_students_parents", { headers, params: { course_id, student_email: student.email } })
+            parentsMapResult[student.email] = pres.data
+          } catch (err) {
+            parentsMapResult[student.email] = []
+          }
+        }))
+        setParentsMap(parentsMapResult)
       } catch (err) {
         alert("Error loading participants: " + (err.response?.data?.detail || err.message))
       } finally {
@@ -51,14 +63,12 @@ export default function ParticipantsPage() {
         headers,
         params: {
           course_id,
-          ...(type === "student" ? { student_email: email } : { parent_email: email }),
+          ...(type === "student" ? { student_email: email } : { parent_email: email, student_email: ownerStudentEmail }),
         },
       })
       if (type === "student") {
         setStudents((prev) => prev.filter((u) => u.email !== email))
-        const newMap = { ...parentsMap }
-        delete newMap[email]
-        setParentsMap(newMap)
+        setDeletedStudents((prev) => [...prev, email])
       } else {
         const updated = { ...parentsMap }
         updated[ownerStudentEmail] = updated[ownerStudentEmail].filter(p => p.email !== email)
@@ -69,57 +79,71 @@ export default function ParticipantsPage() {
     }
   }
 
-  if (loading) return <div>Loading participants...</div>
+  if (loading || !courseInfo) return <div className="landing-content">Loading participants...</div>
 
   return (
     <Header>
-      <PageMeta title="Course Participants" icon="/edHub_icon.svg" />
-      <div className="participants-page">
-        <h1>Participants</h1>
-
-        <div className="section">
-          <h2>Teachers</h2>
-          <div className="user-blocks">
-            {teachers.map(t => (
-              <div className="user-card" key={t.email}>
-                <div>{t.name}</div>
-                <div className="email">{t.email}</div>
-              </div>
-            ))}
-          </div>
+      <PageMeta title={courseInfo.title} icon="/edHub_icon.svg" />
+      <div className="course-page">
+        <div className="course-page-header">
+          <h1 className="course-title">{courseInfo.title}</h1>
+          <CourseTabs
+            activeTab="Participants"
+            onTabChange={(tab) => {
+              if (tab === "Course") {
+                window.location.href = `/courses/${course_id}`;
+              } else if (tab === "Participants") {
+                window.location.href = `/courses/${course_id}/participants`;
+              } else if (tab === "Grades") {
+                window.location.href = `/courses/${course_id}/grades`;
+              }
+            }}
+            availableTabs={["Course", "Participants", "Grades"]}
+          />
+        </div>
+        <div className="participants-wrapper">
+  <div className="participants-section">
+    <h2>Participants</h2>
+    {students.map((s) => (
+      <div key={s.email} className="student-parent-block">
+        <div className="participant-card student-card">
+          <div style={{ fontWeight: 600 }}>{s.name}</div>
+          <div className="email">{s.email}</div>
+          {isPrivileged && (
+            <button onClick={() => removeUser("student", s.email)} className="remove-btn">×</button>
+          )}
         </div>
 
-        <div className="section">
-          <h2>Students</h2>
-          <div className="user-blocks">
-            {students.map(s => (
-              <div className="user-card" key={s.email}>
-                <div>{s.name}</div>
-                <div className="email">{s.email}</div>
-                {isPrivileged && (
-                  <button className="remove-btn" onClick={() => removeUser("student", s.email)}>×</button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="section">
-          <h2>Parents</h2>
-          <div className="user-blocks">
-            {Object.entries(parentsMap).map(([studentEmail, parentList]) =>
-              parentList.map(p => (
-                <div className="user-card" key={p.email}>
-                  <div>{p.name}</div>
+        <div className="parent-block">
+          {(deletedStudents.includes(s.email)) ? (
+            <div style={{ fontStyle: "italic", color: "#999", marginTop: 6 }}>Student was removed</div>
+          ) : (
+            parentsMap[s.email]?.length > 0 ? (
+              parentsMap[s.email].map((p) => (
+                <div key={p.email} className="participant-card parent-card">
+                  <div style={{ fontWeight: 600 }}>{p.name}</div>
                   <div className="email">{p.email}</div>
                   {isPrivileged && (
-                    <button className="remove-btn" onClick={() => removeUser("parent", p.email, studentEmail)}>×</button>
+                    <button
+                      onClick={() => removeUser("parent", p.email, s.email)}
+                      className="remove-btn"
+                    >
+                      ×
+                    </button>
                   )}
                 </div>
               ))
-            )}
-          </div>
+            ) : (
+              <div className="no-parent-text">No parents added</div>
+            )
+          )}
         </div>
+
+        <div className="participant-divider" />
+      </div>
+    ))}
+  </div>
+</div>
       </div>
     </Header>
   )

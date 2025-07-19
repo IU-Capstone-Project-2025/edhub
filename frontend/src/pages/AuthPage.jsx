@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import "./../styles/AuthPage.css"
 import noavatar from "../components/edHub_icon.svg";
 import axios from "axios"
@@ -14,6 +14,23 @@ export default function AuthPage() {
   const navigate = useNavigate()
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  const checkToken = async ()=>{ 
+    if (localStorage.getItem("access_token")!==null && localStorage.getItem("access_token")!=="") {
+      try{
+        const res = await axios.get("/api/get_user_info", {
+          headers:{ Authorization: `Bearer ${localStorage.getItem("access_token")}`}
+        })
+        navigate("/courses")
+      }catch(error){
+        localStorage.removeItem("access_token");
+      }
+      
+    }
+  }
+  useEffect(() => {
+    checkToken()
+  },[])
 
   function validatePassword(pw) {
     return pw.length >= 8 && /[a-zA-Z]/.test(pw) && /\d/.test(pw)
