@@ -13,7 +13,7 @@ import json_classes
 router = APIRouter()
 
 
-@router.get("/get_students_parents", response_model=List[json_classes.User])
+@router.get("/get_students_parents", response_model=List[json_classes.User], tags=["Parents"])
 async def get_students_parents(course_id: str, student_email: str, user_email: str = Depends(get_current_user)):
     """
     Get the list of parents observing the student with provided email on course with provided course_id.
@@ -26,7 +26,7 @@ async def get_students_parents(course_id: str, student_email: str, user_email: s
         return logic_get_students_parents(db_cursor, course_id, student_email, user_email)
 
 
-@router.post("/invite_parent", response_model=json_classes.Success)
+@router.post("/invite_parent", response_model=json_classes.Success, tags=["Parents"])
 async def invite_parent(
     course_id: str,
     student_email: str,
@@ -44,7 +44,7 @@ async def invite_parent(
         return logic_invite_parent(db_conn, db_cursor, course_id, student_email, parent_email, teacher_email)
 
 
-@router.post("/remove_parent", response_model=json_classes.Success)
+@router.post("/remove_parent", response_model=json_classes.Success, tags=["Parents"])
 async def remove_parent(
     course_id: str,
     student_email: str,
@@ -64,7 +64,7 @@ async def remove_parent(
         return logic_remove_parent(db_conn, db_cursor, course_id, student_email, parent_email, user_email)
 
 
-@router.get("/get_parents_children", response_model=List[json_classes.User])
+@router.get("/get_parents_children", response_model=List[json_classes.User], tags=["Parents"])
 async def get_parents_children(course_id: str, user_email: str = Depends(get_current_user)):
     """
     Get the list of students for the parent with provided email on course with provided course_id.

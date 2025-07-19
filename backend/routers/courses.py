@@ -11,7 +11,7 @@ import logic.assignments
 router = APIRouter()
 
 
-@router.get("/available_courses", response_model=List[json_classes.CourseId])
+@router.get("/available_courses", response_model=List[json_classes.CourseId], tags=["Courses"])
 async def available_courses(user_email: str = Depends(get_current_user)):
     """
     Get the list of IDs of courses available for user (as a teacher, student, or parent).
@@ -20,7 +20,7 @@ async def available_courses(user_email: str = Depends(get_current_user)):
         return logic.courses.available_courses(db_cursor, user_email)
 
 
-@router.get("/get_all_courses", response_model=List[json_classes.CourseId])
+@router.get("/get_all_courses", response_model=List[json_classes.CourseId], tags=["Courses"])
 async def get_all_courses(user_email: str = Depends(get_current_user)):
     """
     Get the list of IDs of all courses in the system.
@@ -31,7 +31,7 @@ async def get_all_courses(user_email: str = Depends(get_current_user)):
         return logic.courses.get_all_courses(db_cursor, user_email)
 
 
-@router.post("/create_course", response_model=json_classes.CourseId)
+@router.post("/create_course", response_model=json_classes.CourseId, tags=["Courses"])
 async def create_course(title: str, user_email: str = Depends(get_current_user)):
     """
     Create the course with provided title and become a teacher in it.
@@ -41,7 +41,7 @@ async def create_course(title: str, user_email: str = Depends(get_current_user))
 
 
 # WARNING: update if new elements appear
-@router.post("/remove_course", response_model=json_classes.Success)
+@router.post("/remove_course", response_model=json_classes.Success, tags=["Courses"])
 async def remove_course(course_id: str, user_email: str = Depends(get_current_user)):
     """
     Remove the course with provided course_id.
@@ -54,7 +54,7 @@ async def remove_course(course_id: str, user_email: str = Depends(get_current_us
         return logic.courses.remove_course(db_conn, db_cursor, course_id, user_email)
 
 
-@router.get("/get_course_info", response_model=json_classes.Course)
+@router.get("/get_course_info", response_model=json_classes.Course, tags=["Courses"])
 async def get_course_info(course_id: str, user_email: str = Depends(get_current_user)):
     """
     Get information about the course: course_id, title, creation date, and number of enrolled students.
@@ -63,7 +63,7 @@ async def get_course_info(course_id: str, user_email: str = Depends(get_current_
         return logic.courses.get_course_info(db_cursor, course_id, user_email)
 
 
-@router.get("/get_course_feed", response_model=List[json_classes.CoursePost])
+@router.get("/get_course_feed", response_model=List[json_classes.CoursePost], tags=["Courses"])
 async def get_course_feed(course_id: str, user_email: str = Depends(get_current_user)):
     """
     Get the course feed with all its materials.
@@ -76,7 +76,7 @@ async def get_course_feed(course_id: str, user_email: str = Depends(get_current_
         return logic.courses.get_course_feed(db_cursor, course_id, user_email)
 
 
-@router.get("/download_full_course_grade_table")
+@router.get("/download_full_course_grade_table", tags=["Courses"])
 async def download_full_course_grade_table(course_id: str, user_email: str = Depends(get_current_user)):
     """
     Download a CSV file (comma-separated, CRLF newlines) with all grades of all students.
@@ -99,7 +99,7 @@ async def download_full_course_grade_table(course_id: str, user_email: str = Dep
                                            headers={'Content-Disposition': 'filename=report.csv'})
 
 
-@router.get("/get_full_course_grade_table_json", response_model=json_classes.GradeTable)
+@router.get("/get_full_course_grade_table_json", response_model=json_classes.GradeTable, tags=["Courses"])
 async def get_full_course_grade_table_json(course_id: str, user_email: str = Depends(get_current_user)):
     """
     Get all grades of all students.

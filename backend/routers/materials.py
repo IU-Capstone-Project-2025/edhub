@@ -15,7 +15,7 @@ from logic.materials import (
 router = APIRouter()
 
 
-@router.post("/create_material", response_model=json_classes.MaterialID)
+@router.post("/create_material", response_model=json_classes.MaterialID, tags=["Materials"])
 async def create_material(
     course_id: str,
     title: str,
@@ -33,7 +33,7 @@ async def create_material(
         return logic_create_material(db_conn, db_cursor, course_id, title, description, user_email)
 
 
-@router.post("/remove_material", response_model=json_classes.Success)
+@router.post("/remove_material", response_model=json_classes.Success, tags=["Materials"])
 async def remove_material(course_id: str, material_id: str, user_email: str = Depends(get_current_user)):
     """
     Remove the material by the provided course_id and material_id.
@@ -44,7 +44,7 @@ async def remove_material(course_id: str, material_id: str, user_email: str = De
         return logic_remove_material(db_conn, db_cursor, course_id, material_id, user_email)
 
 
-@router.get("/get_material", response_model=json_classes.Material)
+@router.get("/get_material", response_model=json_classes.Material, tags=["Materials"])
 async def get_material(course_id: str, material_id: str, user_email: str = Depends(get_current_user)):
     """
     Get the material details by the provided (course_id, material_id).
@@ -59,7 +59,7 @@ async def get_material(course_id: str, material_id: str, user_email: str = Depen
         return logic_get_material(db_cursor, course_id, material_id, user_email)
 
 
-@router.post("/create_material_attachment", response_model=json_classes.MaterialAttachmentMetadata)
+@router.post("/create_material_attachment", response_model=json_classes.MaterialAttachmentMetadata, tags=["Materials"])
 async def create_material_attachment(
     course_id: str,
     material_id: str,
@@ -79,7 +79,7 @@ async def create_material_attachment(
         return await logic_create_material_attachment(db_conn, db_cursor, storage_db_conn, storage_db_cursor, course_id, material_id, file, user_email)
 
 
-@router.get("/get_material_attachments", response_model=List[json_classes.MaterialAttachmentMetadata])
+@router.get("/get_material_attachments", response_model=List[json_classes.MaterialAttachmentMetadata], tags=["Materials"])
 async def get_material_attachments(course_id: str, material_id: str, user_email: str = Depends(get_current_user)):
     """
     Get the list of course material attachments by provided course_id, material_id.
@@ -92,7 +92,7 @@ async def get_material_attachments(course_id: str, material_id: str, user_email:
         return logic_get_material_attachments(db_cursor, course_id, material_id, user_email)
 
 
-@router.get("/download_material_attachment")
+@router.get("/download_material_attachment", tags=["Materials"])
 async def download_material_attachment(course_id: str, material_id: str, file_id: str, user_email: str = Depends(get_current_user)):
     """
     Download the course material attachment by provided course_id, material_id, file_id.

@@ -17,7 +17,7 @@ from logic.submissions import (
 router = APIRouter()
 
 
-@router.post("/submit_assignment", response_model=json_classes.Success)
+@router.post("/submit_assignment", response_model=json_classes.Success, tags=["Submissions"])
 async def submit_assignment(
     course_id: str,
     assignment_id: str,
@@ -37,7 +37,7 @@ async def submit_assignment(
         return logic_submit_assignment(db_conn, db_cursor, course_id, assignment_id, comment, student_email)
 
 
-@router.get("/get_assignment_submissions", response_model=List[json_classes.Submission])
+@router.get("/get_assignment_submissions", response_model=List[json_classes.Submission], tags=["Submissions"])
 async def get_assignment_submissions(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
     """
     Get the list of students submissions of provided assignments.
@@ -58,7 +58,7 @@ async def get_assignment_submissions(course_id: str, assignment_id: str, user_em
         return logic_get_assignment_submissions(db_cursor, course_id, assignment_id, user_email)
 
 
-@router.get("/get_submission", response_model=json_classes.Submission)
+@router.get("/get_submission", response_model=json_classes.Submission, tags=["Submissions"])
 async def get_submission(
     course_id: str,
     assignment_id: str,
@@ -84,7 +84,7 @@ async def get_submission(
         return logic_get_submission(db_cursor, course_id, assignment_id, student_email, user_email)
 
 
-@router.post("/grade_submission", response_model=json_classes.Success)
+@router.post("/grade_submission", response_model=json_classes.Success, tags=["Submissions"])
 async def grade_submission(
     course_id: str,
     assignment_id: str,
@@ -111,7 +111,7 @@ async def grade_submission(
         )
 
 
-@router.post("/create_submission_attachment", response_model=json_classes.SubmissionAttachmentMetadata)
+@router.post("/create_submission_attachment", response_model=json_classes.SubmissionAttachmentMetadata, tags=["Submissions"])
 async def create_submission_attachment(
     course_id: str,
     assignment_id: str,
@@ -132,7 +132,7 @@ async def create_submission_attachment(
         return await logic_create_submission_attachment(db_conn, db_cursor, storage_db_conn, storage_db_cursor, course_id, assignment_id, student_email, file, user_email)
 
 
-@router.get("/get_submission_attachments", response_model=List[json_classes.SubmissionAttachmentMetadata])
+@router.get("/get_submission_attachments", response_model=List[json_classes.SubmissionAttachmentMetadata], tags=["Submissions"])
 async def get_submission_attachments(course_id: str, assignment_id: str, student_email: str, user_email: str = Depends(get_current_user)):
     """
     Get the list of attachments to the course assignment submission by provided course_id, assignment_id, student_email.
@@ -145,7 +145,7 @@ async def get_submission_attachments(course_id: str, assignment_id: str, student
         return logic_get_submission_attachments(db_cursor, course_id, assignment_id, student_email, user_email)
 
 
-@router.get("/download_submission_attachment")
+@router.get("/download_submission_attachment", tags=["Submissions"])
 async def download_submission_attachment(course_id: str, assignment_id: str, student_email: str, file_id: str, user_email: str = Depends(get_current_user)):
     """
     Download the attachment to the course assignment submission by provided course_id, assignment_id, student_email, file_id.
