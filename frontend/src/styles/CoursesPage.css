@@ -80,20 +80,18 @@
 }
 
 .create-course-page-button {
-  background-color: #4CB050;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  font-size: 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  margin-left: 24px;
-
-  align-self: center;
-  margin-top: 0;
-  margin-bottom: 0;
+    background: white;
+    color: #4cb050;
+    border: 2px solid #4cb050;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .create-course-page-button:hover {
-  background-color: #3BBF12;
+  background-color: #4cb050;
+  color: white;
 }
