@@ -82,6 +82,14 @@ async def download_full_course_grade_table(course_id: str, user_email: str = Dep
     Download a CSV file (comma-separated, CRLF newlines) with all grades of all students.
 
     COLUMNS: student login, student display name, then assignment names
+
+    Teacher OR parent OR student role required.
+
+    Teachers can always use this endpoint.
+
+    Parents can only use this endpoint if they happen to be the parent of all students in the course.
+
+    Students can only use this endpoint if they are the only student in the course.
     """
     with get_db() as (db_conn, db_cursor):
         students = [i["email"] for i in logic.students.get_enrolled_students(db_cursor, course_id, user_email)]
@@ -94,9 +102,15 @@ async def download_full_course_grade_table(course_id: str, user_email: str = Dep
 @router.get("/get_full_course_grade_table_json", response_model=json_classes.GradeTable)
 async def get_full_course_grade_table_json(course_id: str, user_email: str = Depends(get_current_user)):
     """
-    Download a CSV file (comma-separated, CRLF newlines) with all grades of all students.
+    Get all grades of all students.
 
-    COLUMNS: student login, student display name, then assignment names
+    Teacher OR parent OR student role required.
+
+    Teachers can always use this endpoint.
+
+    Parents can only use this endpoint if they happen to be the parent of all students in the course.
+
+    Students can only use this endpoint if they are the only student in the course.
     """
     with get_db() as (db_conn, db_cursor):
         students = [i["email"] for i in logic.students.get_enrolled_students(db_cursor, course_id, user_email)]
