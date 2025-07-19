@@ -39,7 +39,7 @@ export default function CourseFeed() {
             })
             return [ass.post_id, res.data]
           } catch {
-            return [ass.post_id, { title: "Ошибка загрузки", description: "" }]
+            return [ass.post_id, { title: "Loading error", description: "" }]
           }
         })),
         Promise.all(matList.map(async (mat) => {
@@ -50,7 +50,7 @@ export default function CourseFeed() {
             })
             return [mat.post_id, res.data]
           } catch {
-            return [mat.post_id, { title: "Ошибка загрузки", description: "" }]
+            return [mat.post_id, { title: "Loading error", description: "" }]
           }
         })),
       ])

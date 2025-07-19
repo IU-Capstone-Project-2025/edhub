@@ -35,6 +35,19 @@
   padding: 0;
 }
 
+.courses-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; 
+  margin-bottom: 24px;
+}
+
+.courses-header h1 {
+  margin: 0; 
+  font-size: 32px;
+  color: #333940;
+}
+
 .course-item {
   background: #f5f5f5;
   border-radius: 8px;
@@ -61,22 +74,24 @@
 
 .course-list-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* ⬅️ меньше карточки */
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 28px;
   margin-top: 32px;
 }
 
 .create-course-page-button {
-  background-color: #4CB050;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  font-size: 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  width: 10%;
+    background: white;
+    color: #4cb050;
+    border: 2px solid #4cb050;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .create-course-page-button:hover {
-  background-color: #3BBF12;
+  background-color: #4cb050;
+  color: white;
 }

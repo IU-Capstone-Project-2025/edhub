@@ -1,5 +1,5 @@
 .course-page {
-  padding: 40px;
+  padding: 20px;
   max-width: 1000px;
   margin: 0 auto;
 }
@@ -44,4 +44,70 @@
 
 .switch-btn:hover {
   background-color: #3fa046;
+}
+
+
+.course-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  min-height: 80px;
+  margin-bottom: 16px;
+  padding-right: 20px;
+}
+.course-title {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 0;
+  margin-top: 0;
+  margin-right: 32px;
+  font-family: inherit;
+}
+
+.participants-list {
+  margin-top: 32px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px #3339400a;
+  padding: 36px 48px;
+  max-width: 600px;
+}
+.participants-list h2 {
+  font-size: 1.4rem;
+  color: #4CB050;
+  margin-bottom: 18px;
+}
+.teacher-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.13rem;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+.teacher-item:last-child {
+  border-bottom: none;
+}
+.remove-teacher-btn {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-left: 18px;
+  transition: color 0.18s;
+}
+.remove-teacher-btn:hover {
+  color: #c0392b;
+}
+
+.grades-placeholder {
+  margin-top: 32px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px #3339400a;
+  padding: 36px 48px;
+  max-width: 600px;
 }

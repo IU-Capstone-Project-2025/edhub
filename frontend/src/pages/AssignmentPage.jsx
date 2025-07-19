@@ -1,9 +1,19 @@
-import React, {useEffect, useState ,useRef} from "react"
+import React, {useEffect, useState, useRef} from "react"
 import "../styles/AssignmentPage.css"
-import {useParams} from "react-router-dom"
+import {useParams, useNavigate} from "react-router-dom"
 import axios from "axios"
 import AddGrade from "../components/AddGrade"
 import PageMeta from "../components/PageMeta"
+
+function formatText(text) {
+  if (!text) return "";
+  let html = text
+    .replace(/\n/g, "<br>")
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // bold: **text**
+    .replace(/__(.*?)__/g, '<u>$1</u>') // underline: __text__
+    .replace(/\*(.*?)\*/g, '<i>$1</i>'); // italic: *text*
+  return html;
+}
 
 export default function AssignmentPage() {
   const { id, post_id } = useParams()
@@ -17,12 +27,13 @@ export default function AssignmentPage() {
   const [childrenSubmission, setChildrenSubmission] = useState(null)
   const [studentSubmissions, setStudentSubmissions] = useState([])
   const [currentStudentEmail, setCurrentStudentEmail] = useState(null)
+  const navigate = useNavigate();
   const [showAddGrade, setShowAddGrade] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
   const fileInputRef = useRef(null);
 
   const onFileChange = (event) =>{
-    if(event.target.files[0].size/1000000>5){
+    if(event.target.files[0]?.size/1000000>5){
         alert("Files should be smaller than 5 MB")
         setSelectedFile(null)
         if (fileInputRef.current) {
@@ -37,15 +48,15 @@ export default function AssignmentPage() {
     if (selectedFile){
       
       return (
-				<div>
-					<h2>File Details:</h2>
-					<p>File Name: {selectedFile.name}</p>
-					<p>File Type: {selectedFile.type}</p>
-					<p>
-						Last Modified: {selectedFile.lastModifiedDate.toDateString()}
-					</p>
-				</div>
-			);
+        <div>
+          <h2>File Details:</h2>
+          <p>File Name: {selectedFile.name}</p>
+          <p>File Type: {selectedFile.type}</p>
+          <p>
+            Last Modified: {selectedFile.lastModifiedDate.toDateString()}
+          </p>
+        </div>
+      );
     }
   }
 
@@ -61,7 +72,7 @@ export default function AssignmentPage() {
         setAssignmentInfo(res.data)
         
       }catch(err){
-        alert("Ошибка при загрузке курса: " + (err.response?.data?.detail || err.message))
+        alert("Error while course downloading: " + (err.response?.data?.detail || err.message))
       }
     }
     fetchAssignmentInfo()
@@ -75,7 +86,7 @@ export default function AssignmentPage() {
         })
         setRoleData(res.data)
       }catch(err){
-        alert("Ошибка при загрузке роли пользователя: " + (err.response?.data?.detail || err.message))
+        alert("Error while user downloading: " + (err.response?.data?.detail || err.message))
       }
     }
     fetchRoleData()
@@ -88,7 +99,7 @@ export default function AssignmentPage() {
         })
         setOwnEmail(res.data.email)
       } catch (err) {
-        alert("Ошибка при загрузке email'а пользователя: " + (err.response?.data?.detail || err.message))
+        alert("Error while user' email downloading: " + (err.response?.data?.detail || err.message))
       }
     }
     fetchEmail()
@@ -107,7 +118,7 @@ export default function AssignmentPage() {
         })
         setChildrenEmail(res.data)
       } catch (err) {
-        alert("Ошибка при загрузке email'а ребёнка: " + (err.response?.data?.detail || err.message))
+        alert("Error while children' mail downloading: " + (err.response?.data?.detail || err.message))
       }
     }
     fetchChildrenEmail()
@@ -131,7 +142,7 @@ export default function AssignmentPage() {
         ) {
           setMySubmission(null)
         } else {
-          alert("Ошибка при загрузке ответа студента: " + msg)
+          alert("Error while student' task downloading: " + msg)
         }
       }
   }
@@ -151,7 +162,7 @@ export default function AssignmentPage() {
         })
         setStudentSubmissions(res.data)
       } catch (err) {
-          alert("Ошибка при загрузке ответов студентов: " + (err.response?.data?.detail || err.message))
+          alert("Error while stunents' answers downloading: " + (err.response?.data?.detail || err.message))
       }
   }
 
@@ -187,7 +198,7 @@ export default function AssignmentPage() {
     );
     setChildrenSubmission(submissions.filter(sub => sub));
   } catch (err) {
-    alert("Ошибка при загрузке ответов детей: " + (err.response?.data?.detail || err.message));
+    alert("Error loading student answers: " + (err.response?.data?.detail || err.message));
   }
 }
 
@@ -217,7 +228,7 @@ export default function AssignmentPage() {
       setShowSubmissionForm(false)
       fetchMySubmission()
     } catch (err) {
-      alert("Ошибка при отправке ответа: " + (err.response?.data?.detail || err.message))
+      alert("Error submitting answer: " + (err.response?.data?.detail || err.message))
     }
     
   }
@@ -232,15 +243,36 @@ export default function AssignmentPage() {
       </a>
       <div className="assignment-main">
         <div className="assignment-left">
-          <h1>{assignmentInfo.title}</h1>
-          <p>{assignmentInfo.description}</p>
-          <p>Assignment ID : {assignmentInfo.assignment_id}</p>
-          <p>Created : {assignmentInfo.creation_time}</p>
-          <p>Current Email: {ownEmail}</p>
-          <p>author : {assignmentInfo.author}</p>
+          <div className="assignment-date">{assignmentInfo.creation_time}</div>
+          <h1 className="assignment-title">{assignmentInfo.title}</h1>
+
+{roleData && (roleData.is_teacher || roleData.is_admin) && (
+  <div
+    className="remove-assignment-text"
+    onClick={async () => {
+      if (window.confirm("Are you sure you want to remove this assignment? This action cannot be undone.")) {
+        try {
+          const token = localStorage.getItem("access_token")
+          await axios.post("/api/remove_assignment", null, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { course_id: id, assignment_id: post_id }
+          })
+          window.location.assign("../")
+        } catch (err) {
+          alert("Error deleting assignment: " + (err.response?.data?.detail || err.message))
+        }
+      }
+    }}
+  >
+    Delete assignment
+  </div>
+)}
+
+          <p className="assignment-desc" dangerouslySetInnerHTML={{__html: formatText(assignmentInfo.description)}} />
+    
         </div>
         <div className="assignment-right">
-          {roleData && roleData.is_student && showSubmissionForm && !mySubmission &&(
+          {roleData && !roleData.is_admin && roleData.is_student && showSubmissionForm && !mySubmission &&(
             <div className="student-submit-block">
               <h2>Submit your work</h2>
               <div>
@@ -249,79 +281,102 @@ export default function AssignmentPage() {
                 value={text} onChange={(e) => setText(e.target.value)}
                 rows="10" 
                 cols="30"/>
-              <input type="file" onChange={onFileChange} ref={fileInputRef}/>
-              <button 
-                className="submit-btn"
-                onClick={handleSubmit} 
-                disabled={!text.trim()}
-              > Submit
-              </button>
-              {fileData()}
+              <div className="submission-buttons-row">
+                <label htmlFor="file-upload" className="file-input">
+                  Choose File
+                </label>
+                <input
+                  id="file-upload"
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={onFileChange}
+                />
+                <button 
+                  className="submit-btn"
+                  onClick={handleSubmit} 
+                  disabled={!text.trim()}
+                >
+                  Submit
+                </button>
+              </div>
+              {fileData() && (
+                <div className="file-details">
+                  {fileData()}
+                </div>
+              )}
               </div>
             </div>
           )}
-          {roleData && roleData.is_student && !showSubmissionForm && mySubmission && (
+          {roleData && !roleData.is_admin && roleData.is_student && !showSubmissionForm && mySubmission && (
             <div className="submitted-answer">
-              <div className="my-comment-title">Your submission:</div>
-              <div className="my-comment">{mySubmission.comment}</div>
-              <div>Submitted:{mySubmission.submission_time}</div>
-              <div>Last modification time:{mySubmission.last_modification_time}</div>
+              <div className="my-comment-title">Your answer:</div>
+              <div className="my-comment assignment-desc" dangerouslySetInnerHTML={{__html: formatText(mySubmission.comment)}} />
+              <div className="assignment-date">{mySubmission.submission_time}</div>
               {mySubmission.grade && (
-                <div className="my-grade">Grade: <b>{mySubmission.grade}</b> (by {mySubmission.gradedby_email})</div>
+                <div className="my-grade">Grade: <b>{mySubmission.grade}</b> <span className="grade-by">({mySubmission.gradedby_email})</span></div>
               )}
             </div>
           )}
-          {roleData && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length === 0 &&(
+          {roleData && !roleData.is_admin && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length === 0 &&(
             <div className="submitted-answer">Your children haven't submitted anything yet.</div>
           )}
-          {roleData && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length > 0 && (
-            <div>
+          {roleData && !roleData.is_admin && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length > 0 && (
+            <div className="parent-submissions">
               {childrenSubmission.map((child, idx) => (
                 <div key={idx} className="submitted-answer">
-                  <div className="my-comment-title">Your child's {child.student_name || child.student_email || "Child"} submission:</div>
-                  <div className="my-comment">{child.comment}</div>
-                  <div>Submitted: {child.submission_time}</div>
-                  <div>Last modification time: {child.last_modification_time}</div>
+                  <div className="my-comment-title">Child's answer: {child.student_name || child.student_email || "Child"}</div>
+                  <div className="my-comment assignment-desc" dangerouslySetInnerHTML={{__html: formatText(child.comment)}} />
+                  <div className="assignment-date">{child.submission_time}</div>
                   {child.grade && (
-                    <div className="my-grade">Grade: <b>{child.grade}</b> (by {child.gradedby_email})</div>
+              <div className="my-grade">Grade: <b>{child.grade}</b> <span className="grade-by">({child.gradedby_email})</span></div>
                   )}
                 </div>
               ))}
             </div>
           )}
-          {roleData && (roleData.is_teacher || roleData.is_admin) && studentSubmissions && (
-            <div className="submitted-answer">
-              <div className="my-comment-title">Students' submissions:</div>
-              {studentSubmissions.length === 0 && <div>No submissions yet.</div>}
-              {studentSubmissions.map((submission, idx) => (
-                <div key={idx} className="student-submission-block">
-                  <div className="my-comment">
-                    <b>{submission.student_name || submission.student_email || "Student"}:</b> {submission.comment}
-                  </div>
-                  <div>Submitted:{submission.submission_time}</div>
-                  <div>Last modification time:{submission.last_modification_time}</div>
-                  {submission.grade && (
-                    <div className="my-grade">
-                      Grade: <b>{submission.grade}</b> {submission.gradedBy && `(by ${submission.gradedBy})`}
+          {roleData && roleData.is_teacher && studentSubmissions && (
+            <div className="teacher-submissions">
+              <div className="my-comment-title" style={{marginBottom: 24}}>Student answers:</div>
+              {studentSubmissions.length === 0 && <div className="empty">No answers yet.</div>}
+              <div className="teacher-submissions-list">
+                {studentSubmissions.map((submission, idx) => (
+                  <div
+                    key={idx}
+                    className="student-submission-block clickable-submission"
+                    onClick={() => navigate(`/courses/${id}/assignments/${post_id}/submission/${submission.student_email}`)}
+                    style={{cursor: "pointer"}}
+                  >
+                    <div className="my-comment assignment-desc">
+                      <b>{submission.student_name || submission.student_email || "Student"}:</b> <span dangerouslySetInnerHTML={{__html: formatText(submission.comment)}} />
                     </div>
-                  )}
-                  <button 
-                    className="grade-btn"
-                    onClick={() => {
-                      setCurrentStudentEmail(submission.student_email)
-                      setShowAddGrade(true)
-                    }}>Rate</button>
-                  <hr />
-                </div>
-              ))}
+                    <div className="assignment-date">{submission.submission_time}</div>
+                    {submission.grade && (
+                      <div className="my-grade">
+                        Grade: <b>{submission.grade}</b> {submission.gradedBy && <span className="grade-by">({submission.gradedBy})</span>}
+                      </div>
+                    )}
+                    <button 
+                      className="grade-btn"
+                      onClick={e => {
+                        e.stopPropagation();
+                        setCurrentStudentEmail(submission.student_email)
+                        setShowAddGrade(true)
+                      }}>Grade</button>
+                  </div>
+                ))}
+              </div>
             </div>
-)}        
+          )}
             
         </div>
       </div>
       {showAddGrade && (
         <AddGrade
-          onClose={() => setShowAddGrade(false)}
+          onClose={() => {
+              setShowAddGrade(false);
+              fetchStudentSubmissions();
+            }}          
           courseId={id}
           assignmentId={post_id}
           studentEmail={currentStudentEmail}

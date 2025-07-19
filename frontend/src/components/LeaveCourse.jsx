@@ -72,7 +72,7 @@ export default function LeaveCourse({ onClose, courseId , roleData, ownEmail}) {
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail
-      alert("Ошибка при удалении : " + (
+      alert("Error while removing: " + (
         typeof errorData === "string"
           ? errorData
           : JSON.stringify(errorData || err.message)
