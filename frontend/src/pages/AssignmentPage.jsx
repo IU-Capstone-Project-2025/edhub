@@ -281,22 +281,30 @@ export default function AssignmentPage() {
                 value={text} onChange={(e) => setText(e.target.value)}
                 rows="10" 
                 cols="30"/>
-              <label htmlFor="file-upload" className="file-input">
-                Choose File
-              </label>
-              <input
-                id="file-upload"
-                type="file"
-                style={{ display: 'none' }}
-                onChange={onFileChange}
-              />
-              <button 
-                className="submit-btn"
-                onClick={handleSubmit} 
-                disabled={!text.trim()}
-              > Submit
-              </button>
-              {fileData()}
+              <div className="submission-buttons-row">
+                <label htmlFor="file-upload" className="file-input">
+                  Choose File
+                </label>
+                <input
+                  id="file-upload"
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={onFileChange}
+                />
+                <button 
+                  className="submit-btn"
+                  onClick={handleSubmit} 
+                  disabled={!text.trim()}
+                >
+                  Submit
+                </button>
+              </div>
+              {fileData() && (
+                <div className="file-details">
+                  {fileData()}
+                </div>
+              )}
               </div>
             </div>
           )}
@@ -306,7 +314,7 @@ export default function AssignmentPage() {
               <div className="my-comment assignment-desc" dangerouslySetInnerHTML={{__html: formatText(mySubmission.comment)}} />
               <div className="assignment-date">{mySubmission.submission_time}</div>
               {mySubmission.grade && (
-                <div className="my-grade">Оценка: <b>{mySubmission.grade}</b> <span className="grade-by">({mySubmission.gradedby_email})</span></div>
+                <div className="my-grade">Grade: <b>{mySubmission.grade}</b> <span className="grade-by">({mySubmission.gradedby_email})</span></div>
               )}
             </div>
           )}
@@ -317,7 +325,7 @@ export default function AssignmentPage() {
             <div className="parent-submissions">
               {childrenSubmission.map((child, idx) => (
                 <div key={idx} className="submitted-answer">
-                  <div className="my-comment-title">Ответ ребёнка: {child.student_name || child.student_email || "Child"}</div>
+                  <div className="my-comment-title">Child's answer: {child.student_name || child.student_email || "Child"}</div>
                   <div className="my-comment assignment-desc" dangerouslySetInnerHTML={{__html: formatText(child.comment)}} />
                   <div className="assignment-date">{child.submission_time}</div>
                   {child.grade && (

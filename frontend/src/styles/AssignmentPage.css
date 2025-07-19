@@ -20,6 +20,7 @@
   background: none;
   color: #4CB050;
   font-size: 16px;
+  font-weight: 500;
   border: none;
   margin-bottom: 28px;
   cursor: pointer;
@@ -50,7 +51,7 @@
   color: #333940;
 }
 .assignment-left p {
-  font-size: 1.16rem;
+  font-size: 1.1rem;
   color: #576574;
 }
 .assignment-right {
@@ -89,40 +90,7 @@
   flex-direction: column;
   gap: 12px;
 }
-.student-submit-block textarea {
-  width: 100%;
-  min-height: 92px;
-  border-radius: 10px;
-  border: 1px solid #C9E6F3;
-  padding: 13px 14px;
-  font-size: 1.05em;
-  background: #F7FCFF;
-  margin-bottom: 5px;
-  box-sizing: border-box;
-  resize: none;
-}
-.submit-btn {
-  padding: 10px 20px;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  background-color: #4cb050;
-  color: white;
-  transition: background-color 0.3s ease;
-}
-.submit-btn:disabled {
-  background: #a6e6b7;
-  color: #fff;
-  cursor: not-allowed;
-  padding: 10px 20px;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
-}
-.submit-btn:hover {
-  opacity: 0.9;
-}
+
 .submitted-answer {
   background: #FCFFFC;
   border-radius: 14px;
@@ -150,7 +118,7 @@
   font-size: 0.97em;
   font-weight: 400;
 }
-/* Новые стили для эстетики и воздушности */
+
 .assignment-title {
   font-size: 2.2rem;
   font-weight: 700;
@@ -298,6 +266,23 @@
   gap: 12px;
 }
 
+.student-submit-block textarea {
+  font-size: 1.1rem;
+  font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  padding: 18px 18px;
+  border: 1.5px solid rgb(143, 201, 139);
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.student-submit-block textarea:focus {
+  border-color: #4CB050;
+  outline: none;
+  box-shadow: 0 0 0 2px #b1e4c380;
+}
+
 .grade-form input,
 .grade-form textarea {
   font-size: 1.05em;
@@ -360,13 +345,27 @@
 }
 
 .file-input {
-  margin-top: 12px;
-  font-size: 1em;
-  padding: 8px 12px;
+  font-size: 1.07em; 
+  font-weight: 600;
+  height: 42px;
+  padding: 0 18px;
   border-radius: 8px;
-  border: 1.5px solid #B1E4F5;
-  background: #F7FCFF;
-  color: #333940;
+  border: 2px solid rgb(76, 176, 80);
+  background: white;
+  color: rgb(76, 176, 80);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-align: center;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.file-input:hover {
+  background: #f0fff2;
+  border-color: #3fa046;
+  color: #3fa046;
 }
 
 .link-style-button {
@@ -382,4 +381,87 @@
 
 .link-style-button:hover {
   color: #0056b3; 
+}
+
+.submission-buttons-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.file-input:hover {
+  background: #f2fff3;
+}
+
+.submit-btn {
+  padding: 8px 18px;
+  font-size: 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  height: 42px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background-color: rgb(76, 176, 80); 
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submit-btn:hover {
+  background-color: #3fa046;
+}
+
+.submit-btn:disabled {
+  background: white;
+  border: 2px solid rgb(76, 176, 80);
+  color: rgb(76, 176, 80);
+  cursor: not-allowed;
+}
+
+
+/* .submit-btn:not(:disabled) {
+  background-color: #4cb050;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.submit-btn:not(:disabled):hover {
+  background-color: #3fa046;
+} */
+
+.student-submit-block > div {
+  width: 100%;
+}
+
+.student-submit-block textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.submission-buttons-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.submission-buttons-row .file-input,
+.submission-buttons-row .submit-btn {
+  flex: 1;
+  max-width: 48%;
+}
+
+.file-details {
+  margin-top: 16px;
+  margin-bottom: 16px;
 }

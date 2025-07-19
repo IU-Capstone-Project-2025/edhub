@@ -75,7 +75,7 @@
 
 .feed-block {
   flex: 1;
-  background: rgba(30, 40, 50, 0.03); /* тёмный прозрачный оттенок */
+  background: rgba(30, 40, 50, 0.03);
   padding: 24px 28px;
   border-radius: var(--radius);
   box-shadow: 0 2px 12px #a2e4ac22;
@@ -117,18 +117,6 @@
   margin-top: 6px;
   font-weight: 600;
   color: var(--dark);
-}
-
-.grade-btn, .submit-btn {
-  background: var(--green-main);
-  color: white;
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: background 0.2s;
 }
 
 .grade-btn:hover, .submit-btn:hover {

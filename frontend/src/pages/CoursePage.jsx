@@ -29,7 +29,7 @@ export default function CoursePage() {
   const [ownEmail, setOwnEmail] = useState("");
   const [showLeaveCourse, setShowLeaveCourse] = useState();
   const [singleColumnSwitch, setSingleColumnSwitch] = useState(false);
-  const [activeTab, setActiveTab] = useState("course");
+  const [activeTab, setActiveTab] = useState("Course");
   const [teachers, setTeachers] = useState([]);
   const [loadingTeachers, setLoadingTeachers] = useState(false);
 
@@ -77,7 +77,7 @@ export default function CoursePage() {
   }, [id]);
 
   useEffect(() => {
-    if (activeTab === "participants") {
+    if (activeTab === "Participants") {
       setLoadingTeachers(true);
       const fetchTeachers = async () => {
         try {
@@ -122,10 +122,10 @@ export default function CoursePage() {
           <CourseTabs
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            availableTabs={["course", "participants", "grades"]}
+            availableTabs={["Course", "Participants", "Grades"]}
           />
         </div>
-        {activeTab === "course" && (
+        {activeTab === "Course" && (
           <>
             <p><strong>Created:</strong> {new Date(courseInfo.creation_time).toLocaleDateString()}</p>
             <p>Students enrolled: {courseInfo.number_of_students}</p>
@@ -154,17 +154,17 @@ export default function CoursePage() {
                 <button className="outlined-btn blue" onClick={() => setSingleColumnSwitch(!singleColumnSwitch)}>Switch</button>
               </div>
             )}
-            {roleData && (roleData.is_student|| roleData.is_parent ) && (
-              <div className="actions">
-                <button onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
-                <button className="switch-btn" onClick={()=>{setSingleColumnSwitch(!singleColumnSwitch)}}>Switch</button>
+            {roleData && (roleData.is_student || roleData.is_parent ) && (
+              <div className="actions-flex">
+                <button className="outlined-btn red" onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
+                <button className="outlined-btn blue" onClick={() => setSingleColumnSwitch(!singleColumnSwitch)}>Switch</button>
               </div>
             )}
             {!singleColumnSwitch&&(<CourseFeed />)}
             {singleColumnSwitch&&(<SingleCourseFeed />)}
           </>
         )}
-        {activeTab === "participants" && (
+        {activeTab === "Participants" && (
           <div className="participants-list">
             <h2>Teachers</h2>
             {loadingTeachers ? (
@@ -189,7 +189,7 @@ export default function CoursePage() {
             )}
           </div>
         )}
-        {activeTab === "grades" && (
+        {activeTab === "Grades" && (
           <div className="grades-placeholder">
             <h2>Grades</h2>
             <p>Grades view coming soon...</p>

@@ -4,10 +4,12 @@
   background: #F7FAFC;
   font-family: 'Inter', Arial, sans-serif;
 }
+
 .back-btn {
   background: none;
   color: #4CB050;
   font-size: 16px;
+  font-weight: 500;
   border: none;
   margin-bottom: 28px;
   cursor: pointer;
@@ -44,7 +46,7 @@
   color: #333940;
 }
 .assignment-left p {
-  font-size: 1.16rem;
+  font-size: 1.1rem;
   color: #576574;
 }
 .assignment-right {
@@ -122,16 +124,7 @@
   flex-direction: column;
   gap: 12px;
 }
-.student-submit-block textarea {
-  width: 100%;
-  min-height: 92px;
-  border-radius: 10px;
-  border: 1px solid #C9E6F3;
-  padding: 13px 14px;
-  font-size: 1.05em;
-  background: #F7FCFF;
-  margin-bottom: 5px;
-}
+
 .submit-btn {
   background: #4CB050;
   color: #fff;
@@ -143,11 +136,7 @@
   font-weight: 600;
   transition: background 0.1s;
 }
-.submit-btn:disabled {
-  background: #B1E4F5;
-  color: #fff;
-  cursor: not-allowed;
-}
+
 .submitted-answer {
   background: #F1FAFE;
   border-radius: 12px;
