@@ -164,31 +164,7 @@ export default function CoursePage() {
             {singleColumnSwitch&&(<SingleCourseFeed />)}
           </>
         )}
-        {activeTab === "Participants" && (
-          <div className="participants-list">
-            <h2>Teachers</h2>
-            {loadingTeachers ? (
-              <div>Loading teachers...</div>
-            ) : (
-              <ul>
-                {teachers.map((teacher) => (
-                  <li key={teacher.email} className="teacher-item">
-                    <span>{teacher.name} ({teacher.email})</span>
-                    {roleData && roleData.is_teacher && teacher.email !== ownEmail && (
-                      <button
-                        className="remove-teacher-btn"
-                        title="Remove teacher"
-                        onClick={() => handleRemoveTeacher(teacher.email)}
-                      >
-                        ×
-                      </button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
+        {/* Участники теперь отдельная страница, секция убрана */}
         {activeTab === "Grades" && (
           <div className="grades-placeholder">
             <h2>Grades</h2>
