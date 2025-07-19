@@ -149,12 +149,13 @@ export default function CoursePage() {
                     setShowAddParent(true)
                   }}>Parent</span>
                 </div>
-
-                <button className="outlined-btn red" onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
+                {!roleData.is_admin && (
+                  <button className="outlined-btn red" onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
+                )}
                 <button className="outlined-btn blue" onClick={() => setSingleColumnSwitch(!singleColumnSwitch)}>Switch</button>
               </div>
             )}
-            {roleData && (roleData.is_student || roleData.is_parent ) && (
+            {roleData && !roleData.is_admin &&(roleData.is_student || roleData.is_parent ) && (
               <div className="actions-flex">
                 <button className="outlined-btn red" onClick={() => setShowLeaveCourse(true)}>Leave Course</button>
                 <button className="outlined-btn blue" onClick={() => setSingleColumnSwitch(!singleColumnSwitch)}>Switch</button>

@@ -272,7 +272,7 @@ export default function AssignmentPage() {
     
         </div>
         <div className="assignment-right">
-          {roleData && roleData.is_student && showSubmissionForm && !mySubmission &&(
+          {roleData && !roleData.is_admin && roleData.is_student && showSubmissionForm && !mySubmission &&(
             <div className="student-submit-block">
               <h2>Submit your work</h2>
               <div>
@@ -308,7 +308,7 @@ export default function AssignmentPage() {
               </div>
             </div>
           )}
-          {roleData && roleData.is_student && !showSubmissionForm && mySubmission && (
+          {roleData && !roleData.is_admin && roleData.is_student && !showSubmissionForm && mySubmission && (
             <div className="submitted-answer">
               <div className="my-comment-title">Your answer:</div>
               <div className="my-comment assignment-desc" dangerouslySetInnerHTML={{__html: formatText(mySubmission.comment)}} />
@@ -318,10 +318,10 @@ export default function AssignmentPage() {
               )}
             </div>
           )}
-          {roleData && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length === 0 &&(
+          {roleData && !roleData.is_admin && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length === 0 &&(
             <div className="submitted-answer">Your children haven't submitted anything yet.</div>
           )}
-          {roleData && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length > 0 && (
+          {roleData && !roleData.is_admin && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length > 0 && (
             <div className="parent-submissions">
               {childrenSubmission.map((child, idx) => (
                 <div key={idx} className="submitted-answer">
@@ -335,7 +335,7 @@ export default function AssignmentPage() {
               ))}
             </div>
           )}
-          {roleData && (roleData.is_teacher || roleData.is_admin) && studentSubmissions && (
+          {roleData && roleData.is_teacher && studentSubmissions && (
             <div className="teacher-submissions">
               <div className="my-comment-title" style={{marginBottom: 24}}>Student answers:</div>
               {studentSubmissions.length === 0 && <div className="empty">No answers yet.</div>}
