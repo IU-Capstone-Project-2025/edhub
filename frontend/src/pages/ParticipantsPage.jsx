@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom"
+import { useParams , useNavigate} from "react-router-dom"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import Header from "../components/Header"
@@ -18,6 +18,7 @@ export default function ParticipantsPage() {
   const [deletedStudents, setDeletedStudents] = useState([])
   const [activeView, setActiveView] = useState("students")
   const [currentUser, setCurrentUser] = useState(null)
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -61,6 +62,8 @@ export default function ParticipantsPage() {
         setParentsMap(parentsMapResult)
       } catch (err) {
         alert("Error loading participants: " + (err.response?.data?.detail || err.message))
+        console.log("Error loading participants: " + (err.response?.data?.detail || err.message));
+        navigate("/courses");
       } finally {
         setLoading(false)
       }
@@ -82,7 +85,9 @@ useEffect(() => {
         });
         setTeachers(res.data);
       } catch (err) {
-        alert("Failed to fetch teachers");
+        alert("Failed to fetch teachers: " + (err.response?.data?.detail || err.message))
+        console.log("Failed to fetch teachers: " + (err.response?.data?.detail || err.message));
+        navigate("/courses");
       }
     };
     fetchTeachers();

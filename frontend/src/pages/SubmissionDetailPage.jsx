@@ -38,7 +38,9 @@ export default function SubmissionDetailPage() {
       }
       setSubmission(sub);
     } catch (err) {
-      setSubmission(null);
+      alert("Error loading submission: " + (err.response?.data?.detail || err.message))
+      console.log("Error loading submission: " + (err.response?.data?.detail || err.message));
+      navigate("/courses/" + id + "/assignments/"+ post_id);
     }
   };
   useEffect(() => {
