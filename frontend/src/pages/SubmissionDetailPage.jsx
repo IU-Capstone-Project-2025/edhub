@@ -38,7 +38,9 @@ export default function SubmissionDetailPage() {
       }
       setSubmission(sub);
     } catch (err) {
-      setSubmission(null);
+      alert("Error loading submission: " + (err.response?.data?.detail || err.message))
+      console.log("Error loading submission: " + (err.response?.data?.detail || err.message));
+      navigate("/courses/" + id + "/assignments/"+ post_id);
     }
   };
   useEffect(() => {
@@ -92,21 +94,41 @@ export default function SubmissionDetailPage() {
     }
   }, [submission]);
 
-  // Currently only display downloaded text in alert due to API limitations
-  // Currently only get ERROR 500, seems like backend isn't ready yet
-  const downloadAttachment = async (file_id) => {
-    try {
-      const token = localStorage.getItem("access_token");
-      const res = await axios.get("/api/download_submission_attachment", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { course_id: id, assignment_id: post_id, student_email, file_id },
-      });
-      alert(res?.data)
-    } catch (err) {
-      alert("Error downloading attachments: " + (err.response?.data?.detail || err.message));
+const downloadAttachment = async (file_id) => {
+  try {
+    const token = localStorage.getItem("access_token");
 
-    }
+    const response = await axios.get("/api/download_submission_attachment", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        course_id: id,
+        assignment_id: post_id,
+        student_email,
+        file_id,
+      },
+      responseType: "blob",
+    });
+
+    const contentDisposition = response.headers["content-disposition"];
+    const filenameMatch = contentDisposition?.match(/filename="?([^"]+)"?/);
+    const filename = filenameMatch ? filenameMatch[1] : "downloaded_file";
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    alert("Error downloading attachment: " + (err.response?.data?.detail || err.message));
   }
+};
+
   
   if (submission === null) {
     return (
@@ -174,7 +196,7 @@ export default function SubmissionDetailPage() {
   onClick={handleGradeSubmit}
   disabled={loading || success}
 >
-  {success ? "Grade added successfully" : "Submit"}
+  {success ? "Grade added successfully" : "Grade"}
 </button>
         </div>
         {loading && <div className="loading-indicator">Submitting...</div>}

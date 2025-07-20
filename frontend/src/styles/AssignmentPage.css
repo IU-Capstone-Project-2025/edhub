@@ -304,6 +304,7 @@
 
 .grade-form textarea {
   min-height: 80px;
+  display:none;
 }
 
 .grade-success {
