@@ -72,7 +72,9 @@ export default function AssignmentPage() {
         setAssignmentInfo(res.data)
         
       }catch(err){
-        alert("Error while course downloading: " + (err.response?.data?.detail || err.message))
+        alert("Error loading assignment: " + (err.response?.data?.detail || err.message))
+        console.log("Error loading assignment: " + (err.response?.data?.detail || err.message));
+        navigate("/courses/" + id);
       }
     }
     fetchAssignmentInfo()
@@ -162,7 +164,7 @@ export default function AssignmentPage() {
         })
         setStudentSubmissions(res.data)
       } catch (err) {
-          alert("Error while stunents' answers downloading: " + (err.response?.data?.detail || err.message))
+          alert("Error while students' answers downloading: " + (err.response?.data?.detail || err.message))
       }
   }
 

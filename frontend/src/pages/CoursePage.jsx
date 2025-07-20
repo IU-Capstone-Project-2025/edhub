@@ -15,6 +15,8 @@ import SingleCourseFeed from "../components/SingleCourseFeed"
 import CourseTabs from "../components/CoursesTabs"
 import "../styles/UnifiedButtons.css"
 import DeleteCourse from "../components/DeleteCourse"
+import { useNavigate } from "react-router-dom"
+
 
 
 export default function CoursePage() {
@@ -33,6 +35,7 @@ export default function CoursePage() {
   const [teachers, setTeachers] = useState([]);
   const [loadingTeachers, setLoadingTeachers] = useState(false);
   const [showDeleteCourse, setShowDeleteCourse] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -44,7 +47,9 @@ export default function CoursePage() {
         });
         setCourseInfo(res.data);
       } catch (err) {
-        alert("Error loading course: " + (err.response?.data?.detail || err.message));
+        alert("Error loading course: " + (err.response?.data?.detail || err.message))
+        console.log("Error loading course: " + (err.response?.data?.detail || err.message));
+        navigate("/courses");
       }
     };
     fetchCourse();
