@@ -17,6 +17,23 @@ export default function ParticipantsPage() {
   const isPrivileged = role?.is_teacher || role?.is_admin
   const [deletedStudents, setDeletedStudents] = useState([])
   const [activeView, setActiveView] = useState("students")
+  const [currentUser, setCurrentUser] = useState(null)
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const token = localStorage.getItem("access_token")
+      const headers = { Authorization: `Bearer ${token}` }
+      try {
+        const res = await axios.get("/api/get_current_user", { headers })
+        setCurrentUser(res.data)
+      } catch (err) {
+        console.error("Failed to fetch current user:", err)
+      }
+    }
+
+    fetchCurrentUser()
+  }, [])
+
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -54,7 +71,7 @@ export default function ParticipantsPage() {
 
   const [teachers, setTeachers] = useState([]);
 useEffect(() => {
-  if (isPrivileged) {
+  if (role !== null) {
     const fetchTeachers = async () => {
       try {
         const token = localStorage.getItem("access_token");
@@ -146,31 +163,41 @@ useEffect(() => {
         {isPrivileged && (
   <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginBottom: "12px" }}>
     <div className={`part-button green ${activeView === "students" ? "active" : ""}`} onClick={() => setActiveView("students")}>
-      Students & Parents
+      Students
     </div>
     <div className={`part-button green ${activeView === "teachers" ? "active" : ""}`} onClick={() => setActiveView("teachers")}>
       Teachers
     </div>
   </div>
 )}
+{!isPrivileged && (
+  <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginBottom: "12px" }}>
+    <div className={`part-button green ${activeView === "students" ? "active" : ""}`} onClick={() => setActiveView("students")}>
+      Students
+    </div>
+    <div className={`part-button green ${activeView === "teachers" ? "active" : ""}`} onClick={() => setActiveView("teachers")}>
+      Teachers
+    </div>
+  </div>
+)}
+
 {activeView === "students" ? (
   <div className="participants-wrapper">
     <div className="participants-labels">
       <div className="label-left">Students</div>
-      <div className="label-right">Parents</div>
+      {!isPrivileged && <div className="label-right" />}
     </div>
     {students.map((s) => (
-      <div key={s.email} className="participant-row">
+  <div key={s.email} className="participant-row" style={{ width: "100%" }}>
+    {isPrivileged ? (
+      <>
         <div className="participant-left">
           <div className="participant-card">
             <div style={{ fontWeight: 600 }}>{s.name}</div>
             <div className="email">{s.email}</div>
-            {isPrivileged && (
-              <button onClick={() => removeUser("student", s.email)} className="remove-btn">×</button>
-            )}
+            <button onClick={() => removeUser("student", s.email)} className="remove-btn">×</button>
           </div>
         </div>
-
         <div className="participant-right">
           {deletedStudents.includes(s.email) ? (
             <div className="participant-card no-parent-text">Student was removed</div>
@@ -180,23 +207,25 @@ useEffect(() => {
                 <div key={p.email} className="participant-card">
                   <div style={{ fontWeight: 600 }}>{p.name}</div>
                   <div className="email">{p.email}</div>
-                  {isPrivileged && (
-                    <button
-                      onClick={() => removeUser("parent", p.email, s.email)}
-                      className="remove-btn"
-                    >
-                      ×
-                    </button>
-                  )}
+                  <button onClick={() => removeUser("parent", p.email, s.email)} className="remove-btn">×</button>
                 </div>
               ))
             ) : (
               <div className="participant-card no-parent-text">No parents added</div>
             )
           )}
-        </div>    
-    </div>
-    ))}
+        </div>
+      </>
+    ) : (
+      <div className="participant-single">
+        <div className="participant-card">
+          <div style={{ fontWeight: 600 }}>{s.name}</div>
+          <div className="email">{s.email}</div>
+        </div>
+      </div>
+    )}
+  </div>
+))}
   </div>
 ) : (
   <div className="participants-wrapper">
@@ -205,12 +234,13 @@ useEffect(() => {
       <div className="label-right"></div>
     </div>
     {teachers.map((t) => (
+
   <div key={t.email} className="participant-row" style={{ width: "100%" }}>
     <div className="participant-single">
       <div className="participant-card">
         <div style={{ fontWeight: 600 }}>{t.name}</div>
         <div className="email">{t.email}</div>
-        {isPrivileged && t.email !== role?.email && (
+        {isPrivileged && t.email !== currentUser?.email && (
           <button
             onClick={() => removeUser("teacher", t.email)}
             className="remove-btn"
