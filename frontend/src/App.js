@@ -8,6 +8,7 @@ import AssignmentPage from "./pages/AssignmentPage";
 import MaterialPage from "./pages/MaterialPage";
 import SubmissionDetailPage from "./pages/SubmissionDetailPage";
 import ParticipantsPage from "./pages/ParticipantsPage";
+import PageNotFound from "./components/PageNotFound";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/courses/:id/assignments/:post_id" element={<AssignmentPage />} />
         <Route path="/courses/:id/assignments/:post_id/submission/:student_email" element={<SubmissionDetailPage />} />
         <Route path="/courses/:id/participants" element={<ParticipantsPage />} />
+        <Route path="*" element={<PageNotFound />} />
       </Routes>
     </Router>
   );
