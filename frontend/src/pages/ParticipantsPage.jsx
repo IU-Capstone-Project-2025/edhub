@@ -16,13 +16,13 @@ export default function ParticipantsPage() {
   const [courseInfo, setCourseInfo] = useState(null)
   const isPrivileged = role?.is_teacher || role?.is_admin
   const [deletedStudents, setDeletedStudents] = useState([])
+  const [activeView, setActiveView] = useState("students")
 
   useEffect(() => {
     const fetchAll = async () => {
       const token = localStorage.getItem("access_token")
       const headers = { Authorization: `Bearer ${token}` }
       try {
-        // Получаем инфо о курсе, студентов и роль
         const [cRes, sRes, rRes] = await Promise.all([
           axios.get("/api/get_course_info", { headers, params: { course_id } }),
           axios.get("/api/get_enrolled_students", { headers, params: { course_id } }),
@@ -52,32 +52,73 @@ export default function ParticipantsPage() {
     fetchAll()
   }, [course_id])
 
-  const removeUser = async (type, email, ownerStudentEmail = null) => {
-    if (!window.confirm(`Are you sure you want to remove ${email}?`)) return
-    const token = localStorage.getItem("access_token")
-    const headers = { Authorization: `Bearer ${token}` }
-    const endpoint = type === "student" ? "/api/remove_student" : "/api/remove_parent"
+  const [teachers, setTeachers] = useState([]);
+useEffect(() => {
+  if (isPrivileged) {
+    const fetchTeachers = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const headers = { Authorization: `Bearer ${token}` };
+        const res = await axios.get("/api/get_course_teachers", {
+          headers,
+          params: { course_id },
+        });
+        setTeachers(res.data);
+      } catch (err) {
+        alert("Failed to fetch teachers");
+      }
+    };
+    fetchTeachers();
+  }
+}, [course_id, isPrivileged]);
 
+
+  const removeUser = async (type, email, ownerStudentEmail = null) => {
+  if (!window.confirm(`Are you sure you want to remove ${email}?`)) return
+
+  const token = localStorage.getItem("access_token")
+  const headers = { Authorization: `Bearer ${token}` }
+
+  if (type === "teacher") {
     try {
-      await axios.post(endpoint, null, {
+      await axios.post("/api/remove_teacher", null, {
         headers,
         params: {
           course_id,
-          ...(type === "student" ? { student_email: email } : { parent_email: email, student_email: ownerStudentEmail }),
+          removing_teacher_email: email,
         },
       })
-      if (type === "student") {
-        setStudents((prev) => prev.filter((u) => u.email !== email))
-        setDeletedStudents((prev) => [...prev, email])
-      } else {
-        const updated = { ...parentsMap }
-        updated[ownerStudentEmail] = updated[ownerStudentEmail].filter(p => p.email !== email)
-        setParentsMap(updated)
-      }
+      setTeachers((prev) => prev.filter((t) => t.email !== email))
     } catch (err) {
-      alert("Failed to remove: " + (err.response?.data?.detail || err.message))
+      alert("Failed to remove teacher: " + (err.response?.data?.detail || err.message))
     }
+    return
   }
+
+  const endpoint = type === "student" ? "/api/remove_student" : "/api/remove_parent"
+
+  try {
+    await axios.post(endpoint, null, {
+      headers,
+      params: {
+        course_id,
+        ...(type === "student"
+          ? { student_email: email }
+          : { parent_email: email, student_email: ownerStudentEmail }),
+      },
+    })
+    if (type === "student") {
+      setStudents((prev) => prev.filter((u) => u.email !== email))
+      setDeletedStudents((prev) => [...prev, email])
+    } else {
+      const updated = { ...parentsMap }
+      updated[ownerStudentEmail] = updated[ownerStudentEmail].filter((p) => p.email !== email)
+      setParentsMap(updated)
+    }
+  } catch (err) {
+    alert("Failed to remove: " + (err.response?.data?.detail || err.message))
+  }
+}
 
   if (loading || !courseInfo) return <div className="landing-content">Loading participants...</div>
 
@@ -88,6 +129,7 @@ export default function ParticipantsPage() {
         <div className="course-page-header">
           <h1 className="course-title">{courseInfo.title}</h1>
           <CourseTabs
+          
             activeTab="Participants"
             onTabChange={(tab) => {
               if (tab === "Course") {
@@ -101,26 +143,41 @@ export default function ParticipantsPage() {
             availableTabs={["Course", "Participants", "Grades"]}
           />
         </div>
-        <div className="participants-wrapper">
-  <div className="participants-section">
-    <h2>Participants</h2>
+        {isPrivileged && (
+  <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginBottom: "12px" }}>
+    <div className={`part-button green ${activeView === "students" ? "active" : ""}`} onClick={() => setActiveView("students")}>
+      Students & Parents
+    </div>
+    <div className={`part-button green ${activeView === "teachers" ? "active" : ""}`} onClick={() => setActiveView("teachers")}>
+      Teachers
+    </div>
+  </div>
+)}
+{activeView === "students" ? (
+  <div className="participants-wrapper">
+    <div className="participants-labels">
+      <div className="label-left">Students</div>
+      <div className="label-right">Parents</div>
+    </div>
     {students.map((s) => (
-      <div key={s.email} className="student-parent-block">
-        <div className="participant-card student-card">
-          <div style={{ fontWeight: 600 }}>{s.name}</div>
-          <div className="email">{s.email}</div>
-          {isPrivileged && (
-            <button onClick={() => removeUser("student", s.email)} className="remove-btn">×</button>
-          )}
+      <div key={s.email} className="participant-row">
+        <div className="participant-left">
+          <div className="participant-card">
+            <div style={{ fontWeight: 600 }}>{s.name}</div>
+            <div className="email">{s.email}</div>
+            {isPrivileged && (
+              <button onClick={() => removeUser("student", s.email)} className="remove-btn">×</button>
+            )}
+          </div>
         </div>
 
-        <div className="parent-block">
-          {(deletedStudents.includes(s.email)) ? (
-            <div style={{ fontStyle: "italic", color: "#999", marginTop: 6 }}>Student was removed</div>
+        <div className="participant-right">
+          {deletedStudents.includes(s.email) ? (
+            <div className="participant-card no-parent-text">Student was removed</div>
           ) : (
             parentsMap[s.email]?.length > 0 ? (
               parentsMap[s.email].map((p) => (
-                <div key={p.email} className="participant-card parent-card">
+                <div key={p.email} className="participant-card">
                   <div style={{ fontWeight: 600 }}>{p.name}</div>
                   <div className="email">{p.email}</div>
                   {isPrivileged && (
@@ -134,17 +191,41 @@ export default function ParticipantsPage() {
                 </div>
               ))
             ) : (
-              <div className="no-parent-text">No parents added</div>
+              <div className="participant-card no-parent-text">No parents added</div>
             )
           )}
-        </div>
-
-        <div className="participant-divider" />
-      </div>
+        </div>    
+    </div>
     ))}
   </div>
-</div>
+) : (
+  <div className="participants-wrapper">
+    <div className="participants-labels">
+      <div className="label-left">Teachers</div>
+      <div className="label-right"></div>
+    </div>
+    {teachers.map((t) => (
+  <div key={t.email} className="participant-row" style={{ width: "100%" }}>
+    <div className="participant-single">
+      <div className="participant-card">
+        <div style={{ fontWeight: 600 }}>{t.name}</div>
+        <div className="email">{t.email}</div>
+        {isPrivileged && t.email !== role?.email && (
+          <button
+            onClick={() => removeUser("teacher", t.email)}
+            className="remove-btn"
+          >
+            ×
+          </button>
+        )}
       </div>
+    </div>
+  </div>
+))}
+
+  </div>
+)}
+</div>
     </Header>
   )
 }
