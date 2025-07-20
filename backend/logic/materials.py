@@ -102,11 +102,12 @@ def download_material_attachment(db_cursor, storage_db_cursor, course_id: str, m
 
     # searching for material attachment
     file = repo_files.sql_download_attachment(storage_db_cursor, file_id)
-    if not file:
+    file_metadata = repo_mat.sql_select_material_attachments(db_cursor, course_id, material_id)
+    if (not file or not file_metadata):
         raise HTTPException(status_code=404, detail="Attachment not found")
 
     return Response(
-        content=file[0],
+        content=file,
         media_type="application/octet-stream",
-        headers={"Content-Disposition": f'attachment; filename="{file[1]}"'}
+        headers={"Content-Disposition": f'attachment; filename="{file_metadata[1]}"'}
     )
