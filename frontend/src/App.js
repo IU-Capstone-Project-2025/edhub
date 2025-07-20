@@ -7,7 +7,9 @@ import CoursePage from "./pages/CoursePage";
 import AssignmentPage from "./pages/AssignmentPage";
 import MaterialPage from "./pages/MaterialPage";
 import SubmissionDetailPage from "./pages/SubmissionDetailPage";
+
 import ParticipantsPage from "./pages/ParticipantsPage";
+import GradesPage from "./pages/GradesPage";
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
         <Route path="/courses/:id/assignments/:post_id" element={<AssignmentPage />} />
         <Route path="/courses/:id/assignments/:post_id/submission/:student_email" element={<SubmissionDetailPage />} />
         <Route path="/courses/:id/participants" element={<ParticipantsPage />} />
+        <Route path="/courses/:id/grades" element={<GradesPage />} />
       </Routes>
     </Router>
   );
