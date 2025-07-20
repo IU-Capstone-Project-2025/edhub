@@ -31,6 +31,8 @@ export default function AssignmentPage() {
   const [showAddGrade, setShowAddGrade] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
   const fileInputRef = useRef(null);
+  const [myAttachment,setMyAttachment] = useState([])
+  const [childrenAttachment, setChildrenAttachment] = useState([])
 
   const onFileChange = (event) =>{
     if(event.target.files[0]?.size/1000000>5){
@@ -235,6 +237,89 @@ export default function AssignmentPage() {
     
   }
 
+  const fetchChildrenSubmissionAttachment = async()=> {
+    if (!childrenEmail) return
+    try{
+      const token = localStorage.getItem("access_token")
+      const attachments = await Promise.all(
+        childrenEmail.map(async(child)=>{
+          if(!child?.email) return null;
+          try{
+            const res = await axios.get("/api/get_submission_attachments", {
+              headers: { Authorization: `Bearer ${token}` },
+              params: { course_id: id, assignment_id: post_id, student_email:child.email },
+            });
+            return res.data
+          }catch(err){
+            return null;
+          }
+        })
+      )
+      setChildrenAttachment(attachments.filter(sub=>sub))
+    }catch(err){
+      alert("failure to fetch submission attachment")
+      setMyAttachment([])
+    }
+  }
+  useEffect(() => {
+    if (roleData?.is_parent && childrenEmail) {
+      fetchChildrenSubmissionAttachment();
+    }
+  }, [roleData, childrenEmail, id, post_id]);
+
+  const fetchMySubmissionAttachment = async(student_email)=> {
+    try{
+      const token = localStorage.getItem("access_token")
+      const res = await axios.get("/api/get_submission_attachments", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { course_id: id, assignment_id: post_id, student_email },
+      });
+      setMyAttachment(res.data || [])
+    }catch(err){
+      alert("failure to fetch submission attachment")
+      setMyAttachment([])
+    }
+  }
+  useEffect(() => {
+    if (mySubmission && roleData && roleData.is_student) {
+      fetchMySubmissionAttachment(mySubmission.student_email);
+    }
+  }, [mySubmission,roleData]);
+  const downloadAttachment = async (file_id,student_email) => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const response = await axios.get("/api/download_submission_attachment", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          course_id: id,
+          assignment_id: post_id,
+          student_email,
+          file_id,
+        },
+        responseType: "blob",
+      });
+
+      const contentDisposition = response.headers["content-disposition"];
+      const filenameMatch = contentDisposition?.match(/filename="?([^"]+)"?/);
+      const filename = filenameMatch ? filenameMatch[1] : "downloaded_file";
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Error downloading attachment: " + (err.response?.data?.detail || err.message));
+    }
+  };
+
 
   if (!assignmentInfo) return <div>Loading assignment...</div>
   return (
@@ -318,6 +403,14 @@ export default function AssignmentPage() {
               {mySubmission.grade && (
                 <div className="my-grade">Grade: <b>{mySubmission.grade}</b> <span className="grade-by">({mySubmission.gradedby_email})</span></div>
               )}
+              {roleData && mySubmission && myAttachment && myAttachment.length !== 0 && !roleData.is_admin && roleData.is_student && (
+                <button 
+                  className="link-style-button"
+                  onClick={()=>{ downloadAttachment(myAttachment[0].file_id, mySubmission.student_email)}}
+                >
+                  {myAttachment[0].filename}
+                </button>
+              )}
             </div>
           )}
           {roleData && !roleData.is_admin && roleData.is_parent && Array.isArray(childrenSubmission) && childrenSubmission.length === 0 &&(
@@ -331,7 +424,15 @@ export default function AssignmentPage() {
                   <div className="my-comment assignment-desc" dangerouslySetInnerHTML={{__html: formatText(child.comment)}} />
                   <div className="assignment-date">{child.submission_time}</div>
                   {child.grade && (
-              <div className="my-grade">Grade: <b>{child.grade}</b> <span className="grade-by">({child.gradedby_email})</span></div>
+                  <div className="my-grade">Grade: <b>{child.grade}</b> <span className="grade-by">({child.gradedby_email})</span></div>
+                  )}
+                  {childrenAttachment &&childrenAttachment.length>0 && (
+                    <button
+                      className="link-style-button"
+                      onClick={()=>{downloadAttachment(childrenAttachment[idx][0].file_id,childrenAttachment[idx][0].student_email)}}
+                    >
+                      {childrenAttachment[idx][0].filename}
+                    </button>
                   )}
                 </div>
               ))}
