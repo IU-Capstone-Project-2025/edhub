@@ -16,7 +16,7 @@ from logic.assignments import (
 router = APIRouter()
 
 
-@router.post("/create_assignment", response_model=json_classes.AssignmentID)
+@router.post("/create_assignment", response_model=json_classes.AssignmentID, tags=["Assignments"])
 async def create_assignment(
     course_id: str,
     title: str,
@@ -36,7 +36,7 @@ async def create_assignment(
         return logic_create_assignment(db_conn, db_cursor, course_id, title, description, user_email)
 
 
-@router.post("/remove_assignment", response_model=json_classes.Success)
+@router.post("/remove_assignment", response_model=json_classes.Success, tags=["Assignments"])
 async def remove_assignment(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
     """
     Remove the assignment by the provided course_id and assignment_id.
@@ -49,7 +49,7 @@ async def remove_assignment(course_id: str, assignment_id: str, user_email: str 
         return logic_remove_assignment(db_conn, db_cursor, course_id, assignment_id, user_email)
 
 
-@router.get("/get_assignment", response_model=json_classes.Assignment)
+@router.get("/get_assignment", response_model=json_classes.Assignment, tags=["Assignments"])
 async def get_assignment(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
     """
     Get the assignment details by the provided (course_id, assignment_id).
@@ -66,7 +66,7 @@ async def get_assignment(course_id: str, assignment_id: str, user_email: str = D
         return logic_get_assignment(db_cursor, course_id, assignment_id, user_email)
 
 
-@router.post("/create_assignment_attachment", response_model=json_classes.AssignmentAttachmentMetadata)
+@router.post("/create_assignment_attachment", response_model=json_classes.AssignmentAttachmentMetadata, tags=["Assignments"])
 async def create_assignment_attachment(
     course_id: str,
     assignment_id: str,
@@ -86,7 +86,7 @@ async def create_assignment_attachment(
         return await logic_create_assignment_attachment(db_conn, db_cursor, storage_db_conn, storage_db_cursor, course_id, assignment_id, file, user_email)
 
 
-@router.get("/get_assignment_attachments", response_model=List[json_classes.AssignmentAttachmentMetadata])
+@router.get("/get_assignment_attachments", response_model=List[json_classes.AssignmentAttachmentMetadata], tags=["Assignments"])
 async def get_assignment_attachments(course_id: str, assignment_id: str, user_email: str = Depends(get_current_user)):
     """
     Get the list of course assignment attachments by provided course_id, assignment_id.
@@ -99,7 +99,7 @@ async def get_assignment_attachments(course_id: str, assignment_id: str, user_em
         return logic_get_assignment_attachments(db_cursor, course_id, assignment_id, user_email)
 
 
-@router.get("/download_assignment_attachment")
+@router.get("/download_assignment_attachment", tags=["Assignments"])
 async def download_assignment_attachment(course_id: str, assignment_id: str, file_id: str, user_email: str = Depends(get_current_user)):
     """
     Download the course assignment attachment by provided course_id, assignment_id, file_id.
