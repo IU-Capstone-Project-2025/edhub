@@ -184,7 +184,7 @@ def download_submission_attachment(db_cursor, storage_db_cursor, course_id: str,
 
     # searching for submission attachment
     file = repo_files.sql_download_attachment(storage_db_cursor, file_id)
-    file_metadata = repo_submit.sql_select_submission_attachments(db_cursor, course_id, assignment_id, student_email)
+    file_metadata = repo_files.sql_select_attachment_metadata(db_cursor, file_id)
     if (not file or not file_metadata):
         raise HTTPException(status_code=404, detail="Attachment not found")
 
