@@ -196,7 +196,7 @@ const downloadAttachment = async (file_id) => {
   onClick={handleGradeSubmit}
   disabled={loading || success}
 >
-  {success ? "Grade added successfully" : "Submit"}
+  {success ? "Grade added successfully" : "Grade"}
 </button>
         </div>
         {loading && <div className="loading-indicator">Submitting...</div>}
