@@ -1,44 +1,202 @@
-.participants-page {
-  padding: 24px;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.section {
-  margin-bottom: 40px;
-}
-
-.section h2 {
-  margin-bottom: 12px;
-}
-
-.user-blocks {
+.participants-wrapper {
+  flex: 1 1;
+  background: rgba(30, 40, 50, 0.03);
+  padding: 24px 28px;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 12px #a2e4ac22;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 30px;
+  margin-top: 24px;
+}
+
+.participants-wrapper h2 {
+    color: var(--green-main);
+    font-size: 1.7rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+}
+.participant-row {
+  /* display: flex;
+  flex-direction: row;
+  gap: 24px;
+  align-items: flex-start; */
+    display: flex;
+  width: 100%;
+}
+
+
+.participant-left {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.participants-labels {
+  display: flex;
+  flex-direction: row;
+  padding: 0 4px;
+}
+
+.label-left,
+.label-right {
+  color: var(--green-main);
+  font-size: 1.7rem;
+  font-weight: 800;
+}
+
+.label-left {
+  width: 50%;
+  text-align: left;
+}
+
+.label-right {
+  flex: 1 1;
+  text-align: left;
+  padding-left: 28px;
+}
+
+.participant-right {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 12px;
+  padding-left: 28px;
+}
+
+
+.participants-section h2 {
+  color: var(--green-main);
+  font-size: 1.7rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.participants-section {
+  flex: 1;
+}
+
+.participant-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.user-card {
-  background: white;
-  padding: 12px 16px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  position: relative;
-  min-width: 200px;
+.participant-single {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.user-card .email {
-  color: gray;
-  font-size: 0.9em;
+
+.participant-card {
+  background: white;
+  border-left: 4px solid var(--green-main);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+  position: relative;
+}
+
+.participant-card .email {
+  font-size: 0.92rem;
+  color: #444;
+  margin-top: 4px;
 }
 
 .remove-btn {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  background: transparent;
-  color: red;
-  font-size: 18px;
+  right: 0;
+  top: 0;
+  background: none;
   border: none;
+  color: #e74c3c;
+  font-size: 1.4rem;
   cursor: pointer;
+  transition: color 0.2s;
+}
+.remove-btn:hover {
+  color: #c0392b;
+}
+
+.course-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  min-height: 80px;
+  margin-bottom: 16px;
+  padding-right: 20px;
+}
+.course-title {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 0;
+  margin-top: 0;
+  margin-right: 32px;
+  font-family: inherit;
+}
+
+.student-parent-block {
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+}
+
+.parent-block {
+  margin-top: 8px;
+  margin-left: 24px;
+}
+
+.no-parent-text {
+  font-style: italic;
+  color: #777;
+}
+
+.participant-divider {
+  height: 1px;
+  background-color: #ccc;
+  opacity: 0.2;
+  margin-top: 20px;
+}
+
+.student-parent-inner {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.parent-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+
+.part-button.green {
+  background-color: white;
+  color: rgb(143, 201, 139);
+  font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.3s ease, color 0.3s ease;
+    border: 2px solid rgb(143, 201, 139);
+}
+
+.part-button.green.active {
+  background-color: rgb(143, 201, 139);
+  color: white;
+  padding: 8px 18px;
+  border-radius: 8px;    
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
 }

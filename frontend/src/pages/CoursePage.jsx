@@ -14,6 +14,8 @@ import LeaveCourse from "../components/LeaveCourse"
 import SingleCourseFeed from "../components/SingleCourseFeed"
 import CourseTabs from "../components/CoursesTabs"
 import "../styles/UnifiedButtons.css"
+import DeleteCourse from "../components/DeleteCourse"
+import { useNavigate } from "react-router-dom"
 
 
 
@@ -32,6 +34,8 @@ export default function CoursePage() {
   const [activeTab, setActiveTab] = useState("Course");
   const [teachers, setTeachers] = useState([]);
   const [loadingTeachers, setLoadingTeachers] = useState(false);
+  const [showDeleteCourse, setShowDeleteCourse] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -43,7 +47,9 @@ export default function CoursePage() {
         });
         setCourseInfo(res.data);
       } catch (err) {
-        alert("Error loading course: " + (err.response?.data?.detail || err.message));
+        alert("Error loading course: " + (err.response?.data?.detail || err.message))
+        console.log("Error loading course: " + (err.response?.data?.detail || err.message));
+        navigate("/courses");
       }
     };
     fetchCourse();
@@ -129,6 +135,9 @@ export default function CoursePage() {
           <>
             <p><strong>Created:</strong> {new Date(courseInfo.creation_time).toLocaleDateString()}</p>
             <p>Students enrolled: {courseInfo.number_of_students}</p>
+            {roleData && roleData.is_teacher && (
+              <button className="outlined-btn red" onClick={() => setShowDeleteCourse(true)}>Delete Course</button>
+            )}
             {roleData && (roleData.is_teacher || roleData.is_admin) && (
               <div className="actions-flex">
                 <div className="combo-button green" onClick={() => setShowMaterialModal(true)}>
@@ -165,31 +174,7 @@ export default function CoursePage() {
             {singleColumnSwitch&&(<SingleCourseFeed />)}
           </>
         )}
-        {activeTab === "Participants" && (
-          <div className="participants-list">
-            <h2>Teachers</h2>
-            {loadingTeachers ? (
-              <div>Loading teachers...</div>
-            ) : (
-              <ul>
-                {teachers.map((teacher) => (
-                  <li key={teacher.email} className="teacher-item">
-                    <span>{teacher.name} ({teacher.email})</span>
-                    {roleData && roleData.is_teacher && teacher.email !== ownEmail && (
-                      <button
-                        className="remove-teacher-btn"
-                        title="Remove teacher"
-                        onClick={() => handleRemoveTeacher(teacher.email)}
-                      >
-                        ×
-                      </button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
+        {/* Участники теперь отдельная страница, секция убрана */}
         {activeTab === "Grades" && (
           <div className="grades-placeholder">
             <h2>Grades</h2>
@@ -238,6 +223,14 @@ export default function CoursePage() {
           ownEmail={ownEmail}
         />
       )}
+      {showDeleteCourse && (
+        <DeleteCourse
+          onClose={() => setShowDeleteCourse(false)}
+          courseId={id}
+        />
+      )}
+        
+      
     </Header>
   );
 }

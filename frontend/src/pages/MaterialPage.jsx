@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import "../styles/MaterialPage.css"
-import {useParams} from "react-router-dom"
+import {useParams, useNavigate} from "react-router-dom"
 import axios from "axios"
 import PageMeta from "../components/PageMeta"
 import "../styles/AssignmentPage.css"
@@ -19,6 +19,7 @@ export default function MaterialPage() {
   const { post_id , id: course_id} = useParams()
   const [material,setMaterial] = useState()
   const [roleData, setRoleData] = useState()
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRoleData = async () => {
@@ -45,12 +46,9 @@ export default function MaterialPage() {
         })
         setMaterial(res.data)
       }catch (err) {
-        console.log("Material fetch error:", err.response?.data);
-        alert("Error loading assignment: " + (
-          typeof err.response?.data?.detail === "string"
-            ? err.response.data.detail
-            : JSON.stringify(err.response?.data?.detail || err.message)
-    ))
+        alert("Error loading material: " + (err.response?.data?.detail || err.message))
+        console.log("Error loading material: " + (err.response?.data?.detail || err.message));
+        navigate("/courses/" + course_id);
 }
     }
     fetchMaterial()

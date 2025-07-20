@@ -41,6 +41,7 @@ export default function CreateCourseModal({ onClose, onCourseCreated }) {
           placeholder="Course title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e)=>(e.code==="Enter" ? handleCreate(e) : null)}
         />
         <button onClick={handleCreate}>Create Course</button>
         <button onClick={onClose} style={{ marginTop: 10, backgroundColor: "#ccc", color: "#333" }}>

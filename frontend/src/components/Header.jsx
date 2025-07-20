@@ -59,7 +59,7 @@ export default function Header({ children }) {
     <div className="layout">
       <aside className="sidebar">
         <div className="sidebar-title">
-          <Logo className="sidebar-logo" />
+          <Logo className="sidebar-logo" onClick={()=>{window.location.assign(window.location.origin)}}/>
         </div>
         <div className="sidebar-section">Courses</div>
         <ul className="course-list">

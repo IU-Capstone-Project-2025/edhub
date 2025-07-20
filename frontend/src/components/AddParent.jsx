@@ -56,6 +56,7 @@ await axios.post("/api/invite_parent", form, {
           placeholder="Parent Email"
           value={parentEmail}
           onChange={(e) => setParentEmail(e.target.value)}
+          onKeyDown={(e)=>(e.code==="Enter" ? handleSubmit(e) : null)}
         />
         <div className="modal-actions">
           <button className="cancel-btn" onClick={onClose} disabled={loading}>Cancel</button>
