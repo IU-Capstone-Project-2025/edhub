@@ -56,6 +56,7 @@ await axios.post("/api/create_material", form, {
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          onKeyDown={(e)=>(e.code==="Enter" ? handleSubmit(e) : null)}
         />
         <div className="modal-actions">
           <button className="cancel-btn" onClick={onClose} disabled={loading}>Cancel</button>
