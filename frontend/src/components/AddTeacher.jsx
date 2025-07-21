@@ -1,10 +1,15 @@
-import React, { useState } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import axios from "axios"
 import "../styles/AddTeacher.css"
 
 export default function AddTeacher({ onClose, courseId }) {
   const [teacherEmail, setTeacherEmail] = useState("")
   const [loading, setLoading] = useState(false)
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
 
   const handleSubmit = async () => {
     if (!teacherEmail.trim()) {
@@ -19,7 +24,7 @@ export default function AddTeacher({ onClose, courseId }) {
       form.append("course_id", courseId)
       form.append("new_teacher_email", teacherEmail)
 
-await axios.post("/api/invite_teacher", form, {
+      await axios.post("/api/invite_teacher", form, {
         headers: {Authorization: `Bearer ${token}` },
         params:{new_teacher_email: teacherEmail, course_id: courseId}
       })
@@ -43,11 +48,12 @@ await axios.post("/api/invite_teacher", form, {
       <div className="modal-content">
         <h2>Add Teacher</h2>
         <input
+          ref={inputRef}
           type="text"
           placeholder="Teacher Email"
           value={teacherEmail}
           onChange={(e) => setTeacherEmail(e.target.value)}
-          onKeyDown={(e)=>(e.code==="Enter" ? handleSubmit(e) : null)}
+          onKeyDown={(e) => e.code === "Enter" && handleSubmit()}
         />
         <div className="modal-actions">
           <button className="cancel-btn" onClick={onClose} disabled={loading}>Cancel</button>

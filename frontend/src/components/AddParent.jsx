@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import axios from "axios"
 import "../styles/AddParent.css"
 
@@ -6,6 +6,12 @@ export default function AddParent({ onClose, courseId }) {
   const [studentEmail, setStudentEmail] = useState("")
   const [parentEmail, setParentEmail] = useState("")
   const [loading, setLoading] = useState(false)
+  const studentInputRef = useRef(null)
+
+  useEffect(() => {
+    studentInputRef.current?.focus()
+  }, [])
+
 
   const handleSubmit = async () => {
     if (!parentEmail.trim() || !studentEmail.trim()) {
@@ -46,6 +52,7 @@ await axios.post("/api/invite_parent", form, {
       <div className="modal-content">
         <h2>Add Parent</h2>
         <input
+          ref={studentInputRef}
           type="text"
           placeholder="Student Email"
           value={studentEmail}
@@ -56,7 +63,7 @@ await axios.post("/api/invite_parent", form, {
           placeholder="Parent Email"
           value={parentEmail}
           onChange={(e) => setParentEmail(e.target.value)}
-          onKeyDown={(e)=>(e.code==="Enter" ? handleSubmit(e) : null)}
+          onKeyDown={(e) => e.code === "Enter" && handleSubmit()}
         />
         <div className="modal-actions">
           <button className="cancel-btn" onClick={onClose} disabled={loading}>Cancel</button>

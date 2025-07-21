@@ -1,10 +1,15 @@
-import React, { useState } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import axios from "axios"
 import "../styles/AddStudent.css"
 
 export default function AddStudent({ onClose, courseId }) {
   const [studentEmail, setStudentEmail] = useState("")
   const [loading, setLoading] = useState(false)
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
 
   const handleSubmit = async () => {
     if (!studentEmail.trim()) {
@@ -43,11 +48,12 @@ await axios.post("/api/invite_student", form, {
       <div className="modal-content">
         <h2>Add Student</h2>
         <input
+          ref={inputRef}
           type="text"
           placeholder="Student Email"
           value={studentEmail}
           onChange={(e) => setStudentEmail(e.target.value)}
-          onKeyDown={(e)=>(e.code==="Enter" ? handleSubmit(e) : null)}
+          onKeyDown={(e) => e.code === "Enter" && handleSubmit()}
         />
         <div className="modal-actions">
           <button className="cancel-btn" onClick={onClose} disabled={loading}>Cancel</button>
