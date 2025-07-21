@@ -77,3 +77,11 @@
 .modal-actions button:hover {
   opacity: 0.9;
 }
+
+.error-message {
+  color: rgb(231, 76, 60);
+  font-size: 15.2px;
+  font-weight: 500;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
