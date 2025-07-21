@@ -8,8 +8,12 @@ export default function CourseTabs({ activeTab, onTabChange, availableTabs }) {
   const handleTabClick = (tab) => {
     if (tab === "Participants" && id) {
       navigate(`/courses/${id}/participants`);
+    } else if (tab === "Grades" && id) {
+      navigate(`/courses/${id}/grades`);
+    } else if (tab === "Course" && id) {
+      navigate(`/courses/${id}`);
     } else {
-      onTabChange(tab);
+      onTabChange && onTabChange(tab);
     }
   };
   return (

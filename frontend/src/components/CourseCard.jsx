@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import axios from "axios"
 
 import { Link } from "react-router-dom"
-import "./../styles/CourseCard.css"
+import "../styles/CourseCard.css"
 
 export default function CourseCard({ course_id, title, date, students, user_role }) {
   const [materialCount, setMaterialCount] = useState(0)

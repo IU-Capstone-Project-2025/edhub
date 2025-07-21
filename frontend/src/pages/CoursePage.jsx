@@ -174,7 +174,6 @@ export default function CoursePage() {
             {singleColumnSwitch&&(<SingleCourseFeed />)}
           </>
         )}
-        {/* Участники теперь отдельная страница, секция убрана */}
         {activeTab === "Grades" && (
           <div className="grades-placeholder">
             <h2>Grades</h2>
