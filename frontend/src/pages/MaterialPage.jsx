@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState ,useRef} from "react"
 import "../styles/MaterialPage.css"
 import {useParams, useNavigate} from "react-router-dom"
 import axios from "axios"
@@ -20,6 +20,9 @@ export default function MaterialPage() {
   const [material,setMaterial] = useState()
   const [roleData, setRoleData] = useState()
   const navigate = useNavigate();
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [materialAttachments, setMaterialAttachments] = useState([]);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const fetchRoleData = async () => {
@@ -53,6 +56,103 @@ export default function MaterialPage() {
     }
     fetchMaterial()
   }, [post_id,course_id])
+
+  const uploadMaterialAttachment = async()=>{
+    try{
+      const token = localStorage.getItem("access_token")
+      if (selectedFile){
+        const formData = new FormData();
+        formData.append("file", selectedFile, selectedFile.name);
+        await axios.post("/api/create_material_attachment", formData, {
+          headers: { Authorization: `Bearer ${token}` },
+          params:{ course_id, material_id: post_id}
+        })
+      }
+      fetchMaterialAttachments();
+    }catch(err){
+      alert("Error uploading attachment: " + (err.response?.data?.detail || err.message))
+    }
+  }
+
+  const fetchMaterialAttachments = async () => {
+    try{
+      const token = localStorage.getItem("access_token")
+      const res = await axios.get("/api/get_material_attachments", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { course_id, material_id: post_id }
+      })
+      setMaterialAttachments(res.data || [])
+    }catch(err){
+      alert("Error fetching attachment: " + (err.response?.data?.detail || err.message))
+      setMaterialAttachments([]);
+    }
+  }
+  
+  useEffect(() => {
+    if (material) {
+      fetchMaterialAttachments();
+    }
+  }, [material]);
+
+  const downloadAttachment = async (file_id) => {
+    try {
+      const token = localStorage.getItem("access_token");
+  
+      const response = await axios.get("/api/download_material_attachment", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          course_id,
+          material_id: post_id,
+          file_id,
+        },
+        responseType: "blob",
+      });
+  
+      const contentDisposition = response.headers["content-disposition"];
+      const filenameMatch = contentDisposition?.match(/filename="?([^"]+)"?/);
+      const filename = filenameMatch ? filenameMatch[1] : "downloaded_file";
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Error downloading attachment: " + (err.response?.data?.detail || err.message));
+    }
+  };
+
+  const onFileChange = (event) =>{
+    if(event.target.files[0]?.size/1000000>5){
+        alert("Files should be smaller than 5 MB")
+        setSelectedFile(null)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+    }else{
+      setSelectedFile(event.target.files[0])
+    }
+  }
+
+  const fileData = () => {
+    if (selectedFile){
+      
+      return (
+        <div>
+          <h2>File Details:</h2>
+          <p>File Name: {selectedFile.name}</p>
+          <p>File Type: {selectedFile.type}</p>
+          <p>
+            Last Modified: {selectedFile.lastModifiedDate.toDateString()}
+          </p>
+        </div>
+      );
+    }
+  }
 
 if (!material) {
     return <div>Loading...</div>;
@@ -90,6 +190,57 @@ if (!material) {
                     </div>
                   )}
           <p className="assignment-desc" dangerouslySetInnerHTML={{__html: formatText(material.description)}} />
+          <div className="my-comment assignment-desc">
+            <span style={{ fontWeight: 'bold', marginRight: 8 }}>Attachments</span><br />
+            {materialAttachments?.length ===0 ? (
+              <span>No attachments uploaded yet.</span>
+            ) : (
+              <ul className="submission-list">
+                {materialAttachments?.map((attachment) => (
+                  <li key={attachment.file_id}>
+                    <button
+                      className="link-style-button"
+                      onClick={() => downloadAttachment(attachment.file_id)}
+                    >
+                      {attachment.filename}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {material && roleData && roleData?.is_teacher && materialAttachments.length ===0 &&(
+              <div className="student-submit-block">
+                <h2>Upload Attachment</h2>
+                <div>
+                <div className="submission-buttons-row">
+                  <label htmlFor="file-upload" className="file-input">
+                    Choose File
+                  </label>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={onFileChange}
+                  />
+                  <button 
+                    className="submit-btn"
+                    onClick={uploadMaterialAttachment}
+                  >
+                    Upload
+                  </button>
+                </div>
+                {fileData() && (
+                  <div className="file-details">
+                    {fileData()}
+                  </div>
+                )}
+                </div>
+            </div>
+            )}
+
+          </div>
+          
         </div>
       </div>
 

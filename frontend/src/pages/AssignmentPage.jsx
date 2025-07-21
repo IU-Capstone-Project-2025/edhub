@@ -33,6 +33,7 @@ export default function AssignmentPage() {
   const fileInputRef = useRef(null);
   const [myAttachment,setMyAttachment] = useState([])
   const [childrenAttachment, setChildrenAttachment] = useState([])
+  const [assignmentAttachments, setAssignmentAttachments] = useState([])
 
   const onFileChange = (event) =>{
     if(event.target.files[0]?.size/1000000>5){
@@ -320,6 +321,75 @@ export default function AssignmentPage() {
     }
   };
 
+  //Assignment attachment block
+  const uploadAssignmentAttachment = async()=>{
+      try{
+        const token = localStorage.getItem("access_token")
+        if (selectedFile){
+          const formData = new FormData();
+          formData.append("file", selectedFile, selectedFile.name);
+          await axios.post("/api/create_assignment_attachment", formData, {
+            headers: { Authorization: `Bearer ${token}` },
+            params:{ course_id: id, assignment_id: post_id}
+          })
+        }
+        fetchAssignmentAttachments();
+      }catch(err){
+        alert("Error uploading assignment attachment: " + (err.response?.data?.detail || err.message))
+      }
+    }
+  
+    const fetchAssignmentAttachments = async () => {
+      try{
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/api/get_assignment_attachments", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { course_id: id, assignment_id: post_id }
+        })
+        setAssignmentAttachments(res.data || [])
+      }catch(err){
+        alert("Error fetching assignment attachment: " + (err.response?.data?.detail || err.message))
+        setAssignmentAttachments([]);
+      }
+    }
+    
+    useEffect(() => {
+      if (assignmentInfo) {
+        fetchAssignmentAttachments();
+      }
+    }, [assignmentInfo]);
+  
+    const downloadAssignmentAttachment = async (file_id) => {
+      try {
+        const token = localStorage.getItem("access_token");
+    
+        const response = await axios.get("/api/download_assignment_attachment", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            course_id: id,
+            assignment_id: post_id,
+            file_id,
+          },
+          responseType: "blob",
+        });
+    
+        const contentDisposition = response.headers["content-disposition"];
+        const filenameMatch = contentDisposition?.match(/filename="?([^"]+)"?/);
+        const filename = filenameMatch ? filenameMatch[1] : "downloaded_file";
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        alert("Error downloading assignment attachment: " + (err.response?.data?.detail || err.message));
+      }
+    };
 
   if (!assignmentInfo) return <div>Loading assignment...</div>
   return (
@@ -332,31 +402,78 @@ export default function AssignmentPage() {
         <div className="assignment-left">
           <div className="assignment-date">{assignmentInfo.creation_time}</div>
           <h1 className="assignment-title">{assignmentInfo.title}</h1>
-
-{roleData && (roleData.is_teacher || roleData.is_admin) && (
-  <div
-    className="remove-assignment-text"
-    onClick={async () => {
-      if (window.confirm("Are you sure you want to remove this assignment? This action cannot be undone.")) {
-        try {
-          const token = localStorage.getItem("access_token")
-          await axios.post("/api/remove_assignment", null, {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { course_id: id, assignment_id: post_id }
-          })
-          window.location.assign("../")
-        } catch (err) {
-          alert("Error deleting assignment: " + (err.response?.data?.detail || err.message))
-        }
-      }
-    }}
-  >
-    Delete assignment
-  </div>
-)}
-
+          {roleData && (roleData.is_teacher || roleData.is_admin) && (
+            <div
+              className="remove-assignment-text"
+              onClick={async () => {
+                if (window.confirm("Are you sure you want to remove this assignment? This action cannot be undone.")) {
+                  try {
+                    const token = localStorage.getItem("access_token")
+                    await axios.post("/api/remove_assignment", null, {
+                      headers: { Authorization: `Bearer ${token}` },
+                      params: { course_id: id, assignment_id: post_id }
+                    })
+                    window.location.assign("../")
+                  } catch (err) {
+                    alert("Error deleting assignment: " + (err.response?.data?.detail || err.message))
+                  }
+                }
+              }}
+            >
+              Delete assignment
+            </div>
+          )}
           <p className="assignment-desc" dangerouslySetInnerHTML={{__html: formatText(assignmentInfo.description)}} />
-    
+          <div className="my-comment assignment-desc">
+            <span style={{ fontWeight: 'bold', marginRight: 8 }}>Attachments</span><br />
+            {assignmentAttachments?.length ===0 ? (
+              <span>No attachments uploaded yet.</span>
+            ) : (
+              <ul className="submission-list">
+                {assignmentAttachments?.map((attachment) => (
+                  <li key={attachment.file_id}>
+                    <button
+                      className="link-style-button"
+                      onClick={() => downloadAssignmentAttachment(attachment.file_id)}
+                    >
+                      {attachment.filename}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {assignmentInfo && roleData && roleData?.is_teacher && assignmentAttachments.length ===0 &&(
+              <div className="student-submit-block">
+                <h2>Upload Attachment</h2>
+                <div>
+                <div className="submission-buttons-row">
+                  <label htmlFor="file-upload" className="file-input">
+                    Choose File
+                  </label>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={onFileChange}
+                  />
+                  <button 
+                    className="submit-btn"
+                    onClick={uploadAssignmentAttachment}
+                  >
+                    Upload
+                  </button>
+                </div>
+                {fileData() && (
+                  <div className="file-details">
+                    {fileData()}
+                  </div>
+                )}
+                </div>
+            </div>
+            )}
+
+          </div>
         </div>
         <div className="assignment-right">
           {roleData && !roleData.is_admin && roleData.is_student && showSubmissionForm && !mySubmission &&(
