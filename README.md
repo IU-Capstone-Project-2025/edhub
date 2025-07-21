@@ -16,7 +16,7 @@ EdHub is a Learning Management System designed to facilitate interaction among t
 Teachers can easily create a course by simply entering its title, invite students and their parents, upload learning materials, and create assignments.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/dev/img/createcourse.gif" width="600"/>
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/main/img/createcourse.gif" width="600"/>
 </p>
 
 ### Student Assignment Submissions
@@ -24,13 +24,13 @@ Teachers can easily create a course by simply entering its title, invite student
 Students can access course materials, submit their solutions to assignments, and receive grades from the teacher.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/dev/img/studentsubmits.gif" width="600"/>
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/main/img/studentsubmits.gif" width="600"/>
 </p>
 
 Teachers can review submitted work, evaluate solutions, and provide grades.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/dev/img/teachergrades.gif" width="600"/>
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/main/img/teachergrades.gif" width="600"/>
 </p>
 
 ### Parental Access to Track Academic Progress
@@ -38,7 +38,7 @@ Teachers can review submitted work, evaluate solutions, and provide grades.
 Parents have a special role in EdHub. Once invited to a course, they can track their child's academic progress without having to ask for a student account or contact the teacher.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/dev/img/parents.png" width="600"/>
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/main/img/parents.png" width="600"/>
 </p>
 
 ### Built With
