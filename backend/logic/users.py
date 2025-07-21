@@ -120,7 +120,7 @@ def remove_user(db_conn, db_cursor, user_email: str):
 
     # checking constraints
     constraints.assert_user_exists(db_cursor, user_email)
-    if repo_users.sql_count_admins(db_cursor) == 1:
+    if constraints.check_admin_access(db_cursor, user_email) and repo_users.sql_count_admins(db_cursor) == 1:
         raise HTTPException(status_code=403, detail="Cannot remove the last administrator")
 
     # remove teacher role preparation: find courses with 1 teacher left

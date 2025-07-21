@@ -12,6 +12,11 @@
   height: calc(100vh - 40px);
   overflow: hidden;
   position: relative;
+
+  display: flex;
+  flex-direction: column;
+    overflow-y: auto;
+
 }
 .sidebar:hover {
   overflow-y: auto;
@@ -102,9 +107,9 @@
 
 
 .logout-btn {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 8px 18px;
+  padding: 8px 8px;
   border-radius: 8px;
   cursor: pointer;
   background: white;
@@ -121,14 +126,34 @@
 
 
 .logout-btn-bottom {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #fff;
-  padding: 18px 0;
+  gap: 12px;
+  margin-top: auto; 
+  padding: 18px 9px;
+
+    position: sticky;
+  bottom: 0;
+  background-color: #fff;
   border-top: 1px solid #eee;
+  z-index: 1;
+}
+
+.delete-account-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: white;
+  border: 2px solid #e74c3c;
+  color: #e74c3c;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.delete-account-btn:active {
+  background-color: #fdecea;
+  color: #c0392b;
+  border-color: #c0392b;
 }
