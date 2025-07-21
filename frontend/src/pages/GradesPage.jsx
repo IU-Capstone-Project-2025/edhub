@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams , useNavigate} from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
 import PageMeta from "../components/PageMeta";
@@ -16,7 +16,7 @@ export default function GradesPage() {
   const [assignments, setAssignments] = useState([]);
   const [grades, setGrades] = useState({});
   const [activeTab, setActiveTab] = useState("Grades");
-
+  const navigate = useNavigate();
 
   useEffect(() => {
   const fetchData = async () => {
@@ -74,7 +74,9 @@ export default function GradesPage() {
       setAssignments(assignmentTitles);
       setGrades(parsedGrades);
     } catch (err) {
-      console.error("Failed to load grades:", err);
+      alert("Failed to load grades: " + (err.response?.data?.detail || err.message))
+      console.error("Failed to load grades: " + (err.response?.data?.detail || err.message));
+      navigate("/courses");
     } finally {
       setLoading(false);
     }
