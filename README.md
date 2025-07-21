@@ -7,13 +7,39 @@
 
 You can use the public version of EdHub available at [www.edhub.space](https://edhub.space).
 
-## What is EdHub?
+# What is EdHub?
 
-EdHub is a Learning Management System for interaction between teachers, students, and parents. It aims to improve the quality of an educational process, simplify the interaction between stakeholders, and improve student engagement in learning.
+EdHub is a Learning Management System designed to facilitate interaction among teachers, students, and parents. It enhances the educational process by simplifying communication between stakeholders and increasing student engagement in learning.
 
-Any user can create a course becoming a **Teacher**, invite students and their parents, upload materials, create assignments, see student submissions, grade them based on criteria, and calculate course grade. You can also join the course as a **Student** to see the study materials and submit your homework or as a **Parent** to track the academic performance of your child.
+### Quick Start for Teachers
 
-Most existing LMSs either have limited functionality or have awkward website design and cause difficulties in everyday use. EdHub combines a self-contained and clear design, supporting all the necessary features but not bogging the user down with complex customizations.
+Teachers can easily create a course by simply entering its title, invite students and their parents, upload learning materials, and create assignments.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/main/img/createcourse.gif" width="600"/>
+</p>
+
+### Student Assignment Submissions
+
+Students can access course materials, submit their solutions to assignments, and receive grades from the teacher.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/main/img/studentsubmits.gif" width="600"/>
+</p>
+
+Teachers can review submitted work, evaluate solutions, and provide grades.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/main/img/teachergrades.gif" width="600"/>
+</p>
+
+### Parental Access to Track Academic Progress
+
+Parents have a special role in EdHub. Once invited to a course, they can track their child's academic progress without having to ask for a student account or contact the teacher.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/main/img/parents.png" width="600"/>
+</p>
 
 ### Built With
 
@@ -23,7 +49,7 @@ Most existing LMSs either have limited functionality or have awkward website des
 [![NginX][NginX]][NginX-url]
 [![Docker][Docker]][Docker-url]
 
-## Local Startup
+# Local Startup
 
 These instructions will help you to download a copy of the project and run it on your local machine. All of your organization's data will be stored on your computer and will be inaccessible to external users.
 

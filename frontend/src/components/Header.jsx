@@ -55,6 +55,22 @@ export default function Header({ children }) {
     window.location = window.origin
   }
 
+  async function handleDeleteAccount() {
+    if (!window.confirm("Are you sure you want to delete your account? This cannot be undone.")) return;
+    try {
+      const token = localStorage.getItem("access_token");
+      await axios.post("/api/remove_user", null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      localStorage.removeItem("access_token");
+      window.location = window.origin;
+    } catch (error) {
+      console.error("Failed to delete account:", error);
+      alert("Something went wrong while deleting your account.");
+    }
+  }
+
+
   return (
     <div className="layout">
       <aside className="sidebar">
@@ -86,9 +102,11 @@ export default function Header({ children }) {
             onCourseCreated={fetchCourses}
           />
         )}
-      <div className="logout-btn-bottom">
-        <button className="logout-btn" onClick={logout}>Log out</button>
-      </div>
+     <div className="logout-btn-bottom" >
+      <button className="logout-btn" onClick={logout}>Log out</button>
+      <button className="delete-account-btn" onClick={handleDeleteAccount}>Delete Account</button>
+    </div>
+
     </aside>
       <main className="main-content">
         <div className="breadcrumbs">
