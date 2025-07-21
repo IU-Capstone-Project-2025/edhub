@@ -9,25 +9,31 @@ You can use the public version of EdHub available at [www.edhub.space](https://e
 
 # What is EdHub?
 
-EdHub is a Learning Management System for interaction between teachers, students, and parents. It aims to improve the quality of an educational process, simplify the interaction between stakeholders, and improve student engagement in learning.
+EdHub is a Learning Management System designed to facilitate interaction among teachers, students, and parents. It enhances the educational process by simplifying communication between stakeholders and increasing student engagement in learning.
 
-### Quick start for teachers
+### Quick Start for Teachers
 
-Teachers can create a course by just entering a course title, invite students and their parents, upload materials, create assignments, see student submissions, and grade them.
+Teachers can easily create a course by simply entering its title, invite students and their parents, upload learning materials, and create assignments.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/dev/img/createcourse.gif" width="600"/>
 </p>
 
-### Ability for students to submit a solution
+### Student Assignment Submissions
 
-Students can access the course, submit their solutions to assignments, and receive grades from the teacher.
+Students can access course materials, submit their solutions to assignments, and receive grades from the teacher.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/dev/img/submission.gif" width="600"/>
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/dev/img/studentsubmits.gif" width="600"/>
 </p>
 
-### Parental access to track the child's academic performance
+Teachers can review submitted work, evaluate solutions, and provide grades.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/dev/img/teachergrades.gif" width="600"/>
+</p>
+
+### Parental Access to Track Academic Progress
 
 Parents have a special role in EdHub. Once invited to a course, they can track their child's academic progress without having to ask for a student account or contact the teacher.
 
