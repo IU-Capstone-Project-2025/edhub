@@ -93,40 +93,48 @@ export default function GradesPage() {
 
   return (
     <Header>
-          <PageMeta title={courseInfo.title} icon="/edHub_icon.svg" />
-          <div className="course-page">
-            <div className="course-page-header">
-              <h1 className="course-title">{courseInfo.title}</h1>
-              <CourseTabs
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                availableTabs={["Course", "Participants", "Grades"]}
-              />
-            </div>
+      <PageMeta title={courseInfo.title} icon="/edHub_icon.svg" />
+      <div className="course-page">
+        <div className="course-page-header">
+          <h1 className="course-title">{courseInfo.title}</h1>
+          <CourseTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            availableTabs={["Course", "Participants", "Grades"]}
+          />
+        </div>
 
-        <table className="grades-table">
-          <thead>
-            <tr>
-              <th>Student</th>
-              {assignments.map((title, idx) => (
-                <th key={idx}>{title}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((student, i) => (
-              <tr key={student.email}>
-                <td>{student.name || student.email}</td>
-                {assignments.map((title, j) => (
-                  <td key={j}>
-                    {grades[student.email]?.[title] || <span className="grades-empty">—</span>}
-                  </td>
+        {students.length === 0 ? (
+          <div className="grades-empty-message">
+            {role === "teacher" 
+              ? "No grade data available for this course" 
+              : "The grade information will appear here when you invite students."}
+          </div>
+        ) : (
+          <table className="grades-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                {assignments.map((title, idx) => (
+                  <th key={idx}>{title}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-    </div>
+            </thead>
+            <tbody>
+              {students.map((student) => (
+                <tr key={student.email}>
+                  <td>{student.name || student.email}</td>
+                  {assignments.map((title, j) => (
+                    <td key={j}>
+                      {grades[student.email]?.[title] || <span className="grades-empty">—</span>}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </Header>
   );
 }
