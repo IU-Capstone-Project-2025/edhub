@@ -11,7 +11,7 @@ You can use the public version of EdHub available at [www.edhub.space](https://e
 
 EdHub is a Learning Management System for interaction between teachers, students, and parents. It aims to improve the quality of an educational process, simplify the interaction between stakeholders, and improve student engagement in learning.
 
-## Quick start for teachers
+### Quick start for teachers
 
 Teachers can create a course by just entering a course title, invite students and their parents, upload materials, create assignments, see student submissions, and grade them.
 
@@ -19,7 +19,7 @@ Teachers can create a course by just entering a course title, invite students an
 <img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/dev/img/createcourse.gif" width="600"/>
 </p>
 
-## Ability for students to submit a solution
+### Ability for students to submit a solution
 
 Students can access the course, submit their solutions to assignments, and receive grades from the teacher.
 
@@ -43,7 +43,7 @@ Parents have a special role in EdHub. Once invited to a course, they can track t
 [![NginX][NginX]][NginX-url]
 [![Docker][Docker]][Docker-url]
 
-## Local Startup
+# Local Startup
 
 These instructions will help you to download a copy of the project and run it on your local machine. All of your organization's data will be stored on your computer and will be inaccessible to external users.
 
