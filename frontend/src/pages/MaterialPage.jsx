@@ -3,7 +3,6 @@ import "../styles/MaterialPage.css"
 import {useParams, useNavigate} from "react-router-dom"
 import axios from "axios"
 import PageMeta from "../components/PageMeta"
-import "../styles/AssignmentPage.css"
 
 function formatText(text) {
   if (!text) return "";
