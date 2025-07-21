@@ -110,7 +110,7 @@ export default function GradesPage() {
           <div className="grades-empty-message">
             {role === "teacher" 
               ? "No grade data available for this course" 
-              : "The grade information will appear here when you invite students."}
+              : "The grade information will appear here when you invite students and create assignments."}
           </div>
         ) : (
           <table className="grades-table">
