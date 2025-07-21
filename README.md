@@ -7,13 +7,33 @@
 
 You can use the public version of EdHub available at [www.edhub.space](https://edhub.space).
 
-## What is EdHub?
+# What is EdHub?
 
 EdHub is a Learning Management System for interaction between teachers, students, and parents. It aims to improve the quality of an educational process, simplify the interaction between stakeholders, and improve student engagement in learning.
 
-Any user can create a course becoming a **Teacher**, invite students and their parents, upload materials, create assignments, see student submissions, grade them based on criteria, and calculate course grade. You can also join the course as a **Student** to see the study materials and submit your homework or as a **Parent** to track the academic performance of your child.
+## Quick start for teachers
 
-Most existing LMSs either have limited functionality or have awkward website design and cause difficulties in everyday use. EdHub combines a self-contained and clear design, supporting all the necessary features but not bogging the user down with complex customizations.
+Teachers can create a course by just entering a course title, invite students and their parents, upload materials, create assignments, see student submissions, and grade them.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/dev/img/createcourse.gif" width="600"/>
+</p>
+
+## Ability for students to submit a solution
+
+Students can access the course, submit their solutions to assignments, and receive grades from the teacher.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/dev/img/submission.gif" width="600"/>
+</p>
+
+### Parental access to track the child's academic performance
+
+Parents have a special role in EdHub. Once invited to a course, they can track their child's academic progress without having to ask for a student account or contact the teacher.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/IU-Capstone-Project-2025/edhub/refs/heads/dev/img/parents.png" width="600"/>
+</p>
 
 ### Built With
 
