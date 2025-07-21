@@ -49,14 +49,14 @@ export default function AssignmentPage() {
   }
   const fileData = () => {
     if (selectedFile){
-      
+      const date = new Date(selectedFile?.lastModified)
       return (
         <div>
           <h2>File Details:</h2>
           <p>File Name: {selectedFile.name}</p>
-          <p>File Type: {selectedFile.type}</p>
+          <p>File Type: {selectedFile?.type || "MIME type omitted"}</p>
           <p>
-            Last Modified: {selectedFile.lastModifiedDate.toDateString()}
+            Last Modified: {date.toLocaleString() || "Not available"}
           </p>
         </div>
       );
