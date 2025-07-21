@@ -11,13 +11,14 @@ from logic.users import (
     change_password as logic_change_password,
     remove_user as logic_remove_user,
     give_admin_permissions as logic_give_admin_permissions,
-    get_all_users as logic_get_all_users
+    get_all_users as logic_get_all_users,
+    get_admins as logic_get_admins
 )
 
 router = APIRouter()
 
 
-@router.get("/get_user_info", response_model=json_classes.User)
+@router.get("/get_user_info", response_model=json_classes.User, tags=["Users"])
 async def get_user_info(user_email: str = Depends(get_current_user)):
     """
     Get the info about the user.
@@ -26,7 +27,7 @@ async def get_user_info(user_email: str = Depends(get_current_user)):
         return logic_get_user_info(db_cursor, user_email)
 
 
-@router.get("/get_user_role", response_model=json_classes.CourseRole)
+@router.get("/get_user_role", response_model=json_classes.CourseRole, tags=["Users"])
 async def get_user_role(course_id: str, user_email: str = Depends(get_current_user)):
     """
     Get the user's role in the provided course.
@@ -35,7 +36,7 @@ async def get_user_role(course_id: str, user_email: str = Depends(get_current_us
         return logic_get_user_role(db_cursor, course_id, user_email)
 
 
-@router.post("/create_user", response_model=json_classes.Account)
+@router.post("/create_user", response_model=json_classes.Account, tags=["Users"])
 async def create_user(user: json_classes.UserCreate):
     """
     Creates a user account with provided email, name, and password.
@@ -50,7 +51,7 @@ async def create_user(user: json_classes.UserCreate):
         return logic_create_user(db_conn, db_cursor, user)
 
 
-@router.post("/login", response_model=json_classes.Account)
+@router.post("/login", response_model=json_classes.Account, tags=["Users"])
 async def login(user: json_classes.UserLogin):
     """
     Log into user account with provided email and password.
@@ -61,7 +62,7 @@ async def login(user: json_classes.UserLogin):
         return logic_login(db_cursor, user)
 
 
-@router.post("/change_password", response_model=json_classes.Success)
+@router.post("/change_password", response_model=json_classes.Success, tags=["Users"])
 async def change_password(user: json_classes.UserNewPassword):
     """
     Change the user password to a new one.
@@ -70,7 +71,7 @@ async def change_password(user: json_classes.UserNewPassword):
         return logic_change_password(db_conn, db_cursor, user)
 
 
-@router.post("/remove_user", response_model=json_classes.Success)
+@router.post("/remove_user", response_model=json_classes.Success, tags=["Users"])
 async def remove_user(user_email: str = Depends(get_current_user)):
     """
     Delete user account from the system.
@@ -87,7 +88,7 @@ async def remove_user(user_email: str = Depends(get_current_user)):
         return logic_remove_user(db_conn, db_cursor, user_email)
 
 
-@router.post("/give_admin_permissions", response_model=json_classes.Success)
+@router.post("/give_admin_permissions", response_model=json_classes.Success, tags=["Users"])
 async def give_admin_permissions(object_email: str, subject_email: str = Depends(get_current_user)):
     """
     Give admin rights to some existing user by their email.
@@ -98,7 +99,7 @@ async def give_admin_permissions(object_email: str, subject_email: str = Depends
         return logic_give_admin_permissions(db_conn, db_cursor, object_email, subject_email)
 
 
-@router.get("/get_all_users", response_model=List[json_classes.User])
+@router.get("/get_all_users", response_model=List[json_classes.User], tags=["Users"])
 async def get_all_users(user_email: str = Depends(get_current_user)):
     """
     Get the list of all users in the system.
@@ -109,3 +110,12 @@ async def get_all_users(user_email: str = Depends(get_current_user)):
     """
     with get_db() as (db_conn, db_cursor):
         return logic_get_all_users(db_cursor, user_email)
+
+
+@router.get("/get_admins", response_model=List[json_classes.User], tags=["Users"])
+async def get_admins(user_email: str = Depends(get_current_user)):
+    """
+    Get the list of platform administrators.
+    """
+    with get_db() as (db_conn, db_cursor):
+        return logic_get_admins(db_cursor)

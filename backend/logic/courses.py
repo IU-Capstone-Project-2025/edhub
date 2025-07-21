@@ -19,7 +19,7 @@ def available_courses(db_cursor, user_email: str):
 
 def get_all_courses(db_cursor, user_email: str):
     constraints.assert_admin_access(db_cursor, user_email)
-    courses = repo_courses.sql_select_all_courses(db_cursor)
+    courses = repo.courses.sql_select_all_courses(db_cursor)
     result = [{"course_id": crs[0]} for crs in courses]
     return result
 
@@ -123,3 +123,20 @@ def get_grade_table_csv(db_cursor, course_id: str, students: list[str],
         row.insert(0, login)
         row.insert(1, repo.users.sql_get_user_name(db_cursor, login))
     return logic.csvtables.encode_to_csv_with_columns(columns, table)
+
+
+def get_students_accessible_by(db_cursor, course_id: str, user_email: str) -> list[str]:
+    """
+    Returns the list of logins of students whose grades are visible by `user_email`.
+
+    In particular, returns an empty list if the user is not associated with the given course.
+    """
+    role = logic.users.get_user_role(db_cursor, course_id, user_email)
+    if role["is_teacher"] or role["is_admin"]:
+        return [email for email, name in repo.students.sql_select_enrolled_students(db_cursor, course_id)]
+    if role["is_parent"]:
+        return [email for email, name in repo.parents.sql_select_parents_children(db_cursor, course_id, user_email)]
+    elif role["is_student"]:
+        return [user_email]
+    else:
+        return []

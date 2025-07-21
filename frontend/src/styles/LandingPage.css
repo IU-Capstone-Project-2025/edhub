@@ -320,7 +320,7 @@ body { background: var(--page-bg); }
   text-shadow: 0 2px 16px #4098333b, 0 1px 0 #398d2b13;
 }
 
-/* КНОПКА JoinUs — обычная, без подчеркивания */
+
 .landing-section.cta .landing-btn.big {
   font-size: 1.22rem;
   padding: 18px 50px;
@@ -338,7 +338,7 @@ body { background: var(--page-bg); }
   transition: background 0.16s, box-shadow 0.16s, color 0.18s;
 }
 
-/* Ховер — чуть ярче фон, но НЕ кислотный */
+
 .landing-section.cta .landing-btn.big:hover {
   background: rgba(255,255,255,0.29);
   color: #fff;
@@ -346,7 +346,7 @@ body { background: var(--page-bg); }
   text-decoration: none;
 }
 
-/* Ссылка Contact us — всегда белая, подчёркнутая */
+
 .landing-section.cta span {
   color: #fff;
   font-size: 1.07rem;

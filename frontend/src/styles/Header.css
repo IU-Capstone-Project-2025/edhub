@@ -9,6 +9,12 @@
   background-color: #fff;
   padding: 20px;
   border-right: 1px solid #ddd;
+  height: calc(100vh - 40px);
+  overflow: hidden;
+  position: relative;
+}
+.sidebar:hover {
+  overflow-y: auto;
 }
 
 .sidebar-title {
@@ -61,9 +67,11 @@
 }
 
 .breadcrumbs {
-  font-size: 14px;
-  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: bold;
   color: #888;
+  margin-top: 0.5rem;
+  margin-bottom: 24px;
 }
 
 .content-wrapper {
@@ -92,26 +100,35 @@
   fill: currentColor;
 }
 
+
 .logout-btn {
-  position: fixed;
-  bottom: 10%;
-  padding: 10px 40px;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 8px;
   cursor: pointer;
-  background-color: #4cb050;
-  color: white;
-  transition: background-color 0.3s ease;
+  background: white;
+  border: 2px solid #4cb050;
+  color: #4cb050;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-.logout-btn:hover{
-  opacity: 0.9;
+.logout-btn:active {
+  background-color: #eaf8ec;
+  color: #3a8f42;
+  border-color: #3a8f42;
 }
 
-.logout-btn-div {
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  
+
+.logout-btn-bottom {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  padding: 18px 0;
+  border-top: 1px solid #eee;
 }

@@ -31,7 +31,7 @@ export default function AddGrade({ onClose, courseId ,assignmentId, studentEmail
     } catch (err) {
         setLoading(false)
         const errorData = err.response?.data?.detail
-        alert("Ошибка при добавлении оценки: " + (
+        alert("Error adding grade: " + (
         typeof errorData === "string"
             ? errorData
             : JSON.stringify(errorData || err.message)

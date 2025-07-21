@@ -4,10 +4,12 @@
   background: #F7FAFC;
   font-family: 'Inter', Arial, sans-serif;
 }
+
 .back-btn {
   background: none;
   color: #4CB050;
   font-size: 16px;
+  font-weight: 500;
   border: none;
   margin-bottom: 28px;
   cursor: pointer;
@@ -19,16 +21,23 @@
   background: #fff;
   border-radius: 24px;
   box-shadow: 0 6px 32px #3339400a;
-  overflow: hidden;
   min-height: 420px;
+  height: 70vh;
 }
 .assignment-left, .assignment-right {
   padding: 40px 32px;
   flex: 1;
   min-width: 320px;
+  height: 100%;
 }
 .assignment-left {
   border-right: 1px solid #EDF2F7;
+  position: sticky;
+  left: 0;
+  top: 0;
+  align-self: flex-start;
+  z-index: 2;
+  background: #fff;
 }
 .assignment-left h1 {
   font-size: 2.1rem;
@@ -37,17 +46,51 @@
   color: #333940;
 }
 .assignment-left p {
-  font-size: 1.16rem;
+  font-size: 1.1rem;
   color: #576574;
 }
 .assignment-right {
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  height: 100%;
 }
 .assignment-right h2 {
   margin: 0 0 18px 0;
   font-size: 1.25rem;
   color: #4CB050;
+}
+/* Outlined button styles for Add, Leave, Switch */
+.outlined-btn {
+  background: #fff;
+  border: 2px solid #43c463;
+  color: #43c463;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-size: 1.07em;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.outlined-btn:hover {
+  border-color: #2d995b;
+  color: #2d995b;
+}
+.outlined-btn.red {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+.outlined-btn.red:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+}
+.outlined-btn.blue {
+  border-color: #3498db;
+  color: #3498db;
+}
+.outlined-btn.blue:hover {
+  border-color: #217dbb;
+  color: #217dbb;
 }
 .submission-list {
   display: flex;
@@ -81,16 +124,7 @@
   flex-direction: column;
   gap: 12px;
 }
-.student-submit-block textarea {
-  width: 100%;
-  min-height: 92px;
-  border-radius: 10px;
-  border: 1px solid #C9E6F3;
-  padding: 13px 14px;
-  font-size: 1.05em;
-  background: #F7FCFF;
-  margin-bottom: 5px;
-}
+
 .submit-btn {
   background: #4CB050;
   color: #fff;
@@ -102,11 +136,7 @@
   font-weight: 600;
   transition: background 0.1s;
 }
-.submit-btn:disabled {
-  background: #B1E4F5;
-  color: #fff;
-  cursor: not-allowed;
-}
+
 .submitted-answer {
   background: #F1FAFE;
   border-radius: 12px;

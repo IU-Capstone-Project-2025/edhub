@@ -30,7 +30,7 @@ await axios.post("/api/invite_student", form, {
     } catch (err) {
       setLoading(false)
       const errorData = err.response?.data?.detail
-      alert("Ошибка при добавлении студента: " + (
+      alert("Error adding student: " + (
         typeof errorData === "string"
           ? errorData
           : JSON.stringify(errorData || err.message)
@@ -47,10 +47,11 @@ await axios.post("/api/invite_student", form, {
           placeholder="Student Email"
           value={studentEmail}
           onChange={(e) => setStudentEmail(e.target.value)}
+          onKeyDown={(e)=>(e.code==="Enter" ? handleSubmit(e) : null)}
         />
         <div className="modal-actions">
           <button className="cancel-btn" onClick={onClose} disabled={loading}>Cancel</button>
-          <button onClick={handleSubmit} disabled={loading}>Add</button>
+          <button className="outlined-btn" onClick={handleSubmit} disabled={loading}>Add</button>
         </div>
       </div>
     </div>

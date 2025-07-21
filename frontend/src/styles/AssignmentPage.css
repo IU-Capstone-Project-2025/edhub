@@ -1,6 +1,18 @@
+.clickable-submission {
+  transition: box-shadow 0.2s, background 0.2s;
+  box-shadow: 0 2px 8px #33394014;
+  margin-bottom: 18px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+.clickable-submission:hover {
+  background: #e6f7ee;
+  box-shadow: 0 4px 16px #4cb05022;
+  cursor: pointer;
+}
 .assignment-page {
   min-height: 100vh;
-  padding: 40px;
+  padding: 20px 40px 40px 40px;
   background: #F7FAFC;
   font-family: 'Inter', Arial, sans-serif;
 }
@@ -8,6 +20,7 @@
   background: none;
   color: #4CB050;
   font-size: 16px;
+  font-weight: 500;
   border: none;
   margin-bottom: 28px;
   cursor: pointer;
@@ -21,9 +34,10 @@
   box-shadow: 0 6px 32px #3339400a;
   overflow: hidden;
   min-height: 420px;
+  margin-top: 0;
 }
 .assignment-left, .assignment-right {
-  padding: 40px 32px;
+  padding: 28px 32px;
   flex: 1;
   min-width: 320px;
 }
@@ -37,7 +51,7 @@
   color: #333940;
 }
 .assignment-left p {
-  font-size: 1.16rem;
+  font-size: 1.1rem;
   color: #576574;
 }
 .assignment-right {
@@ -55,19 +69,14 @@
   gap: 12px;
 }
 .submission-card {
-  background: #F1FAFE;
-  border-radius: 12px;
-  padding: 14px 18px;
-  box-shadow: 0 2px 10px #4C97B022;
-  cursor: pointer;
-  transition: box-shadow 0.12s;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px 18px 10px 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 10px #4CB05011;
+  display: block;
 }
-.submission-card:hover {
-  box-shadow: 0 4px 24px #4C97B044;
-}
+
 .submission-status {
   font-size: 0.98em;
   color: #999;
@@ -81,38 +90,14 @@
   flex-direction: column;
   gap: 12px;
 }
-.student-submit-block textarea {
-  width: 100%;
-  min-height: 92px;
-  border-radius: 10px;
-  border: 1px solid #C9E6F3;
-  padding: 13px 14px;
-  font-size: 1.05em;
-  background: #F7FCFF;
-  margin-bottom: 5px;
-  box-sizing: border-box;
-  resize: none;
-}
-.submit-btn {
-  background: #4CB050;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 11px 0;
-  font-size: 1.07em;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.1s;
-}
-.submit-btn:disabled {
-  background: #B1E4F5;
-  color: #fff;
-  cursor: not-allowed;
-}
+
 .submitted-answer {
-  background: #F1FAFE;
-  border-radius: 12px;
-  padding: 18px 16px;
+  background: #FCFFFC;
+  border-radius: 14px;
+  padding: 18px 18px 14px 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 12px #4CB05011;
+  border: 1px solid #F1FAFE;
 }
 .my-comment-title {
   font-weight: 500;
@@ -124,8 +109,68 @@
 }
 .my-grade {
   font-size: 1.07em;
-  color: #00a25d;
+  color: #4CB050;
   font-weight: 600;
+  margin-top: 6px;
+}
+.grade-by {
+  color: #888;
+  font-size: 0.97em;
+  font-weight: 400;
+}
+
+.assignment-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #222;
+  letter-spacing: 0.01em;
+}
+.assignment-desc {
+  font-size: 1.18rem;
+  color: #222;
+  font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+  font-weight: 400;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+.assignment-date {
+  font-size: 0.98rem;
+  color: #888;
+  margin-bottom: 6px;
+  margin-top: 2px;
+}
+/* Outlined button styles for Add, Leave, Switch */
+.outlined-btn {
+  background: #fff;
+  border: 2px solid #43c463;
+  color: #43c463;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-size: 1.07em;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.outlined-btn:hover {
+  border-color: #2d995b;
+  color: #2d995b;
+}
+.outlined-btn.red {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+.outlined-btn.red:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+}
+.outlined-btn.blue {
+  border-color: #3498db;
+  color: #3498db;
+}
+.outlined-btn.blue:hover {
+  border-color: #217dbb;
+  color: #217dbb;
 }
 .popup-bg {
   position: fixed;
@@ -174,7 +219,7 @@
   font-size: 1em;
 }
 .grade-btn {
-  background: #4C97B0;
+  background: #43c463;
   color: #fff;
   border: none;
   border-radius: 7px;
@@ -197,4 +242,227 @@
   cursor: pointer;
   font-weight: 500;
   align-self: flex-end;
+}
+
+.grade-block {
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 14px;
+  background: #f6f8fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.grade-block-title {
+  font-weight: bold;
+  margin-bottom: 16px;
+  font-size: 1.1em;
+  color: #333940;
+}
+
+.grade-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.student-submit-block textarea {
+  font-size: 1.1rem;
+  font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  padding: 18px 18px;
+  border: 1.5px solid rgb(143, 201, 139);
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.student-submit-block textarea:focus {
+  border-color: #4CB050;
+  outline: none;
+  box-shadow: 0 0 0 2px #b1e4c380;
+}
+
+.grade-form input,
+.grade-form textarea {
+  font-size: 1.05em;
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: 1.5px solid #43c463;
+  outline: none;
+  background: #fff;
+  color: #222;
+  box-shadow: 0 1px 4px rgba(67, 196, 99, 0.07);
+  font-weight: 400;
+  resize: vertical;
+}
+
+.grade-form input {
+  min-width: 100px;
+  font-weight: 500;
+}
+
+.grade-form textarea {
+  min-height: 80px;
+  display:none;
+}
+
+.grade-success {
+  color: #43c463;
+  font-weight: 500;
+  margin-top: 10px;
+}
+
+.submit-success {
+  background: #43c463;
+  border: 2px solid #2d995b;
+  color: #fff;
+}
+
+.grade-success {
+  color: #43c463;
+  font-weight: 500;
+  margin-top: 10px;
+  opacity: 0;
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.remove-assignment-text {
+  color: #e74c3c;
+  cursor: pointer;
+  margin-top: -10px;
+  margin-bottom: 16px;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+.remove-assignment-text:hover {
+  text-decoration: underline;
+}
+
+.file-input {
+  font-size: 1.07em; 
+  font-weight: 600;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 8px;
+  border: 2px solid rgb(76, 176, 80);
+  background: white;
+  color: rgb(76, 176, 80);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-align: center;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.file-input:hover {
+  background: #f0fff2;
+  border-color: #3fa046;
+  color: #3fa046;
+}
+
+.link-style-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: #007bff; 
+  text-decoration: underline;
+  font: inherit;
+  cursor: pointer;
+}
+
+.link-style-button:hover {
+  color: #0056b3; 
+}
+
+.submission-buttons-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.file-input:hover {
+  background: #f2fff3;
+}
+
+.submit-btn {
+  padding: 8px 18px;
+  font-size: 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  height: 42px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background-color: rgb(76, 176, 80); 
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submit-btn:hover {
+  background-color: #3fa046;
+}
+
+.submit-btn:disabled {
+  background: white;
+  border: 2px solid rgb(76, 176, 80);
+  color: rgb(76, 176, 80);
+  cursor: not-allowed;
+}
+
+
+/* .submit-btn:not(:disabled) {
+  background-color: #4cb050;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.submit-btn:not(:disabled):hover {
+  background-color: #3fa046;
+} */
+
+.student-submit-block > div {
+  width: 100%;
+}
+
+.student-submit-block textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.submission-buttons-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.submission-buttons-row .file-input,
+.submission-buttons-row .submit-btn {
+  flex: 1;
+  max-width: 48%;
+}
+
+.file-details {
+  margin-top: 16px;
+  margin-bottom: 16px;
 }

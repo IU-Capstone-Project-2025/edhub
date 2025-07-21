@@ -12,7 +12,7 @@ from logic.teachers import (
 router = APIRouter()
 
 
-@router.get("/get_course_teachers", response_model=List[json_classes.User])
+@router.get("/get_course_teachers", response_model=List[json_classes.User], tags=["Teachers"])
 async def get_course_teachers(course_id: str, user_email: str = Depends(get_current_user)):
     """
     Get the list of teachers teaching the course with the provided course_id.
@@ -21,7 +21,7 @@ async def get_course_teachers(course_id: str, user_email: str = Depends(get_curr
         return logic_get_course_teachers(db_cursor, course_id, user_email)
 
 
-@router.post("/invite_teacher", response_model=json_classes.Success)
+@router.post("/invite_teacher", response_model=json_classes.Success, tags=["Teachers"])
 async def invite_teacher(
     course_id: str,
     new_teacher_email: str,
@@ -36,7 +36,7 @@ async def invite_teacher(
         return logic_invite_teacher(db_conn, db_cursor, course_id, new_teacher_email, teacher_email)
 
 
-@router.post("/remove_teacher", response_model=json_classes.Success)
+@router.post("/remove_teacher", response_model=json_classes.Success, tags=["Teachers"])
 async def remove_teacher(
     course_id: str,
     removing_teacher_email: str,

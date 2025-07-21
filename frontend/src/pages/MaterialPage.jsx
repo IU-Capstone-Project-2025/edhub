@@ -1,13 +1,41 @@
 import React, { useEffect, useState } from "react"
 import "../styles/MaterialPage.css"
-import {useParams} from "react-router-dom"
+import {useParams, useNavigate} from "react-router-dom"
 import axios from "axios"
 import PageMeta from "../components/PageMeta"
+import "../styles/AssignmentPage.css"
+
+function formatText(text) {
+  if (!text) return "";
+  let html = text
+    .replace(/\n/g, "<br>")
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // bold: **text**
+    .replace(/__(.*?)__/g, '<u>$1</u>') // underline: __text__
+    .replace(/\*(.*?)\*/g, '<i>$1</i>'); // italic: *text*
+  return html;
+}
 
 export default function MaterialPage() {
   const { post_id , id: course_id} = useParams()
   const [material,setMaterial] = useState()
+  const [roleData, setRoleData] = useState()
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchRoleData = async () => {
+      try {
+        const token = localStorage.getItem("access_token")
+        const res = await axios.get("/api/get_user_role", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { course_id },
+        })
+        setRoleData(res.data)
+      } catch (err) {
+        // ignore
+      }
+    }
+    fetchRoleData()
+  }, [course_id])
   useEffect (() => {
     const fetchMaterial = async () => {
       try{
@@ -18,12 +46,9 @@ export default function MaterialPage() {
         })
         setMaterial(res.data)
       }catch (err) {
-        console.log("Material fetch error:", err.response?.data);
-        alert("Ошибка при загрузке задания: " + (
-          typeof err.response?.data?.detail === "string"
-            ? err.response.data.detail
-            : JSON.stringify(err.response?.data?.detail || err.message)
-    ))
+        alert("Error loading material: " + (err.response?.data?.detail || err.message))
+        console.log("Error loading material: " + (err.response?.data?.detail || err.message));
+        navigate("/courses/" + course_id);
 }
     }
     fetchMaterial()
@@ -41,10 +66,30 @@ if (!material) {
       </a>
       <div className="assignment-main">
         <div className="assignment-left">
-          <h1>{material.title}</h1>
-          <p>{material.description}</p>
-          <p>Material ID : {material.material_id}</p>
-          <p>Created : {material.creation_time}</p>
+          <div className="assignment-date">{material.creation_time}</div>
+          <h1 className="assignment-title">{material.title}</h1>
+                    {roleData && (roleData.is_teacher || roleData.is_admin) && (
+                    <div
+                      className="remove-assignment-text"
+                      onClick={async () => {
+                        if (window.confirm("Are you sure you want to remove this material? This action cannot be undone.")) {
+                          try {
+                            const token = localStorage.getItem("access_token")
+                            await axios.post("/api/remove_material", null, {
+                              headers: { Authorization: `Bearer ${token}` },
+                              params: { course_id, material_id: post_id }
+                            })
+                            window.location.assign("../")
+                          } catch (err) {
+                            alert("Error deleting material: " + (err.response?.data?.detail || err.message))
+                          }
+                        }
+                      }}
+                    >
+                      Delete material
+                    </div>
+                  )}
+          <p className="assignment-desc" dangerouslySetInnerHTML={{__html: formatText(material.description)}} />
         </div>
       </div>
 

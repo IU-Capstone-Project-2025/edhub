@@ -59,7 +59,7 @@ export default function Header({ children }) {
     <div className="layout">
       <aside className="sidebar">
         <div className="sidebar-title">
-          <Logo className="sidebar-logo" />
+          <Logo className="sidebar-logo" onClick={()=>{window.location.assign(window.location.origin)}}/>
         </div>
         <div className="sidebar-section">Courses</div>
         <ul className="course-list">
@@ -86,11 +86,10 @@ export default function Header({ children }) {
             onCourseCreated={fetchCourses}
           />
         )}
-        <div className="logout-btn-div">
-          <button className="logout-btn" onClick={logout}>Log out</button>
-        </div>
-      </aside>
-
+      <div className="logout-btn-bottom">
+        <button className="logout-btn" onClick={logout}>Log out</button>
+      </div>
+    </aside>
       <main className="main-content">
         <div className="breadcrumbs">
           {pathParts.map((segment, idx) => {
